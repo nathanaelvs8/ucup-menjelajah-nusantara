@@ -1,0 +1,114 @@
+.intro-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: black;
+  cursor: default;
+}
+
+.intro-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 80vw;
+  height: auto;
+  max-height: 100vh;
+  object-fit: contain;
+  margin: 0 auto;
+  right: 0;
+}
+
+.intro-video.base {
+  z-index: 1;
+}
+
+.intro-video.overlay {
+  z-index: 2;
+}
+
+.hidden-video {
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.5s ease;
+}
+
+.fade-in-video {
+  opacity: 1 !important;
+  z-index: 2;
+  transition: opacity 0.5s ease;
+}
+
+.auth-options-row {
+  position: absolute;
+  bottom: 15%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 20px;
+  z-index: 3;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+}
+
+.auth-button {
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.auth-button.google {
+  width: 48px;
+  height: 48px;
+  background-color: white;
+  padding: 0;
+  border-radius: 10px;
+}
+
+.auth-button.google .auth-icon {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+}
+
+.auth-button.guest {
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  border: 2px solid white;
+  background-color: transparent;
+}
+
+.auth-button.guest:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tap-to-start {
+  position: absolute;
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 26px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 0 8px black;
+  z-index: 3;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.fade-in {
+  opacity: 1 !important;
+}
+
+.fade-out {
+  opacity: 0 !important;
+  pointer-events: none;
+}

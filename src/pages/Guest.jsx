@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Container from "../layout/Container";
 
 export default function Guest() {
   const [username, setUsername] = useState("");
@@ -11,7 +12,7 @@ export default function Guest() {
   };
 
   return (
-    <div>
+    <Container>
       <h2>Masuk sebagai Guest</h2>
       <input
         placeholder="Username"
@@ -19,6 +20,6 @@ export default function Guest() {
         onChange={(e) => setUsername(e.target.value)}
       />
       <button onClick={handleNext}>Lanjut</button>
-    </div>
+    </Container>
   );
 }
