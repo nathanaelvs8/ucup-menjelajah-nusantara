@@ -1,19 +1,13 @@
 import React from "react";
 import "./App.css";
 import { Routes, Route } from "react-router-dom";
-import Intro from "./pages/Intro"; // ⬅️ tambahkan import ini
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Guest from "./pages/Guest";
+import Intro from "./pages/Intro";
 import SelectCharacter from "./pages/SelectCharacter";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Intro />} /> {/* ⬅️ diubah dari TapToStart */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/guest" element={<Guest />} />
+      <Route path="/" element={<Intro />} />
       <Route path="/select-character" element={<SelectCharacter />} />
     </Routes>
   );

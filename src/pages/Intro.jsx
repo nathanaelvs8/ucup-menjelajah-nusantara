@@ -7,16 +7,21 @@ import loadingVideo from "../assets/intro/Loading intro.mp4";
 import introLoopVideo from "../assets/intro/Video Intro.mp4";
 import introMusic from "../assets/audio/intro-music.mp3";
 import googleIcon from "../assets/icons/google.png";
+import guestIcon from "../assets/icons/guest.png";
+import clickSound from "../assets/audio/click.mp3";
+import cardImage from "../assets/images/imageintro.jpg";
+
 import "./Intro.css";
 
 export default function Intro() {
-  const [hasChosenLogin, setHasChosenLogin] = useState(false);
-  const [showTap, setShowTap] = useState(false);
-  const [playLoading, setPlayLoading] = useState(false);
+  const [step, setStep] = useState("select-login"); // select-login | fill-form | tap-start | loading
   const [isGuest, setIsGuest] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [playerPassword, setPlayerPassword] = useState("");
 
   const loadingRef = useRef(null);
   const audioRef = useRef(null);
+  const clickAudioRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -25,38 +30,56 @@ export default function Intro() {
     }
   }, []);
 
-  const handleGoogleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      console.log("Login berhasil:", user);
-
-      setIsGuest(false);
-      setHasChosenLogin(true);
-      setTimeout(() => setShowTap(true), 500);
-
-      if (audioRef.current) {
-        audioRef.current.play().catch(err => console.warn("Audio autoplay blocked:", err.message));
-      }
-
-    } catch (error) {
-      console.error("Login gagal:", error.message);
-      alert("Login gagal: " + error.message);
+  const playClick = () => {
+    if (clickAudioRef.current) {
+      clickAudioRef.current.currentTime = 0;
+      clickAudioRef.current.play();
     }
   };
 
-  const handleGuest = () => {
+  const handleSelectGoogle = () => {
+    playClick();
+    setIsGuest(false);
+    setStep("fill-form");
+  };
+
+  const handleSelectGuest = () => {
+    playClick();
     setIsGuest(true);
-    setHasChosenLogin(true);
-    setTimeout(() => setShowTap(true), 500);
-
-    if (audioRef.current) {
-      audioRef.current.play().catch(err => console.warn("Audio autoplay blocked:", err.message));
-    }
+    setStep("fill-form");
   };
+
+ const handleFormSubmit = async () => {
+  if (playerName.trim() === "") {
+    alert("Nama tidak boleh kosong");
+    return;
+  }
+
+  if (!isGuest) {
+    try {
+      await signInWithPopup(auth, provider);
+      console.log("Login Google berhasil");
+    } catch (error) {
+      alert("Login gagal: " + error.message);
+      return;
+    }
+  }
+
+  localStorage.setItem("playerName", playerName);
+
+  // ⬇️ Mulai musik setelah berhasil login/nama valid
+  if (audioRef.current) {
+    audioRef.current.play().catch((err) => {
+      console.warn("Audio autoplay blocked:", err.message);
+    });
+  }
+
+  setStep("tap-start");
+};
 
   const handleTapStart = () => {
-    setPlayLoading(true);
+    playClick();
+    setStep("loading");
     if (loadingRef.current) {
       loadingRef.current.currentTime = 0;
       loadingRef.current.play();
@@ -64,50 +87,77 @@ export default function Intro() {
   };
 
   const handleLoadingEnd = () => {
-    if (isGuest) navigate("/guest");
-    else navigate("/select-character");
-  };
+  navigate("/select-character"); // pindah ke halaman baru
+};
+
 
   return (
-    <div className="intro-container tappable">
-      {/* Musik latar */}
+    <div className="intro-container">
+      <h1 className="title-text">Ucup Menjelajah Nusantara</h1>
+
       <audio ref={audioRef} loop>
         <source src={introMusic} type="audio/mp3" />
       </audio>
+      <audio ref={clickAudioRef} preload="auto">
+        <source src={clickSound} type="audio/mp3" />
+      </audio>
 
-      {/* Video looping intro */}
       <video className="intro-video base" src={introLoopVideo} autoPlay muted loop />
-
-      {/* Video loading (muncul setelah tap) */}
       <video
         ref={loadingRef}
-        className={`intro-video overlay ${playLoading ? "fade-in-video" : "hidden-video"}`}
+        className={`intro-video overlay ${step === "loading" ? "fade-in-video" : "hidden-video"}`}
         src={loadingVideo}
         muted
         onEnded={handleLoadingEnd}
       />
 
-      {/* Login dan tap */}
-      {!playLoading && (
-        <>
-          <div className={`auth-options-row ${hasChosenLogin ? "fade-out" : "fade-in"}`}>
-            {!hasChosenLogin && (
-              <>
-                <button className="auth-button google" onClick={handleGoogleLogin}>
-                  <img src={googleIcon} alt="Google" className="auth-icon" />
-                </button>
-                <button className="auth-button guest" onClick={handleGuest}>
-                  Play as Guest
-                </button>
-              </>
-            )}
+      {/* STEP 1 - PILIH LOGIN */}
+      {step === "select-login" && (
+        <div className="auth-options-grid">
+          <div className="auth-method" onClick={handleSelectGoogle}>
+            <img src={googleIcon} alt="Google" className="auth-icon-box" />
+            <p className="auth-label">Google Account</p>
           </div>
-
-          <div className={`tap-to-start ${showTap ? "fade-in" : "fade-out"}`} onClick={handleTapStart}>
-            Tap to Start
+          <div className="auth-method" onClick={handleSelectGuest}>
+            <img src={guestIcon} alt="Guest" className="auth-icon-box" />
+            <p className="auth-label">Guest Account</p>
           </div>
-        </>
+        </div>
       )}
+
+      {/* STEP 2 - FORM */}
+  {step === "fill-form" && (
+  <div className="login-card">
+    <img src={cardImage} alt="Header" className="card-header" />
+    <div className="login-title">Masukkan Informasi</div>
+
+    <input
+      type="text"
+      placeholder="Masukkan Nama"
+      value={playerName}
+      onChange={(e) => setPlayerName(e.target.value)}
+    />
+
+    {!isGuest && (
+      <input
+        type="password"
+        placeholder="Masukkan Password"
+        value={playerPassword}
+        onChange={(e) => setPlayerPassword(e.target.value)}
+      />
+    )}
+
+    <button onClick={handleFormSubmit}>OK</button>
+  </div>
+)}
+
+      {/* STEP 3 - TAP TO START */}
+      {step === "tap-start" && (
+        <div className="tap-to-start" onClick={handleTapStart}>
+          Tap to Start
+        </div>
+      )}
+
     </div>
   );
 }

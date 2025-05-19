@@ -1,0 +1,138 @@
+.select-container {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  background: url('../assets/images/Selectchara.jpg') center/cover no-repeat;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6);
+    padding-bottom: 60px;
+}
+
+.select-title {
+  font-size: 36px;
+  color: white;
+  margin-bottom: 16px;
+  text-shadow: 2px 2px black;
+}
+
+.character-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(64px, 1fr));
+  gap: 12px;
+  max-width: 500px;
+  padding: 0 20px;
+  margin-bottom: 40px;
+}
+
+.grid-img {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 6px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.grid-img:hover {
+  transform: scale(1.2);             /* zoom pas hover */
+  box-shadow: 0 0 10px rgba(255,255,255,0.5); /* tambahan glow opsional */
+}
+
+
+
+
+.grid-img.selected {
+  transform: scale(1.1);
+  border-color: white;
+  box-shadow: 0 0 6px white;
+}
+
+.character-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: 140px;         /* ✅ Tambahin ini buat nurunin karakter */
+  padding-top: 20px;
+  padding-bottom: 30px;
+  z-index: 10;
+}
+
+
+.animated-sprite {
+  width: 64px;
+  height: 64px;
+  background-repeat: no-repeat;
+  background-position: 0px 0px;
+  image-rendering: pixelated;
+  animation: walkFront 0.8s steps(4) infinite;
+  transform: scale(4);
+  margin-bottom: 12px;
+}
+
+@keyframes walkFront {
+  from {
+    background-position-x: 0px;
+  }
+  to {
+    background-position-x: -256px;
+  }
+}
+
+.username-display {
+  font-size: 18px;
+  color: white;
+  font-weight: bold;
+  text-shadow: 0 0 4px black;
+  margin-bottom: 8px;
+}
+
+.confirm-button {
+  padding: 10px 20px;
+  font-size: 16px;
+  border-radius: 10px;
+  background-color: #222;
+  color: white;
+  border: 2px solid white;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  margin-top: 100px;
+}
+
+.confirm-button:hover {
+  background-color: #444;
+  color: #fff;
+}
+
+.username-greeting {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 1px 1px 3px black;
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.3); /* opsional, biar lebih keliatan */
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+
+
+.screen-wrapper {
+  width: 100vw;
+  height: 100vh;
+  background-color: black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
