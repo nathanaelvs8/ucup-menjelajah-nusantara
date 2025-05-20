@@ -4,7 +4,7 @@ html, body {
   height: 100%;
   width: 100%;
   background: #000;
-  font-family: sans-serif;
+  font-family: 'IM Fell English SC', serif;
 }
 
 #root {
@@ -192,4 +192,171 @@ html, body {
 
 .event-button:hover {
   background-color: #666;
+}
+
+
+.main-map-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  flex-direction: column;
+}
+
+.main-map-container {
+  position: relative;
+  width: 90vw;
+  max-width: 600px;
+}
+
+.main-map-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border: 4px solid white;
+  border-radius: 10px;
+  box-shadow: 0 0 20px black;
+}
+
+.close-map-button {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 28px;
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  z-index: 60;
+  filter: drop-shadow(0 0 3px black);
+}
+.close-map-button:hover {
+  color: red;
+}
+
+.main-map-player-dot {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  overflow: hidden;
+  transform: translate(-50%, -50%);
+  z-index: 55;
+}
+
+.main-map-player-dot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.map-toggle-button {
+  position: fixed;
+  bottom: 150px;
+  right: 13px;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid white;
+  padding: 6px;
+  border-radius: 12px; /* <--- radius di sini */
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.map-toggle-button img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+   border-radius: 8px; /* kalau mau ikon juga melengkung */
+  filter: drop-shadow(0 0 5px black);
+}
+
+.map-toggle-button:hover {
+  transform: scale(1.05);
+}
+
+.map-toggle-button:hover::after {
+  content: "Press M to open map";
+  position: absolute;
+  bottom: 110%;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #f0f0f0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'IM Fell English SC', serif;
+  white-space: nowrap;
+  box-shadow: 0 0 6px black;
+}
+
+.house-zone {
+  position: absolute;
+  left: 490px; /* sesuaikan dengan koordinat area rumah */
+  top: 2240px; /* sesuaikan juga */
+  width: 260px;
+  height: 235px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.lake-zone {
+  position: absolute;
+  left: 120px;
+  top: 1650px;
+  width: 550px;
+  height: 250px;
+  background-color: rgba(0, 100, 255, 0.15);
+  border: 2px dashed rgba(0, 100, 255, 0.4);
+  border-radius: 50%; /* biar tampil oval */
+  z-index: 5;
+  pointer-events: none;
+}
+
+.mountain-zone {
+  position: absolute;
+  background-color: rgba(160, 82, 45, 0.15);
+  border: 2px dashed rgba(160, 82, 45, 0.4);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Area blok atas kiri gunung */
+.mountain-zone.part-1 {
+  position: absolute;
+  left: 1240px; /* posisi kiri gunung */
+  top: 850px;  /* posisi atas gunung */
+  width: 620px;
+  height: 350px;
+  background-color: rgba(139, 69, 19, 0.2);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  border: 2px dashed rgba(160, 82, 45, 0.5);
+  z-index: 5;
+  pointer-events: none;
+}
+
+/* Area tengah kanan gunung */
+.mountain-zone.part-2 {
+  left: 1200px;
+  top: 1200px;
+  width: 900px;
+  height: 250px;
+}
+
+/* Area bawah besar gunung */
+.mountain-zone.part-3 {
+  left: 1200px;
+  top: 1450px;
+  width: 900px;
+  height: 250px;
 }
