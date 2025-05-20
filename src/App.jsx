@@ -3,7 +3,7 @@ import "./App.css";
 import { Routes, Route } from "react-router-dom";
 import Intro from "./pages/Intro";
 import SelectCharacter from "./pages/SelectCharacter";
-import Gameplay from "./pages/gameplay";
+import Gameplay from "./pages/Gameplay";
 
 
 

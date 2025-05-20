@@ -1,25 +1,196 @@
-/* Gameplay.css */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  background: #000;
+  font-family: sans-serif;
+}
 
-.map-wrapper {
+#root {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+}
+
+.viewport {
   width: 100vw;
   height: 100vh;
   overflow: hidden;
   position: relative;
-  background-color: black;
+  background: black;
+  border: 4px solid #222;
 }
 
 .map {
-  position: relative;
+  position: absolute;
+  width: 4616px;
+  height: 3464px;
   background-size: cover;
   background-repeat: no-repeat;
+  background-position: top left;
 }
 
 .character {
+  position: absolute;
   width: 64px;
   height: 64px;
-  position: absolute;
-  transform: translate(-50%, -50%);
+  background-size: 256px 256px;
   image-rendering: pixelated;
-  background-repeat: no-repeat;
-  background-size: 256px 256px; /* asumsi sprite sheet 4x4 */
+  z-index: 10;
+}
+
+/* UI BARS */
+.status-ui {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  display: flex;
+  justify-content: space-between;
+  z-index: 20;
+  pointer-events: none;
+  flex-wrap: wrap;
+}
+
+.status-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: white;
+  font-size: 14px;
+}
+
+.bar {
+  width: 100px;
+  height: 10px;
+  background: gray;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.bar > div {
+  height: 100%;
+  background: limegreen;
+}
+
+.status-money {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  pointer-events: auto;
+}
+
+.money {
+  color: gold;
+  font-size: 16px;
+}
+
+.inventory-btn {
+  padding: 4px 8px;
+  font-size: 12px;
+  background: #333;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 40px);
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.6);
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #777;
+  border-radius: 4px;
+}
+
+.inventory-item {
+  width: 40px;
+  height: 40px;
+  background: #aaa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  text-align: center;
+  color: black;
+}
+
+.analog-controls {
+  position: fixed;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.analog-controls .horizontal {
+  display: flex;
+  gap: 4px;
+}
+
+.arrow {
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+  border: none;
+  background-color: #333;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  opacity: 0.9;
+}
+.arrow:hover {
+  opacity: 1;
+}
+
+.event-panel {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-size: 16px;
+  min-width: 280px;
+  max-width: 90vw;
+  text-align: center;
+  box-shadow: 0 0 10px #000;
+}
+
+.event-text {
+  margin: 0 0 10px;
+}
+
+.event-button {
+  padding: 8px 16px;
+  background-color: #444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  width: 100%;
+}
+
+.event-button:hover {
+  background-color: #666;
 }
