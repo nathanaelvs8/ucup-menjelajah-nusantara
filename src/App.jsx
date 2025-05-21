@@ -6,6 +6,7 @@ import SelectCharacter from "./pages/SelectCharacter";
 import Gameplay from "./pages/Gameplay";
 import House from "./pages/House";
 import Fishing from "./pages/Fishing";
+import Beach from "./pages/Beach";
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
       <Route path="/gameplay" element={<Gameplay />} />
       <Route path="/house" element={<House />} />
       <Route path="/fishing" element={<Fishing />} />
+      <Route path="/beach" element={<Beach />} />
 
     </Routes>
   );

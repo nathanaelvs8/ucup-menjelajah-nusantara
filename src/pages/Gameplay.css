@@ -360,3 +360,171 @@ html, body {
   width: 900px;
   height: 250px;
 }
+
+.beach-zone {
+  position: absolute;
+  left: 2000px;
+  top: 350px;
+  width: 1200px;
+  height: 450px;
+  background-color: rgba(255, 255, 0, 0.1);
+  border: 2px dashed rgba(255, 255, 0, 0.4);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.beach-zone.part-a {
+  left: 1300px;
+  top: 0px;
+  width: 100px;
+  height: 400px;
+}
+
+.beach-zone.part-b {
+  left: 1400px;
+  top: 0px;
+  width: 300px;
+  height: 600px;
+}
+
+.beach-zone.part-c {
+  left: 1700px;
+  top: 290px;
+  width: 400px;
+  height: 400px;
+}
+
+.beach-zone.part-d {
+  left: 1200px;
+  top: 0px;
+  width: 100px;
+  height: 250px;
+}
+
+.beach-zone.part-e {
+  left: 1100px;
+  top: 0px;
+  width: 100px;
+  height: 100px;
+}
+
+.beach-zone.part-f {
+  left: 2000px;
+  top: 350px;
+  width: 1200px;
+  height: 450px;
+}
+
+.river-zone {
+  position: absolute;
+  background-color: rgba(0, 100, 255, 0.1);
+  border: 2px dashed rgba(0, 100, 255, 0.4);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.river-zone.part-a {
+  left: 2990px;
+  top: 2080px;
+  width: 120px;
+  height: 50px;
+}
+
+.river-zone.part-b {
+  left: 2920px;
+  top: 2130px;
+  width: 150px;
+  height: 50px;
+}
+
+.river-zone.part-c {
+  left: 2860px;
+  top: 2180px;
+  width: 120px;
+  height: 50px;
+}
+
+.river-zone.part-d {
+  left: 2870px;
+  top: 2230px;
+  width: 45px;
+  height: 30px;
+}
+
+.river-zone.part-e {
+  left: 2730px;
+  top: 2300px;
+  width: 95px;
+  height: 80px;
+}
+
+.river-zone.part-f {
+  left: 2630px;
+  top: 2380px;
+  width: 130px;
+  height: 100px;
+}
+
+.river-zone.part-g {
+  left: 2560px;
+  top: 2480px;
+  width: 140px;
+  height: 100px;
+}
+
+.river-zone.part-h {
+  left: 2510px;
+  top: 2580px;
+  width: 130px;
+  height: 100px;
+}
+
+.river-zone.part-i {
+  left: 2450px;
+  top: 2680px;
+  width: 110px;
+  height: 80px;
+}
+
+.river-zone.part-j {
+  left: 2390px;
+  top: 2830px;
+  width: 80px;
+  height: 100px;
+}
+
+.river-zone.part-k {
+  left: 2350px;
+  top: 2930px;
+  width: 80px;
+  height: 100px;
+}
+
+.river-zone.part-l {
+  left: 2320px;
+  top: 3030px;
+  width: 80px;
+  height: 100px;
+}
+
+.river-zone.part-m {
+  left: 2300px;
+  top: 3130px;
+  width: 80px;
+  height: 100px;
+}
+
+.river-zone.part-n {
+  left: 2270px;
+  top: 3230px;
+  width: 80px;
+  height: 100px;
+}
+
+.river-zone.part-o {
+  left: 2250px;
+  top: 3330px;
+  width: 80px;
+  height: 200px;
+}
+
