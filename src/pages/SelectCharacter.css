@@ -2,9 +2,11 @@
   width: 100vw;
   height: 100vh;
   background-image: url('../assets/images/Selectchara.jpg');
-  background-size: contain;       /* ⬅️ Biar seperti intro video */
+  background-size: cover;       /* ⬅ Biar seperti intro video */
   background-repeat: no-repeat;
   background-position: center;
+  background-attachment: fixed;
+  background-color: #d8f4f0;
   display: flex;
   flex-direction: column;
   align-items: center;

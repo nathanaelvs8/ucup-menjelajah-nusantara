@@ -12,8 +12,10 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 
 export default function Gameplay() {
   const [character, setCharacter] = useState(null);
-  const [position, setPosition] = useState({ x: 600, y: 2500 });
-  
+  const [position, setPosition] = useState(() => {
+  const saved = JSON.parse(localStorage.getItem("playerData"));
+  return saved?.position || { x: 600, y: 2500 };
+});
   const [direction, setDirection] = useState("down");
   const [isMoving, setIsMoving] = useState(false);
   const [showMainMap, setShowMainMap] = useState(false);
@@ -28,15 +30,18 @@ export default function Gameplay() {
   const keysPressed = useRef({});
   const mainMapRef = useRef(null);
 
-  const [status, setStatus] = useState({
+    
+  const savedData = JSON.parse(localStorage.getItem("playerData")) || {};
+  const [status, setStatus] = useState(savedData.status || {
     meal: 50,
     sleep: 50,
     happiness: 50,
     cleanliness: 50,
   });
-  const [money, setMoney] = useState(5000);
+  const [money, setMoney] = useState(savedData.money || 5000);
+  const [inventory, setInventory] = useState(savedData.inventory || ["Pickaxe"]);
+
   const [inventoryVisible, setInventoryVisible] = useState(false);
-  const [inventory, setInventory] = useState(["Pickaxe"]);
   const [currentMinute, setCurrentMinute] = useState(0); // 0 - 59
   const [currentHour, setCurrentHour] = useState(9); // 0 - 23
   const [currentDayIndex, setCurrentDayIndex] = useState(0); // Monday
@@ -58,48 +63,61 @@ export default function Gameplay() {
   }, []);
 
   useEffect(() => {
-    let minute = currentMinute;
-    let hour = currentHour;
-    let day = currentDayIndex;
+  const timeData = JSON.parse(localStorage.getItem("playerTime"));
+  let minute = 0;
+  let hour = 9;
+  let day = 0;
 
-    const tick = () => {
-      minute += 1;
+  if (timeData) {
+    const now = Date.now();
+    const elapsed = Math.floor((now - timeData.startTimestamp) / 250); // 1 tick = 250ms = 1 menit game
 
-      if (minute >= 60) {
-        minute = 0;
-        hour += 1;
+    let totalMinutes = timeData.savedHour * 60 + timeData.savedMinute + elapsed;
+    day = (timeData.savedDay + Math.floor(totalMinutes / (24 * 60))) % 7;
+    hour = Math.floor((totalMinutes % (24 * 60)) / 60);
+    minute = totalMinutes % 60;
+  }
 
-        setStatus((prev) => {
-          const newStatus = { ...prev };
-          for (let key in newStatus) {
-            newStatus[key] = Math.max(newStatus[key] - 2, 0);
-          }
-          const allZero = Object.values(newStatus).every(val => val === 0);
-          if (allZero) window.location.href = "/ending";
-          return newStatus;
-        });
-      }
+  setCurrentMinute(minute);
+  setCurrentHour(hour);
+  setCurrentDayIndex(day);
 
-      if (hour >= 24) {
-        hour = 0;
-        day = (day + 1) % 7;
-      }
+  const tick = () => {
+    minute += 1;
 
-      // Update waktu ke state
-      setCurrentMinute(minute);
-      setCurrentHour(hour);
-      setCurrentDayIndex(day);
+    if (minute >= 60) {
+      minute = 0;
+      hour += 1;
 
-      // Jadwalkan update berikutnya
-      timeoutRef.current = setTimeout(tick, 250);
-    };
+      setStatus((prev) => {
+        const newStatus = { ...prev };
+        for (let key in newStatus) {
+          newStatus[key] = Math.max(newStatus[key] - 2, 0);
+        }
+        const allZero = Object.values(newStatus).every(val => val === 0);
+        if (allZero) window.location.href = "/ending";
+        return newStatus;
+      });
+    }
 
-    // Simpan referensi supaya bisa dibersihkan nanti
-    const timeoutRef = { current: null };
+    if (hour >= 24) {
+      hour = 0;
+      day = (day + 1) % 7;
+    }
+
+    setCurrentMinute(minute);
+    setCurrentHour(hour);
+    setCurrentDayIndex(day);
+
     timeoutRef.current = setTimeout(tick, 250);
+  };
 
-    return () => clearTimeout(timeoutRef.current);
-  }, []);
+  const timeoutRef = { current: null };
+  timeoutRef.current = setTimeout(tick, 250);
+
+  return () => clearTimeout(timeoutRef.current);
+}, []);
+
 
 
   const getGreeting = () => {
@@ -282,25 +300,28 @@ export default function Gameplay() {
     keysPressed.current[key] = value;
   };
 
-  const handleInteract = () => {
-    if (inHouseZone) {
-      const saveData = { character, position, status, money, inventory };
-      localStorage.setItem("playerData", JSON.stringify(saveData));
-      window.location.href = "/house";
-    }
-    if (nearLakeZone) {
-      window.location.href = "/fishing";
-    }
-    if (nearBeachZone) {
-      window.location.href = "/beach";
-    }
-    if (inMarketZone) {
-      window.location.href = "/market";
-    }
-    if (nearForestZone) {
-      window.location.href = "/forest";
-    }
-  };
+const handleInteract = () => {
+  const saveData = { character, position, status, money, inventory };
+  localStorage.setItem("playerData", JSON.stringify(saveData));
+  localStorage.setItem("playerTime", JSON.stringify({
+    startTimestamp: Date.now(),
+    savedMinute: currentMinute,
+    savedHour: currentHour,
+    savedDay: currentDayIndex
+  }));
+
+  if (inHouseZone) {
+    window.location.href = "/house";
+  } else if (nearLakeZone) {
+    window.location.href = "/fishing";
+  } else if (nearBeachZone) {
+    window.location.href = "/beach";
+  } else if (inMarketZone) {
+    window.location.href = "/market";
+  } else if (nearForestZone) {
+    window.location.href = "/forest";
+  }
+};
 
   return (
     <div className="viewport">
