@@ -109,37 +109,86 @@ html, body {
 }
 
 .inventory-btn {
-  padding: 4px 8px;
-  font-size: 12px;
+  padding: 6px 12px;
+  font-size: 14px;
   background: #333;
   color: #fff8c6;
   border: 1px solid #555;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
+}
+
+.inventory-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 520px;   /* lebih kecil */
+  height: 280px;  /* lebih kecil */
+  background-color: rgba(20, 20, 20, 0.95);
+  border: 2px solid #888;
+  border-radius: 12px;
+  padding: 15px;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 0 15px #000;
 }
 
 .inventory-grid {
   display: grid;
-  grid-template-columns: repeat(4, 40px);
+  grid-template-columns: repeat(10, 1fr);
+  grid-template-rows: repeat(5, 1fr);
   gap: 4px;
-  background: rgba(0, 0, 0, 0.6);
-  padding: 8px;
-  margin-top: 5px;
-  border: 1px solid #777;
-  border-radius: 4px;
+  width: 100%;
+  height: 100%;
+  margin-bottom: 10px;
 }
 
-.inventory-item {
-  width: 40px;
-  height: 40px;
-  background: #aaa;
+.inventory-slot {
+  background: #222;
+  border: 1px solid #555;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
+  color: #eee;
+  user-select: none;
+  box-shadow: inset 0 0 5px #000;
+  width: 40px;
+  height: 40px;
+}
+
+.inventory-item {
+  width: 32px;
+  height: 32px;
+  background: #aaa;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
   text-align: center;
   color: black;
+  user-select: none;
 }
+
+.close-inventory-btn {
+  padding: 6px 16px;
+  font-size: 14px;
+  background-color: #333;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+.close-inventory-btn:hover {
+  background-color: #555;
+}
+
 
 .analog-controls {
   position: fixed;
@@ -598,3 +647,141 @@ html, body {
   letter-spacing: 0.5px;
 }
 
+.water-zone {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 100%;
+  height: 170px;
+  background-color: rgba(0, 0, 255, 0.1); /* transparan biru */
+  border: 2px dashed rgba(0, 0, 255, 0.5); /* garis kotak */
+  z-index: 5;
+  pointer-events: none;
+}
+
+.sunbathe-zone {
+  position: absolute;
+  left: 750px;
+  top: 240px;
+  width: 150px;
+  height: 140px;
+  background-color: rgba(255, 215, 0, 0.1); /* kuning transparan */
+  border: 2px dashed rgba(255, 215, 0, 0.6); /* kuning garis kotak */
+  z-index: 5;
+  pointer-events: none;
+}
+
+.exit-gradient-zone {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 40px;
+  background: linear-gradient(to top, rgba(255, 0, 0, 0.6), rgba(255, 0, 0, 0));
+  z-index: 5;
+  pointer-events: none;
+}
+
+.coconut-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: black;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.coconut-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.coconut-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.coconut-overlay.result {
+  background-color: rgba(0, 0, 0, 0.9);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.obtained-text {
+  font-size: 32px;
+  color: white;
+  margin-bottom: 16px;
+}
+
+.coconut-icon {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  border: 2px solid white;
+  margin-bottom: 8px;
+}
+
+.item-name {
+  font-size: 20px;
+  color: #fff8c6;
+  margin-bottom: 20px;
+}
+
+.ok-button {
+  padding: 8px 20px;
+  font-size: 16px;
+  background: #333;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.coconut-zone {
+  position: absolute;
+  left: 100px;    /* sesuaikan lokasi pohon kelapa */
+  top: 650px;
+  width: 200px;
+  height: 200px;
+  background-color: rgba(0, 255, 0, 0.2);
+  border: 2px dashed rgba(0, 255, 0, 0.6);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.tap-text {
+  position: absolute;
+  bottom: 50px;
+  width: 100%;
+  text-align: center;
+  font-size: 28px;
+  color: #fff;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(0,0,0,0.7);
+  pointer-events: none;
+  user-select: none;
+}
+
+.obtained-banner {
+  width: 1200px;
+  height: 1050px;
+  padding: 80px 100px 100px 100px;
+  background-repeat: no-repeat;
+  background-size: cover; /* ganti ke cover */
+  background-position: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  user-select: none;
+  text-align: center;
+  max-width: none;
+  max-height: none;
+}

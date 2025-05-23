@@ -191,12 +191,25 @@ export default function Forest() {
           <div className="money">Rp {money} 💰</div>
           <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
           {inventoryVisible && (
-            <div className="inventory-grid">
-              {inventory.map((item, i) => (
-                <div key={i} className="inventory-item">{item}</div>
-              ))}
+            <div className="inventory-modal">
+              <div className="inventory-grid">
+                {Array.from({ length: 50 }).map((_, i) => (
+                  <div key={i} className="inventory-slot">
+                    {inventory[i] ? (
+                      <div className="inventory-item">{inventory[i]}</div>
+                    ) : null}
+                  </div>
+                ))}
+              </div>
+              <button
+                className="close-inventory-btn"
+                onClick={() => setInventoryVisible(false)}
+              >
+                Close
+              </button>
             </div>
           )}
+
         </div>
       </div>
 
