@@ -1,7 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
 import forestMap from "../assets/map/Forest.jpg";
 
+const MAP_WIDTH = 1283.2;
+const MAP_HEIGHT = 1039.2;
+const SPRITE_SIZE = 64;
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function Forest() {
@@ -10,12 +13,19 @@ export default function Forest() {
   const [inventory, setInventory] = useState([]);
   const [inventoryVisible, setInventoryVisible] = useState(false);
   const [username, setUsername] = useState("Player");
-
   const [currentMinute, setCurrentMinute] = useState(0);
   const [currentHour, setCurrentHour] = useState(9);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
+  const [position, setPosition] = useState({ x: 600, y: 300 });
+  const [character, setCharacter] = useState(null);
+  const [direction, setDirection] = useState("down");
+  const [isMoving, setIsMoving] = useState(false);
+  const keysPressed = useRef({});
 
   useEffect(() => {
+    const savedChar = JSON.parse(localStorage.getItem("selectedCharacter"));
+    if (savedChar) setCharacter(savedChar);
+
     const savedData = JSON.parse(localStorage.getItem("playerData"));
     if (savedData) {
       setStatus(savedData.status || {});
@@ -27,59 +37,40 @@ export default function Forest() {
 
     const savedTime = JSON.parse(localStorage.getItem("playerTime"));
     if (savedTime) {
-      setCurrentMinute(savedTime.minute);
-      setCurrentHour(savedTime.hour);
-      setCurrentDayIndex(savedTime.day);
+      setCurrentMinute(savedTime.savedMinute);
+      setCurrentHour(savedTime.savedHour);
+      setCurrentDayIndex(savedTime.savedDay);
     }
   }, []);
 
   useEffect(() => {
-    const timeData = JSON.parse(localStorage.getItem("playerTime"));
-    if (timeData) {
-      const now = Date.now();
-      const elapsed = Math.floor((now - timeData.startTimestamp) / 250);
-
-      let totalMinutes = timeData.savedHour * 60 + timeData.savedMinute + elapsed;
-      const newDayIndex = (timeData.savedDay + Math.floor(totalMinutes / (24 * 60))) % 7;
-      const newHour = Math.floor((totalMinutes % (24 * 60)) / 60);
-      const newMinute = totalMinutes % 60;
-
-      setCurrentMinute(newMinute);
-      setCurrentHour(newHour);
-      setCurrentDayIndex(newDayIndex);
-    }
-
     const interval = setInterval(() => {
-      setCurrentMinute(prevMinute => {
-        let newMinute = prevMinute + 1;
-
+      setCurrentMinute(prev => {
+        let newMinute = prev + 1;
         setCurrentHour(prevHour => {
-          let newHour = prevHour;
-          let newDay = currentDayIndex;
+          let hour = prevHour;
+          let day = currentDayIndex;
 
           if (newMinute >= 60) {
             newMinute = 0;
-            newHour += 1;
-
+            hour += 1;
             setStatus(prev => {
               const newStatus = { ...prev };
               for (let key in newStatus) {
                 newStatus[key] = Math.max(newStatus[key] - 2, 0);
               }
-              if (Object.values(newStatus).every(val => val === 0)) {
-                window.location.href = "/ending";
-              }
+              if (Object.values(newStatus).every(val => val === 0)) window.location.href = "/ending";
               return newStatus;
             });
           }
 
-          if (newHour >= 24) {
-            newHour = 0;
-            newDay = (newDay + 1) % 7;
-            setCurrentDayIndex(newDay);
+          if (hour >= 24) {
+            hour = 0;
+            day = (day + 1) % 7;
+            setCurrentDayIndex(day);
           }
 
-          return newHour;
+          return hour;
         });
 
         return newMinute >= 60 ? 0 : newMinute;
@@ -87,13 +78,99 @@ export default function Forest() {
     }, 250);
 
     return () => clearInterval(interval);
+  }, [currentDayIndex]);
+
+  useEffect(() => {
+    let animationId;
+    const update = () => {
+      setPosition(prev => {
+        const newPos = { ...prev };
+        let moved = false;
+
+        if (keysPressed.current.w || keysPressed.current.arrowup) {
+          newPos.y = Math.max(newPos.y - 2, 0);
+          setDirection("up");
+          moved = true;
+        }
+        if (keysPressed.current.s || keysPressed.current.arrowdown) {
+          newPos.y = Math.min(newPos.y + 2, MAP_HEIGHT - SPRITE_SIZE);
+          setDirection("down");
+          moved = true;
+        }
+        if (keysPressed.current.a || keysPressed.current.arrowleft) {
+          newPos.x = Math.max(newPos.x - 2, 0);
+          setDirection("left");
+          moved = true;
+        }
+        if (keysPressed.current.d || keysPressed.current.arrowright) {
+          newPos.x = Math.min(newPos.x + 2, MAP_WIDTH - SPRITE_SIZE);
+          setDirection("right");
+          moved = true;
+        }
+
+
+        setIsMoving(moved);
+        return newPos;
+      });
+
+      animationId = requestAnimationFrame(update);
+    };
+
+    const handleKeyDown = (e) => { keysPressed.current[e.key.toLowerCase()] = true; };
+    const handleKeyUp = (e) => { keysPressed.current[e.key.toLowerCase()] = false; };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    animationId = requestAnimationFrame(update);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      cancelAnimationFrame(animationId);
+    };
   }, []);
 
+  const getSpriteOffset = () => {
+    const directionMap = { down: 0, left: 1, right: 2, up: 3 };
+    const row = directionMap[direction];
+    const col = isMoving ? Math.floor(Date.now() / 150) % 4 : 1;
+    return `-${col * SPRITE_SIZE}px -${row * SPRITE_SIZE}px`;
+  };
+
+  const offsetX = Math.min(Math.max(-position.x + window.innerWidth / 2, -(MAP_WIDTH - window.innerWidth)), 0);
+  const offsetY = Math.min(Math.max(-position.y + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
+
   const formatTime = (h, m) => `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  const handleInteract = () => {};
 
   return (
     <div className="viewport">
-      <div className="map" style={{ backgroundImage: `url(${forestMap})` }}></div>
+      <div
+        className="map"
+        style={{
+          backgroundImage: `url(${forestMap})`,
+          left: `${offsetX}px`,
+          top: `${offsetY}px`,
+          width: `${MAP_WIDTH}px`,
+          height: `${MAP_HEIGHT}px`,
+          backgroundSize: "cover",
+          backgroundRepeat: "no-repeat",
+          backgroundPosition: "top left",
+          position: "absolute"
+        }}
+      >
+        {character && (
+          <div
+            className="character"
+            style={{
+              left: position.x,
+              top: position.y,
+              backgroundImage: `url(${character.sprite})`,
+              backgroundPosition: getSpriteOffset()
+            }}
+          ></div>
+        )}
+      </div>
 
       <div className="time-display">
         <div className="clock-text">{days[currentDayIndex]}, {formatTime(currentHour, currentMinute)}</div>
@@ -123,40 +200,36 @@ export default function Forest() {
         </div>
       </div>
 
-      <button
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          padding: "10px 20px",
-          fontSize: "16px",
-          background: "#444",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          zIndex: 99
-        }}
-        onClick={() => {
-          const saved = JSON.parse(localStorage.getItem("playerData")) || {};
-          localStorage.setItem("playerData", JSON.stringify({
-            ...saved,
-            status,
-            money,
-            inventory
-          }));
-          localStorage.setItem("playerTime", JSON.stringify({
-            startTimestamp: Date.now(),
-            savedMinute: currentMinute,
-            savedHour: currentHour,
-            savedDay: currentDayIndex
-          }));
-          window.location.href = "/gameplay";
-        }}
-      >
-        🔙 Back to Gameplay
-      </button>
+      <div className="analog-controls">
+        <button className="arrow up" onMouseDown={() => keysPressed.current.arrowup = true} onMouseUp={() => keysPressed.current.arrowup = false}>↑</button>
+        <div className="horizontal">
+          <button className="arrow left" onMouseDown={() => keysPressed.current.arrowleft = true} onMouseUp={() => keysPressed.current.arrowleft = false}>←</button>
+          <button className="arrow right" onMouseDown={() => keysPressed.current.arrowright = true} onMouseUp={() => keysPressed.current.arrowright = false}>→</button>
+        </div>
+        <button className="arrow down" onMouseDown={() => keysPressed.current.arrowdown = true} onMouseUp={() => keysPressed.current.arrowdown = false}>↓</button>
+      </div>
+
+      <div className="event-panel">
+        <p className="event-text">📍 Event info will appear here...</p>
+        <button className="event-button" onClick={handleInteract}>Interact</button>
+      </div>
+
+      <button className="back-button" onClick={() => {
+        const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+        localStorage.setItem("playerData", JSON.stringify({
+          ...saved,
+          status,
+          money,
+          inventory
+        }));
+        localStorage.setItem("playerTime", JSON.stringify({
+          startTimestamp: Date.now(),
+          savedMinute: currentMinute,
+          savedHour: currentHour,
+          savedDay: currentDayIndex
+        }));
+        window.location.href = "/gameplay";
+      }}>🔙 Back to Gameplay</button>
     </div>
   );
 }

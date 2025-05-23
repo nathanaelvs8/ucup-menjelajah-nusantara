@@ -9,6 +9,7 @@ import Fishing from "./pages/Fishing";
 import Beach from "./pages/Beach";
 import Market from "./pages/Market"; 
 import Forest from "./pages/Forest";
+import Ending from "./pages/Ending";
 
 function App() {
   return (
@@ -21,8 +22,7 @@ function App() {
       <Route path="/beach" element={<Beach />} />
       <Route path="/market" element={<Market />} />
       <Route path="/forest" element={<Forest />} />
-
-
+      <Route path="/ending" element={<Ending />} />
     </Routes>
   );
 }
