@@ -785,3 +785,15 @@ html, body {
   max-width: none;
   max-height: none;
 }
+
+.rock-zone {
+  position: absolute;
+  left: 1030px; /* ganti sesuai posisi batu */
+  top: 430px;
+  width: 400px;
+  height: 280px;
+  background-color: rgba(169, 169, 169, 0.1); /* abu transparan */
+  border: 2px dashed rgba(169, 169, 169, 0.5); /* garis putus-putus abu */
+  z-index: 5;
+  pointer-events: none;
+}

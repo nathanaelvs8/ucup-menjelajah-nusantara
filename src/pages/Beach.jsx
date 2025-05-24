@@ -1,9 +1,16 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
+import "./Beach.css";
 import beachMap from "../assets/map/Beach.jpg";
 import coconutTreeImg from "../assets/map-assets/Beach/Beach_tree_with_coconut.png";
 import coconutVideo from "../assets/map-assets/Beach/coconut_fall_animation.mp4";
 import coconutIcon from "../assets/inventory-items/Coconut.png";
+import rockBg1 from "../assets/map-assets/Beach/Rock_minigame1.jpg";
+import rockBg2 from "../assets/map-assets/Beach/Rock_minigame2.jpg";
+import rockBg3 from "../assets/map-assets/Beach/Rock_minigame3.jpg";
+import rockBg4 from "../assets/map-assets/Beach/Rock_minigame4.jpg";
+import pickaxeImg from "../assets/map-assets/Beach/Beach_pickaxe.png";
+
 import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
 
 
@@ -37,6 +44,27 @@ export default function Beach() {
   const [showCoconutVideo, setShowCoconutVideo] = useState(false);
   const [showCoconutResult, setShowCoconutResult] = useState(false);
 
+  const [inRockZone, setInRockZone] = useState(false);
+  const [showRockMinigame, setShowRockMinigame] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [gameStage, setGameStage] = useState(1); // 1 = awal, 2 = menengah, 3 = sulit
+  const [levelCleared, setLevelCleared] = useState(false); // ✅ buat transisi
+  const [levelUp, setLevelUp] = useState(false);
+  const [isEndingRockGame, setIsEndingRockGame] = useState(false);
+  const [fadeOverlay, setFadeOverlay] = useState(false);
+
+  const [pointerX, setPointerX] = useState(0); // posisi pointer 0–100
+  const [targetX, setTargetX] = useState(() => Math.random() * 80 + 10); // posisi target acak di tengah
+  const [isPointerFrozen, setIsPointerFrozen] = useState(false);
+const [pickaxeSwinging, setPickaxeSwinging] = useState(false);
+
+
+  const getRockFrame = () => {
+    if (gameStage === 1) return rockBg1;
+    if (gameStage === 2) return rockBg2;
+    if (gameStage === 3) return rockBg3;
+    return rockBg4; // final
+  };
 
   const keysPressed = useRef({});
 
@@ -100,7 +128,13 @@ export default function Beach() {
   }, [currentDayIndex]);
 
   useEffect(() => {
-    let animationId;
+    let animationId
+
+    const isInRockZone = (x, y) => {
+      return x >= 1000 && x <= 1430 && y >= 380 && y <= 710;
+    };
+
+    ;
     const update = () => {
       if (isSunbathing) return;
 
@@ -129,22 +163,31 @@ export default function Beach() {
           moved = true;
         }
 
+        // ⛏️ Deteksi dulu status rock zone agar tetap bisa set state meski karakter tidak masuk
+        const rockStatus = isInRockZone(newPos.x, newPos.y);
+        setInRockZone(rockStatus);
+
         if (isInWater(newPos.x, newPos.y)) return prev;
+        if (rockStatus) return prev;
 
         setIsMoving(moved);
-
         setNearExitZone(newPos.y >= MAP_HEIGHT - SPRITE_SIZE);
         setInCoconutZone(
           newPos.x >= 100 && newPos.x <= 300 &&
           newPos.y >= 650 && newPos.y <= 850
         );
-        setInSunbatheZone(newPos.x >= 750 && newPos.x <= 900 && newPos.y >= 240 && newPos.y <= 380);
+        setInSunbatheZone(
+          newPos.x >= 750 && newPos.x <= 900 &&
+          newPos.y >= 240 && newPos.y <= 380
+        );
 
         return newPos;
       });
 
       animationId = requestAnimationFrame(update);
     };
+
+
 
     const handleKeyDown = (e) => { keysPressed.current[e.key.toLowerCase()] = true; };
     const handleKeyUp = (e) => { keysPressed.current[e.key.toLowerCase()] = false; };
@@ -160,12 +203,83 @@ export default function Beach() {
     };
   }, [isSunbathing]);
 
+  useEffect(() => {
+    const x = position.x;
+    const y = position.y;
+    const sprite = SPRITE_SIZE;
+
+    const inRock =
+      x + sprite > 1000 &&
+      x < 1430 &&
+      y + sprite > 380 &&
+      y < 710;
+
+    setInRockZone(inRock);
+  }, [position]);
+
+ const pointerDir = useRef(1); // arah pointer tetap terjaga (1 = kanan, -1 = kiri)
+
+useEffect(() => {
+  if (!showRockMinigame) return;
+
+  const speed = gameStage === 1 ? 1 : gameStage === 2 ? 1.8 : 2.5;
+
+  const interval = setInterval(() => {
+    if (!isPointerFrozen) {
+      setPointerX(prev => {
+        let next = prev + pointerDir.current * speed;
+
+        if (next >= 100 || next <= 0) {
+          pointerDir.current *= -1; // ganti arah
+          next = Math.max(0, Math.min(100, next));
+        }
+
+        return next;
+      });
+    }
+  }, 16);
+
+  return () => clearInterval(interval);
+}, [showRockMinigame, gameStage, isPointerFrozen]);
+
+
+
+  useEffect(() => {
+    if (!levelCleared) return;
+
+    if (gameStage < 3) {
+      setGameStage(prev => prev + 1);
+      setPointerX(0);
+      setTargetX(Math.random() * 80 + 10);
+      setLevelCleared(false);
+    } else {
+      setGameStage(4); // tampilkan frame pecah
+      setTimeout(() => {
+        setFadeOverlay(true); // ⬅️ fade out
+        setTimeout(() => {
+          setShowRockMinigame(false);
+          setInventory(prev => [...prev, "Rusty Iron"]);
+          setGameStage(1);
+          setPointerX(0);
+          setTargetX(Math.random() * 80 + 10);
+          setFadeOverlay(false); // reset overlay
+          setLevelCleared(false);
+        }, 1000); // ⬅️ waktu fade hitam sebelum balik
+      }, 2000); // ⬅️ waktu tampil frame 4
+    }
+
+  }, [levelCleared]);
+
+
+
   const getEventText = () => {
     if (inSunbatheZone) return "🌞 Press Interact to sunbathe";
     if (inCoconutZone) return "🥥 Press Interact to shake the coconut tree";
+    if (inRockZone) return "⛏️ Press Interact to mine the rock";
     if (nearExitZone) return "🔙 Press Interact to return to the main map";
     return "📍 Event info will appear here...";
   };
+
 
   const handleInteract = () => {
     if (inSunbatheZone) {
@@ -217,6 +331,18 @@ export default function Beach() {
 
     if (inCoconutZone) {
       setShowCoconutGame(true); // munculin gambar pertama
+      return;
+    }
+
+    if (inRockZone) {
+      setFadeOverlay(true); // ⬅️ aktifkan overlay
+      setTimeout(() => {
+        setProgress(0);
+        setPointerX(0);
+        setTargetX(Math.random() * 80 + 10);
+        setShowRockMinigame(true);
+        setFadeOverlay(false); // ⬅️ hilangkan setelah masuk
+      }, 800); // durasi fade
       return;
     }
 
@@ -279,7 +405,18 @@ export default function Beach() {
             onEnded={() => {
               setShowCoconutVideo(false);
               setShowCoconutResult(true);
-              setInventory(prev => [...prev, "Coconut"]);
+             setInventory(prev => {
+  const updated = [...prev, "Rusty Iron"];
+  localStorage.setItem("playerData", JSON.stringify({
+    status,
+    money,
+    inventory: updated,
+    character,
+    position
+  }));
+  return updated;
+});
+
             }}
             className="coconut-video"
           />
@@ -299,6 +436,69 @@ export default function Beach() {
           </div>
         </div>
       )}
+
+  {showRockMinigame && (
+  <div
+    className="rock-minigame-overlay"
+    onClick={() => {
+      if (gameStage === 4 || isPointerFrozen) return;
+
+      setIsPointerFrozen(true); // ❄️ pointer stop
+      setPickaxeSwinging(true); // ⛏️ animasi
+
+      setTimeout(() => setPickaxeSwinging(false), 1000); // hanya 1x ayun
+const hitWidth = 15; // atau 8, atau nilai sesuai width bar kamu
+const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
+
+
+      setTimeout(() => {
+        if (inZone) {
+          setLevelCleared(true); // ⏫ lanjut stage
+        }
+        setIsPointerFrozen(false); // pointer jalan lagi (kalau gagal)
+      }, 500);
+    }}
+  >
+    <img src={getRockFrame()} alt="Rock Minigame" className="rock-minigame-background" />
+
+    <img
+  src={pickaxeImg}
+  alt="Pickaxe"
+  className={`rock-pickaxe ${pickaxeSwinging ? 'active' : ''}`}
+/>
+
+{gameStage !== 4 && (
+  <>
+    <div className="rock-bar-container">
+      <div
+        className="rock-target-zone"
+        style={{
+          left: `${targetX}%`,
+          width: "8%",
+        }}
+      ></div>
+
+      <div className="rock-moving-pointer" style={{ left: `${pointerX}%` }}></div>
+    </div>
+
+    <div className="rock-hit-zone"></div>
+
+    <div className="rock-minigame-bar">
+      <div
+        className="rock-minigame-bar-fill"
+        style={{ width: `${progress}%` }}
+      ></div>
+    </div>
+  </>
+)}
+
+  </div>
+)}
+
+
+    {fadeOverlay && (
+      <div className="fade-black"></div>
+    )}
 
 
       <div className="time-display">
@@ -334,6 +534,7 @@ export default function Beach() {
         <div className="water-zone"></div>
         <div className="sunbathe-zone"></div>
         <div className="coconut-zone"></div>
+        <div className="rock-zone"></div>
         
       </div>
 
