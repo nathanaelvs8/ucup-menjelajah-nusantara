@@ -15,6 +15,32 @@ const MINUTE_PER_REAL_SECOND = 4; // 1 detik = 4 menit in-game
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function Gameplay() {
+  const itemDetails = {
+    Wood: {
+      description: "Basic material for crafting tools and buildings.",
+      sellGold: 200,
+    },
+    "Special Fish Skin": {
+      description: "Rare fish skin used for crafting high-quality gear.",
+      sellGold: 0,
+    },
+    "Hunger Potion": {
+      description: "Herbal drink that reduces hunger and boosts energy.",
+      useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 100, 100) }),
+    },
+    "Fishing Rod": {
+      description: "Tool for catching fish in rivers, lakes, or sea.",
+    },
+    Pickaxe: {
+      description: "Strong tool for mining stones and minerals.",
+    },
+    Coconut: {
+      description: "Tropical fruit, edible or used for crafting.",
+      useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
+    },
+  };
+
+
   const [character, setCharacter] = useState(null);
   const [position, setPosition] = useState(() => {
   const saved = JSON.parse(localStorage.getItem("playerData"));
@@ -50,6 +76,70 @@ export default function Gameplay() {
   const [currentHour, setCurrentHour] = useState(9); // 0 - 23
   const [currentDayIndex, setCurrentDayIndex] = useState(0); // Monday
   const [username, setUsername] = useState(localStorage.getItem("playerName") || "Player");
+
+  const [tooltipInfo, setTooltipInfo] = useState(null); // {item, index, x, y} atau null
+
+  function showTooltip(e, item, index) {
+    e.stopPropagation(); // cegah event naik ke modal (agar modal tidak menutup tooltip)
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltipInfo({
+      item,
+      index,
+      x: rect.right + window.scrollX + 10,
+      y: rect.top + window.scrollY,
+    });
+  }
+
+
+  function hideTooltip() {
+    setTooltipInfo(null);
+  }
+
+  function handleUseItem(index) {
+    if (index < 0 || index >= inventory.length) return;
+    const itemName = inventory[index];
+    const effectFn = itemDetails[itemName]?.useEffect;
+    if (effectFn) {
+      setStatus(prev => effectFn(prev));
+      alert(`${itemName} used!`);
+    } else {
+      alert(`Used ${itemName}`);
+    }
+
+    const newInv = [...inventory];
+    newInv.splice(index, 1);
+    setInventory(newInv);
+    setTooltipInfo(null);
+    savePlayerData(newInv, money, status);
+  }
+
+  function handleSellItem(index) {
+    if (index < 0 || index >= inventory.length) return;
+    const itemName = inventory[index];
+    const price = itemDetails[itemName]?.sellGold || 0;
+    if (price <= 0) {
+      alert(`Cannot sell ${itemName}`);
+      return;
+    }
+    alert(`Sold ${itemName} for ${price} gold.`);
+
+    const newInv = [...inventory];
+    newInv.splice(index, 1);
+    setInventory(newInv);
+    setMoney(money + price);
+    setTooltipInfo(null);
+    savePlayerData(newInv, money + price, status);
+  }
+
+  function savePlayerData(inv, mon, stat) {
+    const playerDataRaw = localStorage.getItem("playerData");
+    let playerData = playerDataRaw ? JSON.parse(playerDataRaw) : {};
+    playerData.inventory = inv;
+    playerData.money = mon;
+    playerData.status = stat;
+    localStorage.setItem("playerData", JSON.stringify(playerData));
+  }
+
 
   const getMainMapCharPosition = () => {
     const img = mainMapRef.current;
@@ -394,27 +484,72 @@ const handleInteract = () => {
         <div className="status-money">
           <div className="money">Rp {money} 💰</div>
           <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
+
+          {/* Modal Inventory */}
           {inventoryVisible && (
-            <div className="inventory-modal">
-              <div className="inventory-grid">
+            <div className="inventory-modal" onClick={() => { setInventoryVisible(false); hideTooltip(); }}>
+              <div className="inventory-grid" onClick={(e) => e.stopPropagation()}>
                 {Array.from({ length: 50 }).map((_, i) => (
-                  <div key={i} className="inventory-slot">
+                  <div
+                    key={i}
+                    className="inventory-slot"
+                    onClick={inventory[i] ? (e) => showTooltip(e, inventory[i], i) : undefined}
+                  >
                     {inventory[i] ? (
                       <div className="inventory-item">{inventory[i]}</div>
                     ) : null}
                   </div>
                 ))}
               </div>
-              <button
-                className="close-inventory-btn"
-                onClick={() => setInventoryVisible(false)}
-              >
+              <button className="close-inventory-btn" onClick={() => {
+                setInventoryVisible(false);
+                hideTooltip();
+              }}>
                 Close
               </button>
             </div>
           )}
 
 
+          {/* Tooltip Item */}
+          {tooltipInfo && (
+            <div
+              className="inventory-tooltip"
+              style={{
+                position: "absolute",
+                top: tooltipInfo.y,
+                left: tooltipInfo.x,
+                backgroundColor: "#222",
+                color: "white",
+                padding: 12,
+                borderRadius: 8,
+                boxShadow: "0 0 10px rgba(0,0,0,0.8)",
+                zIndex: 10000,
+                width: 220,
+                userSelect: "none",
+              }}
+            >
+              <div><strong>{tooltipInfo.item}</strong></div>
+              <div style={{ margin: "8px 0" }}>{itemDetails[tooltipInfo.item]?.description || "No description"}</div>
+
+              {itemDetails[tooltipInfo.item]?.sellGold > 0 && (
+                <div>Sell: get {itemDetails[tooltipInfo.item].sellGold} gold</div>
+              )}
+              {typeof itemDetails[tooltipInfo.item]?.useEffect === "function" && (
+                <div>Use: available</div>
+              )}
+
+              <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                {typeof itemDetails[tooltipInfo.item]?.useEffect === "function" && (
+                  <button onClick={() => handleUseItem(tooltipInfo.index)}>Use Item</button>
+                )}
+                {itemDetails[tooltipInfo.item]?.sellGold > 0 && (
+                  <button onClick={() => handleSellItem(tooltipInfo.index)}>Sell Item</button>
+                )}
+                <button onClick={hideTooltip}>Close</button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

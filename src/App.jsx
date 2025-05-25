@@ -1,6 +1,7 @@
 import React from "react";
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
+
 import Intro from "./pages/Intro";
 import SelectCharacter from "./pages/SelectCharacter";
 import Gameplay from "./pages/Gameplay";
@@ -11,6 +12,16 @@ import Market from "./pages/Market";
 import Forest from "./pages/Forest";
 import Ending from "./pages/Ending";
 import Dungeon from "./pages/Dungeon"; 
+
+function WithNavigateDungeon() {
+  const navigate = useNavigate();
+
+  function handleExit() {
+    navigate("/forest");
+  }
+
+  return <Dungeon onExit={handleExit} />;
+}
 
 function App() {
   return (
@@ -23,7 +34,7 @@ function App() {
       <Route path="/beach" element={<Beach />} />
       <Route path="/market" element={<Market />} />
       <Route path="/forest" element={<Forest />} />
-      <Route path="/dungeon" element={<Dungeon />} />
+      <Route path="/dungeon" element={<WithNavigateDungeon />} />
       <Route path="/ending" element={<Ending />} />
     </Routes>
   );
