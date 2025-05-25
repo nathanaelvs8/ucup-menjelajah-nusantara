@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
+import "./Forest.css";
 import forestMap from "../assets/map/Forest.jpg";
 
 const MAP_WIDTH = 1283.2;
@@ -16,8 +17,42 @@ export default function Forest() {
   const [currentMinute, setCurrentMinute] = useState(0);
   const [currentHour, setCurrentHour] = useState(9);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
-  const [position, setPosition] = useState({ x: 600, y: 300 });
-  const [character, setCharacter] = useState(null);
+  const [position, setPosition] = useState({
+    x: 500,           // lebih ke kiri
+    y: MAP_HEIGHT - SPRITE_SIZE // tetap 2 tile dari bawah
+  });
+
+  const [atBottom, setAtBottom] = useState(false);
+
+  const fruitTree = {
+    x: 130 + 350 / 2, // centerX
+    y: 200 + 280 / 2, // centerY
+    rx: 350 / 2,
+    ry: 280 / 2
+  };
+  const [canInteractFruit, setCanInteractFruit] = useState(false);
+
+  const woodTree = {
+    x: 900 + 150,  // centerX = left + width / 2
+    y: 300 + 175,  // centerY = top + height / 2
+    rx: 150,       // radiusX = width / 2
+    ry: 175        // radiusY = height / 2
+  };
+
+  const [canInteractWood, setCanInteractWood] = useState(false);
+
+  const dungeonZone = {
+    x: 1100 + 125, // centerX = left + width / 2
+    y: 0 + 85,     // centerY = top + height / 2
+    rx: 125,       // radiusX = width / 2
+    ry: 85         // radiusY = height / 2
+  };
+
+  const [canInteractDungeon, setCanInteractDungeon] = useState(false);
+
+
+
+    const [character, setCharacter] = useState(null);
   const [direction, setDirection] = useState("down");
   const [isMoving, setIsMoving] = useState(false);
   const keysPressed = useRef({});
@@ -80,6 +115,7 @@ export default function Forest() {
     return () => clearInterval(interval);
   }, [currentDayIndex]);
 
+
   useEffect(() => {
     let animationId;
     const update = () => {
@@ -110,6 +146,43 @@ export default function Forest() {
 
 
         setIsMoving(moved);
+
+        //fruit tree
+        const dx = (newPos.x - fruitTree.x) / fruitTree.rx;
+        const dy = (newPos.y - fruitTree.y) / fruitTree.ry;
+        const dist = dx * dx + dy * dy;
+
+        const inside = dist < 0.7;   // ~radius dalam elips
+        const near = dist >= 0.7 && dist <= 1.2; // tepi luar
+
+
+        if (inside) return prev; // blok total
+        setCanInteractFruit(near); // interaksi hanya saat dekat luar
+
+        //wood tree
+        const dxW = (newPos.x - woodTree.x) / woodTree.rx;
+        const dyW = (newPos.y - woodTree.y) / woodTree.ry;
+        const distW = dxW * dxW + dyW * dyW;
+
+        const insideWood = distW < 1;         // ⬅️ tepat sama dengan ellipse CSS
+        const nearWood = distW >= 1 && distW <= 1.2; // pinggiran
+
+        if (insideWood) return prev; // blok total
+        setCanInteractWood(nearWood);
+
+        //dungeon
+        const dxD = (newPos.x - dungeonZone.x) / dungeonZone.rx;
+        const dyD = (newPos.y - dungeonZone.y) / dungeonZone.ry;
+        const distD = dxD * dxD + dyD * dyD;
+
+        const insideDungeon = distD < 1;
+        const nearDungeon = distD >= 1 && distD <= 1.2;
+
+        if (insideDungeon) return prev;
+        setCanInteractDungeon(nearDungeon);
+
+        
+        setAtBottom(newPos.y >= MAP_HEIGHT - SPRITE_SIZE);
         return newPos;
       });
 
@@ -141,7 +214,57 @@ export default function Forest() {
   const offsetY = Math.min(Math.max(-position.y + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
 
   const formatTime = (h, m) => `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-  const handleInteract = () => {};
+
+  const handleInteract = () => {
+    if (canInteractFruit) {
+      alert("🍎 You picked fruit from the tree!");
+      return;
+    }
+
+    if (canInteractWood) {
+      alert("🪓 You chopped some wood!");
+      return;
+    }
+
+    if (canInteractDungeon) {
+      alert("🕳️ You approach a mysterious dungeon entrance...");
+      return;
+    }
+
+    if (atBottom) {
+      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+      const lastPos = JSON.parse(localStorage.getItem("lastGameplayPosition")) || { x: 600, y: 2500 };
+
+      localStorage.setItem("playerData", JSON.stringify({
+        ...saved,
+        status,
+        money,
+        inventory,
+        position: lastPos,
+        character
+      }));
+
+      localStorage.setItem("playerTime", JSON.stringify({
+        startTimestamp: Date.now(),
+        savedMinute: currentMinute,
+        savedHour: currentHour,
+        savedDay: currentDayIndex
+      }));
+
+      window.location.href = "/gameplay";
+    }
+  };
+
+
+
+  const getEventText = () => {
+    if (canInteractFruit) return "🍎 Press Interact to pick wild fruit";
+    if (canInteractWood) return "🪓 Press Interact to chop wood";
+    if (canInteractDungeon) return "🕳️ Press Interact to enter dungeon";
+    if (atBottom) return "🌲 Press Interact to return to the main map";
+    return "📍 Event info will appear here...";
+  };
+
 
   return (
     <div className="viewport">
@@ -170,6 +293,11 @@ export default function Forest() {
             }}
           ></div>
         )}
+
+        <div className="fruit-block-zone"></div>
+        <div className="wood-block-zone"></div>
+        <div className="dungeon-block-zone"></div>
+
       </div>
 
       <div className="time-display">
@@ -223,26 +351,10 @@ export default function Forest() {
       </div>
 
       <div className="event-panel">
-        <p className="event-text">📍 Event info will appear here...</p>
+        <p className="event-text">{getEventText()}</p>
         <button className="event-button" onClick={handleInteract}>Interact</button>
       </div>
 
-      <button className="back-button" onClick={() => {
-        const saved = JSON.parse(localStorage.getItem("playerData")) || {};
-        localStorage.setItem("playerData", JSON.stringify({
-          ...saved,
-          status,
-          money,
-          inventory
-        }));
-        localStorage.setItem("playerTime", JSON.stringify({
-          startTimestamp: Date.now(),
-          savedMinute: currentMinute,
-          savedHour: currentHour,
-          savedDay: currentDayIndex
-        }));
-        window.location.href = "/gameplay";
-      }}>🔙 Back to Gameplay</button>
     </div>
   );
 }
