@@ -7,11 +7,6 @@ import arrowUp from "../assets/ui/ArrowUP.png";
 import arrowDown from "../assets/ui/ArrowDOWN.png";
 import arrowLeft from "../assets/ui/ArrowLEFT.png";
 import arrowRight from "../assets/ui/ArrowRight.png";
-import hungryIcon from "../assets/inventory-items/Hunger.png";
-import sleepIcon from "../assets/inventory-items/Sleep.png";
-import happyIcon from "../assets/inventory-items/Happiness.png";
-import cleanIcon from "../assets/inventory-items/Cleanliness.png";
-import coinGif from "../assets/ui/MoneyMoney.gif";
 
 const MAP_WIDTH = 4616;
 const MAP_HEIGHT = 3464;
@@ -389,30 +384,15 @@ const handleInteract = () => {
             {getGreeting()}, {username}
           </div>
           <div className="status-bars">
-          <div className="status-item">
-            <img src={hungryIcon} alt="Meal" className="status-icon" />
-            <div className="bar"><div style={{ width: `${status.meal}%` }}></div></div>
+            <div className="status-item">🍗<div className="bar"><div style={{ width: `${status.meal}%` }}></div></div></div>
+            <div className="status-item">😴<div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div></div>
+            <div className="status-item">😊<div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div></div>
+            <div className="status-item">🛁<div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div></div>
           </div>
-          <div className="status-item">
-            <img src={sleepIcon} alt="Sleep" className="status-icon" />
-            <div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div>
-          </div>
-          <div className="status-item">
-            <img src={happyIcon} alt="Happiness" className="status-icon" />
-            <div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div>
-          </div>
-          <div className="status-item">
-            <img src={cleanIcon} alt="Cleanliness" className="status-icon" />
-            <div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div>
-          </div>
-        </div>
         </div>
 
         <div className="status-money">
-          <div className="money">
-            {money}
-            <img src={coinGif} alt="Gold" className="coin-icon" />
-          </div>
+          <div className="money">Rp {money} 💰</div>
           <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
           {inventoryVisible && (
             <div className="inventory-modal">

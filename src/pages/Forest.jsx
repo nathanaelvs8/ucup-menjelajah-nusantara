@@ -1,7 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Gameplay.css";
 import "./Forest.css";
 import forestMap from "../assets/map/Forest.jpg";
+import minigameBg from "../assets/map-assets/Forest/Wildtree_minigame.png";
+import wildFruitImg from "../assets/inventory-items/WildFruit.png";
+import parasiteImg from "../assets/map-assets/Forest/Parasite.png";
+import basketImg from "../assets/map-assets/Forest/Basket.png";
+import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
+import chopBg1 from "../assets/map-assets/Forest/Deciduous_tree_minigame1.png";
+import chopBg2 from "../assets/map-assets/Forest/Deciduous_tree_minigame2.png";
+import sawImg from "../assets/map-assets/Forest/Saw.png";
+import logIcon from "../assets/inventory-items/Log.png";
 
 const MAP_WIDTH = 1283.2;
 const MAP_HEIGHT = 1039.2;
@@ -9,6 +19,7 @@ const SPRITE_SIZE = 64;
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function Forest() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState({ meal: 50, sleep: 50, happiness: 50, cleanliness: 50 });
   const [money, setMoney] = useState(0);
   const [inventory, setInventory] = useState([]);
@@ -18,45 +29,90 @@ export default function Forest() {
   const [currentHour, setCurrentHour] = useState(9);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [position, setPosition] = useState({
-    x: 500,           // lebih ke kiri
-    y: MAP_HEIGHT - SPRITE_SIZE // tetap 2 tile dari bawah
+    x: 500,
+    y: MAP_HEIGHT - SPRITE_SIZE
   });
 
   const [atBottom, setAtBottom] = useState(false);
 
   const fruitTree = {
-    x: 130 + 350 / 2, // centerX
-    y: 200 + 280 / 2, // centerY
+    x: 130 + 350 / 2,
+    y: 200 + 280 / 2,
     rx: 350 / 2,
     ry: 280 / 2
   };
   const [canInteractFruit, setCanInteractFruit] = useState(false);
 
   const woodTree = {
-    x: 900 + 150,  // centerX = left + width / 2
-    y: 300 + 175,  // centerY = top + height / 2
-    rx: 150,       // radiusX = width / 2
-    ry: 175        // radiusY = height / 2
+    x: 900 + 150,
+    y: 300 + 175,
+    rx: 150,
+    ry: 175
   };
-
   const [canInteractWood, setCanInteractWood] = useState(false);
 
   const dungeonZone = {
-    x: 1100 + 125, // centerX = left + width / 2
-    y: 0 + 85,     // centerY = top + height / 2
-    rx: 125,       // radiusX = width / 2
-    ry: 85         // radiusY = height / 2
+    x: 1100 + 125,
+    y: 0 + 85,
+    rx: 125,
+    ry: 85
   };
-
   const [canInteractDungeon, setCanInteractDungeon] = useState(false);
 
+  // Minigame states
+  const [showMinigame, setShowMinigame] = useState(false);
+  const [fruitsCaught, setFruitsCaught] = useState(0);
+  const [minigameItems, setMinigameItems] = useState([]);
+  const [basketX, setBasketX] = useState(window.innerWidth / 2 - 50);
+  const [minigameResult, setMinigameResult] = useState(null);
+  const [countdown, setCountdown] = useState(0);
+  const [minigameStarted, setMinigameStarted] = useState(false);
 
+  const [leftPressed, setLeftPressed] = useState(false);
+  const [rightPressed, setRightPressed] = useState(false);
 
-    const [character, setCharacter] = useState(null);
+  const [character, setCharacter] = useState(null);
   const [direction, setDirection] = useState("down");
   const [isMoving, setIsMoving] = useState(false);
   const keysPressed = useRef({});
+  const basketRef = useRef(null);
 
+  const [showChopMinigame, setShowChopMinigame] = useState(false);
+  const [chopDurability, setChopDurability] = useState(100);
+  const [chopTimeLeft, setChopTimeLeft] = useState(10);
+  const [chopResult, setChopResult] = useState(null);
+  const [isSawing, setIsSawing] = useState(false);
+  const [showChopFinishImage, setShowChopFinishImage] = useState(false);
+
+  // Save current game state before navigating
+  const saveGameState = () => {
+    const gameData = {
+      status,
+      money,
+      inventory,
+      position,
+      character,
+      currentMinute,
+      currentHour,
+      currentDayIndex
+    };
+    
+    localStorage.setItem("forestGameState", JSON.stringify(gameData));
+    localStorage.setItem("playerData", JSON.stringify({
+      status,
+      money,
+      inventory,
+      character
+    }));
+    localStorage.setItem("playerTime", JSON.stringify({
+      startTimestamp: Date.now(),
+      savedMinute: currentMinute,
+      savedHour: currentHour,
+      savedDay: currentDayIndex
+    }));
+  };
+
+  // Load game state when component mounts
   useEffect(() => {
     const savedChar = JSON.parse(localStorage.getItem("selectedCharacter"));
     if (savedChar) setCharacter(savedChar);
@@ -76,8 +132,15 @@ export default function Forest() {
       setCurrentHour(savedTime.savedHour);
       setCurrentDayIndex(savedTime.savedDay);
     }
+
+    // Load forest-specific state if returning from dungeon
+    const forestState = JSON.parse(localStorage.getItem("forestGameState"));
+    if (forestState) {
+      setPosition(forestState.position || { x: 500, y: MAP_HEIGHT - SPRITE_SIZE });
+    }
   }, []);
 
+  // Time progression
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentMinute(prev => {
@@ -115,7 +178,7 @@ export default function Forest() {
     return () => clearInterval(interval);
   }, [currentDayIndex]);
 
-
+  // Movement and collision detection
   useEffect(() => {
     let animationId;
     const update = () => {
@@ -144,44 +207,35 @@ export default function Forest() {
           moved = true;
         }
 
-
         setIsMoving(moved);
 
-        //fruit tree
+        // Fruit tree collision
         const dx = (newPos.x - fruitTree.x) / fruitTree.rx;
         const dy = (newPos.y - fruitTree.y) / fruitTree.ry;
         const dist = dx * dx + dy * dy;
+        const inside = dist < 0.7;
+        const near = dist >= 0.7 && dist <= 1.2;
+        if (inside) return prev;
+        setCanInteractFruit(near);
 
-        const inside = dist < 0.7;   // ~radius dalam elips
-        const near = dist >= 0.7 && dist <= 1.2; // tepi luar
-
-
-        if (inside) return prev; // blok total
-        setCanInteractFruit(near); // interaksi hanya saat dekat luar
-
-        //wood tree
+        // Wood tree collision
         const dxW = (newPos.x - woodTree.x) / woodTree.rx;
         const dyW = (newPos.y - woodTree.y) / woodTree.ry;
         const distW = dxW * dxW + dyW * dyW;
-
-        const insideWood = distW < 1;         // ⬅️ tepat sama dengan ellipse CSS
-        const nearWood = distW >= 1 && distW <= 1.2; // pinggiran
-
-        if (insideWood) return prev; // blok total
+        const insideWood = distW < 1;
+        const nearWood = distW >= 1 && distW <= 1.2;
+        if (insideWood) return prev;
         setCanInteractWood(nearWood);
 
-        //dungeon
+        // Dungeon collision
         const dxD = (newPos.x - dungeonZone.x) / dungeonZone.rx;
         const dyD = (newPos.y - dungeonZone.y) / dungeonZone.ry;
         const distD = dxD * dxD + dyD * dyD;
-
         const insideDungeon = distD < 1;
         const nearDungeon = distD >= 1 && distD <= 1.2;
-
         if (insideDungeon) return prev;
         setCanInteractDungeon(nearDungeon);
 
-        
         setAtBottom(newPos.y >= MAP_HEIGHT - SPRITE_SIZE);
         return newPos;
       });
@@ -203,6 +257,155 @@ export default function Forest() {
     };
   }, []);
 
+  // Minigame effects (keeping all existing minigame logic)
+  useEffect(() => {
+    if (!showMinigame || !minigameStarted || minigameResult) return;
+    const spawnInterval = setInterval(() => {
+      const isFruit = Math.random() > 0.25;
+      const x = Math.random() * (window.innerWidth - 40);
+      const id = Date.now() + Math.random();
+      setMinigameItems(prev => [...prev, { id, x, y: 0, isFruit }]);
+    }, 500);
+    return () => clearInterval(spawnInterval);
+  }, [showMinigame, minigameStarted, minigameResult]);
+
+  useEffect(() => {
+    if (!showMinigame || !minigameStarted) return;
+    const dropUpdate = setInterval(() => {
+      const basketRect = basketRef.current?.getBoundingClientRect();
+      if (!basketRect) return;
+
+      setMinigameItems(prev =>
+        prev
+          .map(item => ({ ...item, y: item.y + 8 }))
+          .filter(item => {
+            const itemWidth = item.isFruit ? 160 : 100;
+            const itemHeight = item.isFruit ? 160 : 100;
+            const itemLeft = item.x;
+            const itemRight = item.x + itemWidth;
+            const itemTop = item.y;
+            const itemBottom = item.y + itemHeight;
+            const MARGIN = 50;
+            const basketLeft = basketRect.left + MARGIN;
+            const basketRight = basketRect.right - MARGIN;
+            const basketTop = basketRect.top + MARGIN;
+            const basketBottom = basketRect.bottom - MARGIN;
+
+            const isCollision =
+              itemRight > basketLeft &&
+              itemLeft < basketRight &&
+              itemBottom > basketTop &&
+              itemTop < basketBottom;
+
+            if (isCollision) {
+              if (item.isFruit) {
+                setFruitsCaught(c => {
+                  const total = c + 1;
+                  if (total >= 15) setMinigameResult("win");
+                  return total;
+                });
+              } else {
+                setMinigameResult("lose");
+              }
+              return false;
+            }
+
+            return item.y < window.innerHeight;
+          })
+      );
+    }, 40);
+
+    return () => clearInterval(dropUpdate);
+  }, [showMinigame, minigameStarted]);
+
+  useEffect(() => {
+    const down = e => {
+      if (!showMinigame || minigameResult) return;
+      const key = e.key.toLowerCase();
+      if (key === "a" || key === "arrowleft") setLeftPressed(true);
+      if (key === "d" || key === "arrowright") setRightPressed(true);
+    };
+    const up = e => {
+      const key = e.key.toLowerCase();
+      if (key === "a" || key === "arrowleft") setLeftPressed(false);
+      if (key === "d" || key === "arrowright") setRightPressed(false);
+    };
+    window.addEventListener("keydown", down);
+    window.addEventListener("keyup", up);
+    return () => {
+      window.removeEventListener("keydown", down);
+      window.removeEventListener("keyup", up);
+    };
+  }, [showMinigame, minigameResult]);
+
+  useEffect(() => {
+    if (!showMinigame || minigameResult) return;
+    let animationId;
+    const move = () => {
+      setBasketX(prev => {
+        if (leftPressed) return Math.max(prev - 12, 0);
+        if (rightPressed) return Math.min(prev + 12, window.innerWidth - 160);
+        return prev;
+      });
+      animationId = requestAnimationFrame(move);
+    };
+    animationId = requestAnimationFrame(move);
+    return () => cancelAnimationFrame(animationId);
+  }, [showMinigame, minigameResult, leftPressed, rightPressed]);
+
+  useEffect(() => {
+    if (!countdown || !showMinigame) return;
+    const sequence = ["3", "2", "1", "GO"];
+    const currentIndex = sequence.indexOf(countdown);
+    const timer = setTimeout(() => {
+      if (currentIndex < sequence.length - 1) {
+        setCountdown(sequence[currentIndex + 1]);
+      } else {
+        setCountdown(null);
+        setMinigameStarted(true);
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [countdown, showMinigame]);
+
+  useEffect(() => {
+    if (!showChopMinigame || chopResult) return;
+    const timer = setInterval(() => {
+      setChopTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setChopResult("lose");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [showChopMinigame, chopResult]);
+
+  useEffect(() => {
+    const handleKeyDown = e => {
+      if (!showChopMinigame || chopResult) return;
+      if (e.code === "Space") {
+        setIsSawing(true);
+        setChopDurability(prev => {
+          const next = prev - 10;
+          if (next <= 0) {
+            setShowChopFinishImage(true);
+            setTimeout(() => {
+              setChopResult("win");
+            }, 2000);
+            return 0;
+          }
+          return next;
+        });
+        setTimeout(() => setIsSawing(false), 100);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showChopMinigame, chopResult]);
+
   const getSpriteOffset = () => {
     const directionMap = { down: 0, left: 1, right: 2, up: 3 };
     const row = directionMap[direction];
@@ -216,18 +419,43 @@ export default function Forest() {
   const formatTime = (h, m) => `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
 
   const handleInteract = () => {
+    if (showMinigame || showChopMinigame) return;
+
     if (canInteractFruit) {
-      alert("🍎 You picked fruit from the tree!");
+      const overlay = document.createElement("div");
+      overlay.className = "fade-black";
+      document.body.appendChild(overlay);
+      setTimeout(() => {
+        document.body.removeChild(overlay);
+        setShowMinigame(true);
+        setFruitsCaught(0);
+        setMinigameItems([]);
+        setMinigameResult(null);
+        setBasketX(window.innerWidth / 2 - 50);
+        setCountdown(3);
+        setMinigameStarted(false);
+      }, 500);
       return;
     }
 
     if (canInteractWood) {
-      alert("🪓 You chopped some wood!");
+      const overlay = document.createElement("div");
+      overlay.className = "fade-black";
+      document.body.appendChild(overlay);
+      setTimeout(() => {
+        document.body.removeChild(overlay);
+        setShowChopMinigame(true);
+        setChopDurability(100);
+        setChopTimeLeft(10);
+        setChopResult(null);
+      }, 500);
       return;
     }
 
     if (canInteractDungeon) {
-      alert("🕳️ You approach a mysterious dungeon entrance...");
+      // Save current game state before navigating to dungeon
+      saveGameState();
+      navigate('/dungeon');
       return;
     }
 
@@ -251,11 +479,9 @@ export default function Forest() {
         savedDay: currentDayIndex
       }));
 
-      window.location.href = "/gameplay";
+      navigate('/gameplay');
     }
   };
-
-
 
   const getEventText = () => {
     if (canInteractFruit) return "🍎 Press Interact to pick wild fruit";
@@ -265,6 +491,21 @@ export default function Forest() {
     return "📍 Event info will appear here...";
   };
 
+  const handleCloseMinigame = () => {
+    const fade = document.createElement("div");
+    fade.className = "fade-black";
+    document.body.appendChild(fade);
+    setTimeout(() => {
+      document.body.removeChild(fade);
+      setShowMinigame(false);
+      if (minigameResult === "win") {
+        setInventory(prev => [...prev, "Wild Fruit"]);
+        setStatus(prev => ({ ...prev, happiness: Math.min(prev.happiness + 20, 100) }));
+      } else {
+        setStatus(prev => ({ ...prev, happiness: Math.max(prev.happiness - 20, 0) }));
+      }
+    }, 800);
+  };
 
   return (
     <div className="viewport">
@@ -297,7 +538,6 @@ export default function Forest() {
         <div className="fruit-block-zone"></div>
         <div className="wood-block-zone"></div>
         <div className="dungeon-block-zone"></div>
-
       </div>
 
       <div className="time-display">
@@ -337,7 +577,6 @@ export default function Forest() {
               </button>
             </div>
           )}
-
         </div>
       </div>
 
@@ -355,6 +594,140 @@ export default function Forest() {
         <button className="event-button" onClick={handleInteract}>Interact</button>
       </div>
 
+      {/* Minigame overlays - keeping all existing minigame JSX */}
+      {showMinigame && (
+        <div className="coconut-overlay">
+          <img src={minigameBg} alt="bg" className="coconut-image" />
+
+          {countdown && (
+            <div className="countdown-text">
+              {countdown}
+            </div>
+          )}
+
+          {minigameStarted && !minigameResult && (
+            <div className="minigame-hint">
+              🍎 Collect 15 wild fruits and avoid the parasite!
+            </div>
+          )}
+
+          {minigameItems.map(item => (
+            <img
+              key={item.id}
+              src={item.isFruit ? wildFruitImg : parasiteImg}
+              alt={item.isFruit ? "fruit" : "parasite"}
+              className={`falling-item ${item.isFruit ? "" : "parasite"}`}
+              style={{
+                left: `${item.x}px`,
+                top: `${item.y}px`,
+                transform: `rotate(${(item.y + item.x) % 360}deg)`
+              }}
+            />
+          ))}
+
+          <img
+            ref={basketRef}
+            src={basketImg}
+            alt="basket"
+            className="basket"
+            style={{ left: `${basketX}px` }}
+          />
+
+          <div className="basket-hint">
+            Use ← / → or A / D to move the basket
+          </div>
+
+          <div className="fruit-counter">
+            Fruits Caught: {fruitsCaught} / 15
+          </div>
+
+          {minigameResult && (
+            <div className="coconut-overlay result">
+              <div className="obtained-banner" style={{ backgroundImage: `url(${scrollBanner})` }}>
+                <div className="obtained-text">
+                  {minigameResult === "win"
+                    ? "You caught 15 wild fruits!"
+                    : "You caught a parasite!"}
+                </div>
+                <img
+                  src={minigameResult === "win" ? wildFruitImg : parasiteImg}
+                  alt="result"
+                  className="coconut-icon"
+                />
+                <div className="item-name">
+                  {minigameResult === "win" ? "Wild Fruit" : "Game Over"}
+                </div>
+                <button className="ok-button" onClick={handleCloseMinigame}>OK</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {showChopMinigame && (
+        <div className="coconut-overlay">
+          <img
+            src={
+              showChopFinishImage || chopResult === "win"
+                ? chopBg2
+                : chopBg1
+            }
+            className="coconut-image"
+            alt="tree"
+          />
+
+          <img
+            src={sawImg}
+            className="saw-image"
+            alt="saw"
+            style={{
+              transform: isSawing ? "translateY(-10px)" : "translateY(0)",
+              transition: "transform 0.1s",
+            }}
+          />
+
+          {!chopResult && (
+            <>
+              <div className="minigame-hint">Press SPACE quickly to chop the tree!</div>
+              <div className="countdown-text">
+                ⏱️ Time Left: {chopTimeLeft}s
+              </div>
+              <div className="durability-text">
+                🪓 Durability: {chopDurability}
+              </div>
+            </>
+          )}
+
+          {chopResult && (
+            <div className="coconut-overlay result">
+              <div className="obtained-banner" style={{ backgroundImage: `url(${scrollBanner})` }}>
+                <div className="obtained-text">
+                  {chopResult === "win" ? "You successfully chopped the tree!" : "You failed to chop it."}
+                </div>
+                <img
+                  src={chopResult === "win" ? logIcon : sawImg}
+                  alt="result"
+                  className="coconut-icon"
+                />
+                <div className="item-name">{chopResult === "win" ? "Wood" : "Try Again"}</div>
+                <button className="ok-button" onClick={() => {
+                  const fade = document.createElement("div");
+                  fade.className = "fade-black";
+                  document.body.appendChild(fade);
+                  setTimeout(() => {
+                    document.body.removeChild(fade);
+                    setShowChopMinigame(false);
+                    setShowChopFinishImage(false);
+                    if (chopResult === "win") {
+                      setInventory(prev => [...prev, "Wood"]);
+                    }
+                  }, 800);
+                }}>OK</button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

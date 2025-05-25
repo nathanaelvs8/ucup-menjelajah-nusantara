@@ -1,0 +1,67 @@
+/* Dungeon.css */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: #121212;
+  color: #eee;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  justify-content: center;  /* Center horizontally */
+  align-items: center;      /* Center vertically */
+  height: 100vh;
+}
+
+.dungeon-container {
+  text-align: center;
+  width: max-content;
+  background-color: #222;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.9);
+  user-select: none;
+}
+
+h2 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+p {
+  font-size: 1.5rem;
+  color: #ccc;
+  margin: 0 0 30px;
+  font-weight: 500;
+}
+
+.maze-image-container {
+  margin: 0 auto;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.7);
+  position: relative;
+  width: 448px;  /* 7 * 64 */
+  height: 320px; /* 5 * 64 */
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+}
+
+.player {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  border-radius: 4px;
+  box-shadow: 0 0 8px #3399ff;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  background-size: 256px auto; /* jika sprite sheet 4 frame hor */
+  background-color: transparent;
+  transition: top 0.15s ease, left 0.15s ease;
+}

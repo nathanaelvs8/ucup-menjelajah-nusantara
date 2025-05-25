@@ -37,3 +37,106 @@
   pointer-events: none;
 }
 
+.falling-item {
+  position: absolute;
+  width: 160px; /* ⬅️ perbesar dari 40px ke 64px */
+  height: 160px;
+  object-fit: contain;
+  z-index: 10;
+}
+
+.falling-item.parasite {
+  width: 100px;
+  height: 100px;
+}
+
+.basket {
+  position: absolute;
+  bottom: 30px;
+  width: 160px; /* ⬅️ perbesar dari 100px ke 140px */
+  height: auto;
+  z-index: 10;
+}
+
+.basket-hint {
+  position: absolute;
+  bottom: 10px;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 18px;
+}
+
+.fruit-counter {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 24px;
+  color: white;
+}
+
+.fade-black {
+  position: fixed;
+  inset: 0;
+  background-color: black;
+  opacity: 0.6;
+  z-index: 9999;
+  animation: fadeInOut 1s ease-in-out;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  50% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+
+.countdown-text {
+  position: absolute;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 80px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 10px black;
+  z-index: 999;
+}
+
+.countdown-text::after {
+  content: attr(data-go);
+  color: yellow;
+}
+
+.minigame-hint {
+  position: absolute;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 28px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 5px black;
+  z-index: 999;
+}
+
+.saw-image {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;  /* ukuran baru */
+  height: auto;
+  z-index: 20;
+}
+
+.durability-text {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  text-shadow: 2px 2px 6px black;
+  z-index: 999;
+}

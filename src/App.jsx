@@ -10,6 +10,7 @@ import Beach from "./pages/Beach";
 import Market from "./pages/Market"; 
 import Forest from "./pages/Forest";
 import Ending from "./pages/Ending";
+import Dungeon from "./pages/Dungeon"; 
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
       <Route path="/beach" element={<Beach />} />
       <Route path="/market" element={<Market />} />
       <Route path="/forest" element={<Forest />} />
+      <Route path="/dungeon" element={<Dungeon />} />
       <Route path="/ending" element={<Ending />} />
     </Routes>
   );
