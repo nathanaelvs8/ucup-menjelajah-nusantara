@@ -9,8 +9,15 @@ import chillImage from "../assets/images/chill.webp"; // sesuaikan path jika bed
 import chillMusic from "../assets/audio/Chill.mp3"; // sesuaikan path kalau beda
 import sapuAudio from "../assets/audio/Nyapu.mp3";
 import mandiAudio from "../assets/audio/Mandi.mp3";
-
-
+import arrowUp from "../assets/ui/ArrowUP.png";
+import arrowDown from "../assets/ui/ArrowDOWN.png";
+import arrowLeft from "../assets/ui/ArrowLEFT.png";
+import arrowRight from "../assets/ui/ArrowRIGHT.png";
+import hungryIcon from "../assets/inventory-items/Hunger.png";
+import sleepIcon from "../assets/inventory-items/Sleep.png";
+import happyIcon from "../assets/inventory-items/Happiness.png";
+import cleanIcon from "../assets/inventory-items/Cleanliness.png";
+import coinGif from "../assets/ui/MoneyMoney.gif";
 
 
 
@@ -563,10 +570,22 @@ useEffect(() => {
 {isSweeping && (
   <div className="bath-status-bar">
     <div className="status-bars">
-      <div className="status-item">🍗<div className="bar"><div style={{ width: `${status.meal}%` }}></div></div></div>
-      <div className="status-item">😴<div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div></div>
-      <div className="status-item">😊<div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div></div>
-      <div className="status-item">🛁<div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div></div>
+      <div className="status-item">
+        <img src={hungryIcon} alt="Meal" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.meal}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={sleepIcon} alt="Sleep" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={happyIcon} alt="Happiness" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={cleanIcon} alt="Cleanliness" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div>
+      </div>
     </div>
   </div>
 )}
@@ -590,10 +609,22 @@ useEffect(() => {
 {isBathing && (
   <div className="bath-status-bar">
     <div className="status-bars">
-      <div className="status-item">🍗<div className="bar"><div style={{ width: `${status.meal}%` }}></div></div></div>
-      <div className="status-item">😴<div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div></div>
-      <div className="status-item">😊<div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div></div>
-      <div className="status-item">🛁<div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div></div>
+      <div className="status-item">
+        <img src={hungryIcon} alt="Meal" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.meal}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={sleepIcon} alt="Sleep" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={happyIcon} alt="Happiness" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={cleanIcon} alt="Cleanliness" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div>
+      </div>
     </div>
   </div>
 )}
@@ -666,15 +697,30 @@ useEffect(() => {
         <div className="status-left">
           <div className="greeting-ui">Welcome back, {username}</div>
           <div className="status-bars">
-            <div className="status-item">🍗<div className="bar"><div style={{ width: `${status.meal}%` }}></div></div></div>
-            <div className="status-item">😴<div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div></div>
-            <div className="status-item">😊<div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div></div>
-            <div className="status-item">🛁<div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div></div>
-          </div>
+      <div className="status-item">
+        <img src={hungryIcon} alt="Meal" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.meal}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={sleepIcon} alt="Sleep" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={happyIcon} alt="Happiness" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div>
+      </div>
+      <div className="status-item">
+        <img src={cleanIcon} alt="Cleanliness" className="status-icon" />
+        <div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div>
+      </div>
+    </div>
         </div>
 
         <div className="status-money">
-          <div className="money">Rp {money} 💰</div>
+          <div className="money">
+            {money}
+            <img src={coinGif} alt="Gold" className="coin-icon" />
+          </div>
           <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
           {inventoryVisible && (
             <div className="inventory-modal">
@@ -699,39 +745,51 @@ useEffect(() => {
       </div>
 
       <div className="analog-controls">
-       <button
-  className="arrow up"
-  onMouseDown={() => {
-    if (!isSleeping) keysPressed.current.arrowup = true;
-  }}
-  onMouseUp={() => keysPressed.current.arrowup = false}
->↑</button>
+  <button
+    className="arrow up"
+    onMouseDown={() => {
+      if (!isSleeping) keysPressed.current.arrowup = true;
+    }}
+    onMouseUp={() => keysPressed.current.arrowup = false}
+  >
+    <img src={arrowUp} alt="Up" className="arrow-img" />
+  </button>
 
-        <div className="horizontal">
-         <button
-  className="arrow left"
-  onMouseDown={() => {
-    if (!isSleeping) keysPressed.current.arrowleft = true;
-  }}
-  onMouseUp={() => keysPressed.current.arrowleft = false}
->←</button>
-         <button
-  className="arrow right"
-  onMouseDown={() => {
-    if (!isSleeping) keysPressed.current.arrowright = true;
-  }}
-  onMouseUp={() => keysPressed.current.arrowright = false}
->→</button>
+  <div className="horizontal">
+    <button
+      className="arrow left"
+      onMouseDown={() => {
+        if (!isSleeping) keysPressed.current.arrowleft = true;
+      }}
+      onMouseUp={() => keysPressed.current.arrowleft = false}
+    >
+      <img src={arrowLeft} alt="Left" className="arrow-img" />
+    </button>
 
-        </div>
-       <button
-  className="arrow down"
-  onMouseDown={() => {
-    if (!isSleeping) keysPressed.current.arrowdown = true;
-  }}
-  onMouseUp={() => keysPressed.current.arrowdown = false}
->↓</button>
-      </div>
+    <button
+      className="arrow right"
+      onMouseDown={() => {
+        if (!isSleeping) keysPressed.current.arrowright = true;
+      }}
+      onMouseUp={() => keysPressed.current.arrowright = false}
+    >
+      <img src={arrowRight} alt="Right" className="arrow-img" />
+    </button>
+  </div>
+
+  <button
+    className="arrow down"
+    onMouseDown={() => {
+      if (!isSleeping) keysPressed.current.arrowdown = true;
+    }}
+    onMouseUp={() => keysPressed.current.arrowdown = false}
+  >
+    <img src={arrowDown} alt="Down" className="arrow-img" />
+  </button>
+</div>
+
+
+
 <div className="event-panel">
 <p className="event-text">
   {

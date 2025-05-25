@@ -70,29 +70,33 @@ html, body {
 .status-bars {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  pointer-events: auto;
+  gap: 10px;
 }
 
 .status-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: white;
-  font-size: 14px;
+  gap: 8px;
+}
+
+.status-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
 }
 
 .bar {
-  width: 100px;
-  height: 10px;
-  background: gray;
-  border-radius: 5px;
+  flex: 1;
+  background-color: #555;
+  border-radius: 10px;
   overflow: hidden;
+  height: 10px;
 }
 
 .bar > div {
+  background-color: limegreen;
   height: 100%;
-  background: limegreen;
+  transition: width 0.2s ease-in-out;
 }
 
 .status-money {
@@ -101,6 +105,13 @@ html, body {
   align-items: flex-end;
   gap: 8px;
   pointer-events: auto;
+}
+
+.coin-icon {
+  width: 24px;
+  height: 24px;
+  margin-left: 6px;
+  vertical-align: middle;
 }
 
 .money {

@@ -14,6 +14,12 @@ import arrowUp from "../assets/ui/ArrowUP.png";
 import arrowDown from "../assets/ui/ArrowDOWN.png";
 import arrowLeft from "../assets/ui/ArrowLEFT.png";
 import arrowRight from "../assets/ui/ArrowRIGHT.png";
+import ancientGlassImg from "../assets/inventory-items/AncientGlass.png";
+import hungryIcon from "../assets/inventory-items/Hunger.png";
+import sleepIcon from "../assets/inventory-items/Sleep.png";
+import happyIcon from "../assets/inventory-items/Happiness.png";
+import cleanIcon from "../assets/inventory-items/Cleanliness.png";
+import coinGif from "../assets/ui/MoneyMoney.gif";
 
 import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
 
@@ -60,7 +66,34 @@ export default function Beach() {
   const [pointerX, setPointerX] = useState(0); // posisi pointer 0–100
   const [targetX, setTargetX] = useState(() => Math.random() * 80 + 10); // posisi target acak di tengah
   const [isPointerFrozen, setIsPointerFrozen] = useState(false);
-const [pickaxeSwinging, setPickaxeSwinging] = useState(false);
+  const [pickaxeSwinging, setPickaxeSwinging] = useState(false);
+
+  const [glassPos, setGlassPos] = useState(null);
+  const [nearGlass, setNearGlass] = useState(false);
+  const [showGlassResult, setShowGlassResult] = useState(false);
+
+
+  const isInRestrictedZone = (x, y) => {
+    // coconut
+    if (x >= 100 && x <= 300 && y >= 650 && y <= 850) return true;
+    // rock
+    if (x >= 1000 && x <= 1430 && y >= 380 && y <= 710) return true;
+    // water
+    if (y >= 0 && y <= 170) return true;
+    // exit zone
+    if (y >= MAP_HEIGHT - SPRITE_SIZE) return true;
+    return false;
+  };
+
+  const generateGlassPos = () => {
+    let x, y;
+    do {
+      x = Math.floor(Math.random() * (MAP_WIDTH - SPRITE_SIZE));
+      y = Math.floor(Math.random() * (MAP_HEIGHT - SPRITE_SIZE));
+    } while (isInRestrictedZone(x, y));
+    return { x, y };
+  };
+
 
 
   const getRockFrame = () => {
@@ -170,6 +203,15 @@ const [pickaxeSwinging, setPickaxeSwinging] = useState(false);
         // ⛏️ Deteksi dulu status rock zone agar tetap bisa set state meski karakter tidak masuk
         const rockStatus = isInRockZone(newPos.x, newPos.y);
         setInRockZone(rockStatus);
+        
+        if (glassPos) {
+          const near = Math.abs(glassPos.x - newPos.x) < 40 && Math.abs(glassPos.y - newPos.y) < 40;
+          setNearGlass(near);
+        }
+
+        if (isInWater(newPos.x, newPos.y)) return prev;
+        if (rockStatus) return prev;
+
 
         if (isInWater(newPos.x, newPos.y)) return prev;
         if (rockStatus) return prev;
@@ -184,6 +226,12 @@ const [pickaxeSwinging, setPickaxeSwinging] = useState(false);
           newPos.x >= 750 && newPos.x <= 900 &&
           newPos.y >= 240 && newPos.y <= 380
         );
+
+        if (glassPos) {
+          const near = Math.abs(glassPos.x - newPos.x) < 40 && Math.abs(glassPos.y - newPos.y) < 40;
+          setNearGlass(near);
+        }
+
 
         return newPos;
       });
@@ -274,9 +322,16 @@ useEffect(() => {
 
   }, [levelCleared]);
 
+  useEffect(() => {
+    const hasGlass = inventory.includes("Ancient Glass");
+    if (!hasGlass) {
+      setGlassPos(generateGlassPos());
+    }
+  }, [inventory]);
 
 
   const getEventText = () => {
+    if (nearGlass) return "🍶 Press Interact to collect Ancient Glass";
     if (inSunbatheZone) return "🌞 Press Interact to sunbathe";
     if (inCoconutZone) return "🥥 Press Interact to shake the coconut tree";
     if (inRockZone) return "⛏️ Press Interact to mine the rock";
@@ -286,6 +341,24 @@ useEffect(() => {
 
 
   const handleInteract = () => {
+
+    if (nearGlass && glassPos) {
+      setInventory(prev => {
+        const updated = [...prev, "Ancient Glass"];
+        localStorage.setItem("playerData", JSON.stringify({
+          status,
+          money,
+          inventory: updated,
+          character,
+          position
+        }));
+        return updated;
+      });
+      setGlassPos(null); // hapus dari map
+      setShowGlassResult(true); // ⬅️ tampilkan banner
+      return;
+    }
+
     if (inSunbatheZone) {
       setIsSunbathing(true);
       setSkipRequested(false);
@@ -400,6 +473,19 @@ useEffect(() => {
         </div>
       )}
 
+      {showGlassResult && (
+        <div className="coconut-overlay result">
+          <div
+            className="obtained-banner"
+            style={{ backgroundImage: `url(${scrollBanner})` }}
+          >
+            <div className="obtained-text">You have obtained</div>
+            <img src={ancientGlassImg} alt="Ancient Glass" className="coconut-icon" />
+            <div className="item-name">Ancient Glass</div>
+            <button className="ok-button" onClick={() => setShowGlassResult(false)}>OK</button>
+          </div>
+        </div>
+      )}
 
       {showCoconutVideo && (
         <div className="coconut-overlay">
@@ -409,17 +495,17 @@ useEffect(() => {
             onEnded={() => {
               setShowCoconutVideo(false);
               setShowCoconutResult(true);
-             setInventory(prev => {
-  const updated = [...prev, "Rusty Iron"];
-  localStorage.setItem("playerData", JSON.stringify({
-    status,
-    money,
-    inventory: updated,
-    character,
-    position
-  }));
-  return updated;
-});
+              setInventory(prev => {
+              const updated = [...prev, "Rusty Iron"];
+              localStorage.setItem("playerData", JSON.stringify({
+                status,
+                money,
+                inventory: updated,
+                character,
+                position
+              }));
+              return updated;
+            });
 
             }}
             className="coconut-video"
@@ -532,6 +618,32 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
             }}
           ></div>
         )}
+
+        {glassPos && (
+          <>
+            <img
+              src={ancientGlassImg}
+              alt="Ancient Glass"
+              style={{
+                position: "absolute",
+                left: glassPos.x,
+                top: glassPos.y,
+                width: 32,
+                height: 32,
+                zIndex: 4
+              }}
+            />
+            {/* Tambahkan visualisasi hitbox */}
+            <div
+              className="glass-hitbox"
+              style={{
+                left: glassPos.x - 4,
+                top: glassPos.y - 4
+              }}
+            ></div>
+          </>
+        )}
+
         
         <div className="exit-gradient-zone"></div>
 
@@ -546,15 +658,30 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
         <div className="status-left">
           <div className="greeting-ui">Welcome back, {username}</div>
           <div className="status-bars">
-            <div className="status-item">🍗<div className="bar"><div style={{ width: `${status.meal}%` }}></div></div></div>
-            <div className="status-item">😴<div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div></div>
-            <div className="status-item">😊<div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div></div>
-            <div className="status-item">🛁<div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div></div>
-          </div>
+                <div className="status-item">
+                  <img src={hungryIcon} alt="Meal" className="status-icon" />
+                  <div className="bar"><div style={{ width: `${status.meal}%` }}></div></div>
+                </div>
+                <div className="status-item">
+                  <img src={sleepIcon} alt="Sleep" className="status-icon" />
+                  <div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div>
+                </div>
+                <div className="status-item">
+                  <img src={happyIcon} alt="Happiness" className="status-icon" />
+                  <div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div>
+                </div>
+                <div className="status-item">
+                  <img src={cleanIcon} alt="Cleanliness" className="status-icon" />
+                  <div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div>
+                </div>
+              </div>
         </div>
 
         <div className="status-money">
-          <div className="money">Rp {money} 💰</div>
+          <div className="money">
+            {money}
+            <img src={coinGif} alt="Gold" className="coin-icon" />
+          </div>
           <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
           {inventoryVisible && (
             <div className="inventory-modal">
