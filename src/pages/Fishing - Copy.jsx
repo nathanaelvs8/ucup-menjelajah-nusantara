@@ -26,9 +26,6 @@ export default function Fishing() {
 
   const intervalRef = useRef(null);
   const catchIntervalRef = useRef(null);
-const [autoMoveDirection, setAutoMoveDirection] = useState(-1); // -1 untuk kiri, 1 untuk kanan
-const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
-  
 
   // Data ikan dan peluang per area
   const fishData = {
@@ -43,18 +40,22 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
     jauh: { Goldfish: 0.35, Tuna: 0.40, Megalodon: 0.25 },
   };
 
-  const areaZones = [
+const areaZones = [
   { name: "dekat", top: 10, height: 200, color: "rgba(0, 123, 255, 0.3)" },  // 400px dari atas, tinggi 100px
   { name: "sedang", top: 200, height: 200, color: "rgba(255, 255, 0, 0.3)" }, // 500px dari atas, tinggi 150px
   { name: "jauh", top: 400, height: 200, color: "rgba(255, 0, 0, 0.3)" },     // 650px dari atas, tinggi 100px
 ];
 
+
+
   // Tentukan area dari depth
-  const getArea = (depth) => {
-    if (depth < 210) return "dekat";
-    if (depth < 400) return "sedang";
-    return "jauh";
-  };
+const getArea = (depthPx) => {
+  if (depthPx < 210) return "dekat";     // 10 + 200
+  if (depthPx < 400) return "sedang";    // 200 + 200
+  return "jauh";                         // 400 ke atas
+};
+
+
 
   // Pilih ikan berdasar peluang area
   const chooseFish = (area) => {
@@ -89,19 +90,16 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
     setCharging(true);
   };
 
-  const handleBarClick = () => {
-  // Geser bar hijau 20% ke kanan saat diklik
-  setControlBarPos((prev) => Math.min(90, prev + 5));
-};
-
   const handleCastRelease = () => {
     if (stage !== 1) return;
     setCharging(false);
+const minTopPx = 10;   // posisi paling atas kail (top zona 'dekat')
+const maxTopPx = 600;  // posisi paling bawah kail (top 'jauh' + height)
 
-    const minTop = 60;
-    const maxTop = 80;
-    const depth = minTop + ((power / 100) * (maxTop - minTop));
-    setKailTop(`${depth}vh`);
+const depthPx = maxTopPx - ((power / 100) * (maxTopPx - minTopPx));
+setKailTop(`${depthPx}px`);
+;
+
 
     setStage(2);
     setShowExclamation(true);
@@ -111,7 +109,7 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
       setShowExclamation(false);
       setStage(3);
       setStartCatchTime(Date.now());
-      setCatchProgress(50); // Start di 50%
+      setCatchProgress(0);
       setFishIndicatorPos(50);
       setControlBarPos(50);
       setCaught(false);
@@ -124,49 +122,34 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
     }, delay);
   };
 
- const startCatchMechanic = (fish) => {
-  if (catchIntervalRef.current) clearInterval(catchIntervalRef.current);
+  const startCatchMechanic = (fish) => {
+    if (catchIntervalRef.current) clearInterval(catchIntervalRef.current);
 
-  catchIntervalRef.current = setInterval(() => {
-    // Update posisi ikan (tetap sama)
-    setFishIndicatorPos((pos) => {
-      let speed = fishData[fish]?.speed || 3;
-      let nextPos = pos + (Math.random() > 0.5 ? 1 : -1) * speed;
-      return Math.max(0, Math.min(100, nextPos));
-    });
+    catchIntervalRef.current = setInterval(() => {
+      setFishIndicatorPos((pos) => {
+        let speed = fishData[fish]?.speed || 3;
+        let nextPos = pos + (Math.random() > 0.5 ? 1 : -1) * speed;
+        if (nextPos > 100) nextPos = 100;
+        if (nextPos < 0) nextPos = 0;
+        return nextPos;
+      });
 
-    // Update posisi bar hijau (bergerak otomatis ke kiri)
-    setControlBarPos((prev) => {
-      let newPos = prev + (autoMoveDirection * autoMoveSpeed);
-      // Jika mencapai batas, balik arah
-      if (newPos <= 10) {
-        newPos = 10;
-        setAutoMoveDirection(1); // Balik ke kanan
-      } else if (newPos >= 90) {
-        newPos = 90;
-        setAutoMoveDirection(-1); // Balik ke kiri
-      }
-      return newPos;
-    });
-
-    // Update progress
-    setCatchProgress((prog) => {
-      const fishPos = fishIndicatorPosRef.current;
-      const duration = fishData[fish]?.duration || 4000;
-      const inc = 100 / (duration / 100);
-      
-      // Area hijau sekarang mengikuti controlBarPos (±10%)
-      if (fishPos >= controlBarPos - 10 && fishPos <= controlBarPos + 10) {
-        return Math.min(prog + inc, 100);
-      } else {
-        const dec = inc * 1.5;
-        return Math.max(0, prog - dec);
-      }
-    });
-  }, 100);
-};
-
-
+      setCatchProgress((prog) => {
+        const pos = fishIndicatorPosRef.current;
+        const duration = fishData[fish]?.duration || 4000;
+        const inc = 100 / (duration / 100);
+        if (pos >= 40 && pos <= 60) {
+          // indikator di dalam bar → naik
+          return Math.min(prog + inc, 100);
+        } else {
+          // indikator keluar bar → turun lebih cepat
+          const dec = inc * 1.5;
+          const newProg = prog - dec;
+          return newProg < 0 ? 0 : newProg;
+        }
+      });
+    }, 100);
+  };
 
   useEffect(() => {
     if (stage === 3) {
@@ -206,22 +189,23 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
 
   return (
     <>
-      <div className="fishing-scene"onClick={handleBarClick}>
+      <div className="fishing-scene">
         <img src={alatPancing} alt="alat pancing" className="alat-pancing-scene" />
 
-        <div
-          className="fishing-line"
-          style={{
-            position: "absolute",
-            top: "60vh",
-            left: "50%",
-            width: "2px",
-            height: `${lineHeight}vh`,
-            backgroundColor: "white",
-            transform: "translateX(-50%)",
-            zIndex: 5,
-          }}
-        ></div>
+     <div
+  className="fishing-line"
+  style={{
+    position: "absolute",
+    top: kailTop, // sama dengan posisi kail, misal "450px"
+    left: "50%",
+    width: "2px",
+    height: `calc(60vh - ${kailTop})`, // jarak dari kail ke alat pancing
+    backgroundColor: "white",
+    transform: "translateX(-50%)",
+    zIndex: 5,
+  }}
+></div>
+
 
         {showExclamation && (
           <div
@@ -240,14 +224,14 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
         )}
 
         <div className="water">
-          <img
-            src={kailPancing}
-            alt="kail"
-            className="kail-pancing-scene"
-            style={{ top: kailTopPx }}
-          />
-        </div>
+        <img
+  src={kailPancing}
+  alt="kail"
+  className="kail-pancing-scene"
+  style={{ top: kailTop }} // langsung pakai kailTop karena sudah "450px" atau "10px"
+ />
 
+        </div>
 {areaZones.map((zone) => (
   <div
     key={zone.name}
@@ -280,6 +264,7 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
   </div>
 ))}
 
+
         
 
         <div className="land"></div>
@@ -287,7 +272,7 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
 
       <div className="ui-layer">
         <div className="status-money">
-          <div className="money">🎣 Fishing Mode - Stage: {stage}</div>
+          <div className="money">🎣 Fishing Mode</div>
           <button
             className="inventory-btn"
             onClick={() => setInventoryVisible((prev) => !prev)}
@@ -340,100 +325,16 @@ const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
           </div>
         )}
 
-        {stage === 2 && (
-          <div style={{
-            position: "fixed",
-            bottom: "20px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            color: "white",
-            fontSize: "20px",
-            textAlign: "center"
-          }}>
-            Waiting for fish... 🎣
-          </div>
-        )}
-
         {stage === 3 && (
           <div className="catch-stage">
-            {/* Progress Bar */}
-            <div style={{
-              position: "absolute",
-              top: "20vh",
-              left: "50%",
-              transform: "translateX(-50%)",
-              width: "300px",
-              height: "20px",
-              backgroundColor: "#333",
-              borderRadius: "10px",
-              border: "2px solid white",
-              overflow: "hidden"
-            }}>
-              <div style={{
-                width: `${catchProgress}%`,
-                height: "100%",
-                backgroundColor: catchProgress > 75 ? "#00ff00" : catchProgress > 50 ? "#ffff00" : "#ff0000",
-                transition: "width 0.1s"
-              }}></div>
-            </div>
-
-            {/* Fish Info */}
-            <div style={{
-              position: "absolute",
-              top: "15vh",
-              left: "50%",
-              transform: "translateX(-50%)",
-              color: "white",
-              fontSize: "18px",
-              fontWeight: "bold",
-              textAlign: "center",
-              textShadow: "2px 2px 4px rgba(0,0,0,0.8)"
-            }}>
-              Catching {currentFish}! Keep the red line in the green zone!
-            </div>
-
-
-
-
-             <div 
-      className="catch-bar"
-      onClick={handleBarClick}
-      style={{
-        position: "absolute",
-        bottom: "15vh",
-        left: "50%",
-        transform: "translateX(-50%)",
-        width: "300px",
-        height: "30px",
-        backgroundColor: "rgba(0,0,0,0.5)",
-        borderRadius: "4px",
-        cursor: "pointer",
-      }} >
-
-         <div 
-        style={{
-          position: "absolute",
-          left: `${controlBarPos - 10}%`,
-          width: "20%",
-          height: "100%",
-          backgroundColor: "rgba(0, 255, 0, 0.3)",
-          borderRadius: "4px",
-        }}
-      ></div>
-              
-              {/* Fish Indicator */}
+            <div className="catch-bar">
+              <div
+                className="control-bar"
+                style={{ left: `${catchProgress}%`, width: "40px" }}
+              ></div>
               <div
                 className="fish-line"
-                style={{ 
-                  left: `${fishIndicatorPos}%`,
-                  width: "4px",
-                  height: "100%",
-                  backgroundColor: "#ff0000",
-                  position: "absolute",
-                  transform: "translateX(-50%)",
-                  borderRadius: "2px",
-                  boxShadow: "0 0 10px rgba(255,0,0,0.8)"
-                }}
+                style={{ left: `${fishIndicatorPos}%` }}
               ></div>
             </div>
           </div>

@@ -1,0 +1,262 @@
+/* Container umum */
+.fishing-container {
+  background: #cdeeff;
+  margin: 0;
+  padding-top: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Power bar vertikal di kanan bawah */
+.powerbar-stage-vertical {
+  position: absolute;
+  bottom: 100px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.power-bar-vertical {
+  width: 20px;
+  height: 170px;
+  background: #333;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.power-fill-vertical {
+  width: 100%;
+  background: linear-gradient(to top, #00ff99, #00ccff);
+  transition: height 0.1s;
+  height: 0%;
+}
+
+.cast-button-bottom-right {
+  padding: 12px 16px;
+  font-size: 16px;
+  background: #00aaff;
+  color: white;
+  border: 2px solid white;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: transform 0.2s;
+}
+
+.cast-button-bottom-right:hover {
+  transform: scale(1.05);
+  background: #008ecc;
+}
+
+/* Fishing scene */
+.fishing-scene {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  z-index: 0;
+}
+
+.land {
+  height: 25vh;
+  background: linear-gradient(to bottom, #cccccc, #666666);
+  position: relative;
+}
+
+.water {
+  height: 75vh;
+  background: url('../assets/images/air.png');
+  background-size: 300px 300px;
+  background-repeat: repeat;
+  position: relative;
+  overflow: hidden;
+  animation: waterFlow 20s linear infinite;
+}
+
+@keyframes waterFlow {
+  from { background-position: 0 0; }
+  to { background-position: 300px 300px; }
+}
+
+.water::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(255,255,255,0.05);
+  animation: waveFlash 3s infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes waveFlash {
+  0% { opacity: 0.05; }
+  100% { opacity: 0.15; }
+}
+
+/* Alat pancing */
+.alat-pancing-scene {
+  position: absolute;
+  top: 60vh;
+  left: 50%;
+  transform: translateX(-50%) rotate(220deg);
+  width: 200px;
+  z-index: 10;
+}
+
+/* Kail pancing */
+.kail-pancing-scene {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 35px;
+  transition: top 0.3s ease;
+}
+
+/* Garis benang pancing */
+.fishing-line {
+  position: absolute;
+  transition: height 0.3s ease;
+}
+
+/* Catch bar & indikator */
+.catch-stage {
+  position: fixed;      /* agar posisinya tetap di layar */
+  bottom: 100px;        /* jarak dari bawah layar */
+  left: 50%;            /* tengah horizontal */
+  transform: translateX(-50%); /* pusatkan secara horizontal */
+  width: 400px;         /* lebar bar */
+  height: 50px;         /* tinggi bar */
+  background-color: rgba(0,0,0,0.5);
+  border-radius: 10px;
+  z-index: 9999;
+}
+
+.catch-bar {
+  position: relative;   /* sebagai container posisi absolut anaknya */
+  width: 100%;
+  height: 100%;
+  background-color: #222;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+
+.control-bar {
+  position: absolute;
+  top: 0;
+  width: 40px;
+  height: 100%;
+  background: rgba(0, 255, 0, 0.8);
+  border-radius: 4px;
+  transform: translateX(-50%);
+}
+
+.fish-line {
+  position: absolute;
+  top: 0;
+  width: 10px;
+  height: 100%;
+  background: red;
+  border-radius: 3px;
+  transform: translateX(-50%);
+}
+
+/* Inventory UI */
+.status-money {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0,0,0,0.7);
+  padding: 10px;
+  border-radius: 8px;
+  color: white;
+  z-index: 20;
+}
+
+.money {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.inventory-btn {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  background: #00aaff;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.inventory-modal {
+  margin-top: 8px;
+  background: #222;
+  border-radius: 8px;
+  max-width: 300px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.inventory-slot {
+  width: 50px;
+  height: 50px;
+  background: #444;
+  border-radius: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.inventory-item {
+  color: white;
+  font-weight: bold;
+  text-align: center;
+}
+
+.close-inventory-btn {
+  margin-top: 10px;
+  width: 100%;
+  padding: 8px;
+  background: #555;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+/* UI Layer general */
+.ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.ui-layer button,
+.ui-layer .powerbar-stage-vertical,
+.ui-layer .catch-stage,
+.ui-layer .reaction-stage {
+  pointer-events: auto;
+}
+

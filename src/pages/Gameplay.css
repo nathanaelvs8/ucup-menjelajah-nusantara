@@ -144,7 +144,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  box-shadow: 0 0 15px #000;
+  box-shadow: 0 0 15px #000;
 }
 
 .inventory-grid {
