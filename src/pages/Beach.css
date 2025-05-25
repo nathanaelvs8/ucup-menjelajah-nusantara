@@ -127,3 +127,10 @@
   50% { opacity: 0.6; }
   100% { opacity: 0; }
 }
+
+.arrow-img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  pointer-events: none;
+}

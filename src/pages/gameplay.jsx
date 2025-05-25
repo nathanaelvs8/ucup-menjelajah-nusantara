@@ -2,7 +2,11 @@ import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
 import mapImage from "../assets/map/Main.jpg";
 import mainMapImage from "../assets/map/MainMap.jpg";
-import mapIcon from "../assets/ui/map_icon.png";
+import mapIcon from "../assets/ui/Map.png";
+import arrowUp from "../assets/ui/ArrowUP.png";
+import arrowDown from "../assets/ui/ArrowDOWN.png";
+import arrowLeft from "../assets/ui/ArrowLEFT.png";
+import arrowRight from "../assets/ui/ArrowRight.png";
 
 const MAP_WIDTH = 4616;
 const MAP_HEIGHT = 3464;
@@ -416,13 +420,45 @@ const handleInteract = () => {
 
 
       <div className="analog-controls">
-        <button className="arrow up" onMouseDown={() => handleAnalog("arrowup", true)} onMouseUp={() => handleAnalog("arrowup", false)} onTouchStart={() => handleAnalog("arrowup", true)} onTouchEnd={() => handleAnalog("arrowup", false)}>↑</button>
-        <div className="horizontal">
-          <button className="arrow left" onMouseDown={() => handleAnalog("arrowleft", true)} onMouseUp={() => handleAnalog("arrowleft", false)} onTouchStart={() => handleAnalog("arrowleft", true)} onTouchEnd={() => handleAnalog("arrowleft", false)}>←</button>
-          <button className="arrow right" onMouseDown={() => handleAnalog("arrowright", true)} onMouseUp={() => handleAnalog("arrowright", false)} onTouchStart={() => handleAnalog("arrowright", true)} onTouchEnd={() => handleAnalog("arrowright", false)}>→</button>
-        </div>
-        <button className="arrow down" onMouseDown={() => handleAnalog("arrowdown", true)} onMouseUp={() => handleAnalog("arrowdown", false)} onTouchStart={() => handleAnalog("arrowdown", true)} onTouchEnd={() => handleAnalog("arrowdown", false)}>↓</button>
+      <button className="arrow up"
+        onMouseDown={() => handleAnalog("arrowup", true)}
+        onMouseUp={() => handleAnalog("arrowup", false)}
+        onTouchStart={() => handleAnalog("arrowup", true)}
+        onTouchEnd={() => handleAnalog("arrowup", false)}
+      >
+        <img src={arrowUp} alt="Up" className="arrow-img" />
+      </button>
+
+      <div className="horizontal">
+        <button className="arrow left"
+          onMouseDown={() => handleAnalog("arrowleft", true)}
+          onMouseUp={() => handleAnalog("arrowleft", false)}
+          onTouchStart={() => handleAnalog("arrowleft", true)}
+          onTouchEnd={() => handleAnalog("arrowleft", false)}
+        >
+          <img src={arrowLeft} alt="Left" className="arrow-img" />
+        </button>
+
+        <button className="arrow right"
+          onMouseDown={() => handleAnalog("arrowright", true)}
+          onMouseUp={() => handleAnalog("arrowright", false)}
+          onTouchStart={() => handleAnalog("arrowright", true)}
+          onTouchEnd={() => handleAnalog("arrowright", false)}
+        >
+          <img src={arrowRight} alt="Right" className="arrow-img" />
+        </button>
       </div>
+
+      <button className="arrow down"
+        onMouseDown={() => handleAnalog("arrowdown", true)}
+        onMouseUp={() => handleAnalog("arrowdown", false)}
+        onTouchStart={() => handleAnalog("arrowdown", true)}
+        onTouchEnd={() => handleAnalog("arrowdown", false)}
+      >
+        <img src={arrowDown} alt="Down" className="arrow-img" />
+      </button>
+    </div>
+
 
       <div className="event-panel">
         <p className="event-text">

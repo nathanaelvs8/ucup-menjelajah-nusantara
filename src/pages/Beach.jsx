@@ -10,6 +10,10 @@ import rockBg2 from "../assets/map-assets/Beach/Rock_minigame2.jpg";
 import rockBg3 from "../assets/map-assets/Beach/Rock_minigame3.jpg";
 import rockBg4 from "../assets/map-assets/Beach/Rock_minigame4.jpg";
 import pickaxeImg from "../assets/map-assets/Beach/Beach_pickaxe.png";
+import arrowUp from "../assets/ui/ArrowUP.png";
+import arrowDown from "../assets/ui/ArrowDOWN.png";
+import arrowLeft from "../assets/ui/ArrowLEFT.png";
+import arrowRight from "../assets/ui/ArrowRIGHT.png";
 
 import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
 
@@ -576,13 +580,41 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
       </div>
 
       <div className="analog-controls">
-        <button className="arrow up" onMouseDown={() => handleAnalog("arrowup", true)} onMouseUp={() => handleAnalog("arrowup", false)}>↑</button>
-        <div className="horizontal">
-          <button className="arrow left" onMouseDown={() => handleAnalog("arrowleft", true)} onMouseUp={() => handleAnalog("arrowleft", false)}>←</button>
-          <button className="arrow right" onMouseDown={() => handleAnalog("arrowright", true)} onMouseUp={() => handleAnalog("arrowright", false)}>→</button>
-        </div>
-        <button className="arrow down" onMouseDown={() => handleAnalog("arrowdown", true)} onMouseUp={() => handleAnalog("arrowdown", false)}>↓</button>
+      <button
+        className="arrow up"
+        onMouseDown={() => handleAnalog("arrowup", true)}
+        onMouseUp={() => handleAnalog("arrowup", false)}
+      >
+        <img src={arrowUp} alt="Up" className="arrow-img" />
+      </button>
+
+      <div className="horizontal">
+        <button
+          className="arrow left"
+          onMouseDown={() => handleAnalog("arrowleft", true)}
+          onMouseUp={() => handleAnalog("arrowleft", false)}
+        >
+          <img src={arrowLeft} alt="Left" className="arrow-img" />
+        </button>
+
+        <button
+          className="arrow right"
+          onMouseDown={() => handleAnalog("arrowright", true)}
+          onMouseUp={() => handleAnalog("arrowright", false)}
+        >
+          <img src={arrowRight} alt="Right" className="arrow-img" />
+        </button>
       </div>
+
+      <button
+        className="arrow down"
+        onMouseDown={() => handleAnalog("arrowdown", true)}
+        onMouseUp={() => handleAnalog("arrowdown", false)}
+      >
+        <img src={arrowDown} alt="Down" className="arrow-img" />
+      </button>
+    </div>
+
 
       <div className="event-panel">
         <p className="event-text">{getEventText()}</p>
