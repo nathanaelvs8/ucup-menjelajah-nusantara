@@ -63,6 +63,7 @@ const [positionLock, setPositionLock] = useState(null); // null = bebas gerak, {
 const [positionBeforeInteract, setPositionBeforeInteract] = useState(null);
 const [isReturningFromSleep, setIsReturningFromSleep] = useState(false);
 const [manualPosition, setManualPosition] = useState(null);
+const happinessIntervalRef = useRef(null);
 
 
 
@@ -434,19 +435,30 @@ else if (zone.name === "Sweeper") {
 
   return;
 }
- else if (zone.name === "Picture") {
-    setIsInteracting(true);
-     setPositionBeforeInteract(position);
+else if (zone.name === "Picture") {
+  setIsInteracting(true);
+  setPositionBeforeInteract(position);
   setPositionLock(position);
+  
   if (chillAudioRef.current) {
-  chillAudioRef.current.play().catch((err) => {
-    console.warn("Autoplay error:", err);
-  });
-}
-setShowChillImage(true);
-return;
+    chillAudioRef.current.play().catch((err) => {
+      console.warn("Autoplay error:", err);
+    });
+  }
+  setShowChillImage(true);
 
+  // Mulai interval untuk tambah happiness tiap 3 detik
+  if (happinessIntervalRef.current) clearInterval(happinessIntervalRef.current);
+  happinessIntervalRef.current = setInterval(() => {
+    setStatus(prev => ({
+      ...prev,
+      happiness: Math.min(prev.happiness + 30, 100)
+    }));
+  }, 3000);
+
+  return;
 }
+
 
 
     alert(`You interacted with ${zone.name}`);
@@ -593,15 +605,22 @@ useEffect(() => {
 {showChillImage && (
   <div className="chill-overlay">
     <img src={chillImage} alt="Chill" className="chill-image" />
-    <button className="chill-close-btn" onClick={() => {
+   <button className="chill-close-btn" onClick={() => {
   if (chillAudioRef.current) {
     chillAudioRef.current.pause();
     chillAudioRef.current.currentTime = 0;
   }
   setShowChillImage(false);
-   setIsInteracting(false);
-}}
->×</button>
+  setIsInteracting(false);
+
+  if (happinessIntervalRef.current) {
+    clearInterval(happinessIntervalRef.current);
+    happinessIntervalRef.current = null;
+  }
+}}>
+  ×
+</button>
+
   </div>
 )}
 
@@ -628,61 +647,6 @@ useEffect(() => {
     </div>
   </div>
 )}
-
-
-
-{blockedZones.map((zone, i) => (
-  <div
-    key={i}
-    style={{
-      position: "absolute",
-      left: zone.x,
-      top: zone.y,
-      width: zone.width,
-      height: zone.height,
-      border: "2px dashed yellow",
-      backgroundColor: "rgba(255,255,0,0.1)",
-      zIndex: 5,
-      pointerEvents: "none"
-    }}
-  />
-))}
-
-{isSleeping && blokKhusus.map((zone, i) => (
-  <div
-    key={`blokKhusus-${i}`}
-    style={{
-      position: "absolute",
-      left: zone.x,
-      top: zone.y,
-      width: zone.width,
-      height: zone.height,
-      backgroundColor: "rgba(255, 0, 0, 0.2)",
-      border: "2px dashed red",
-      zIndex: 5,
-      pointerEvents: "none"
-    }}
-  />
-))}
-
-
-
-{interactZones.map((zone, i) => (
-  <div
-    key={`interact-${i}`}
-    style={{
-      position: "absolute",
-      left: zone.x,
-      top: zone.y,
-      width: zone.width,
-      height: zone.height,
-      border: "2px dashed cyan",
-      backgroundColor: "rgba(0,255,255,0.1)",
-      zIndex: 5,
-      pointerEvents: "none"
-    }}
-  />
-))}
 
 
 

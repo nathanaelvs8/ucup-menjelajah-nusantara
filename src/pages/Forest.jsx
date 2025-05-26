@@ -113,32 +113,39 @@ export default function Forest() {
   };
 
   // Load game state when component mounts
-  useEffect(() => {
-    const savedChar = JSON.parse(localStorage.getItem("selectedCharacter"));
-    if (savedChar) setCharacter(savedChar);
+useEffect(() => {
+  const savedChar = JSON.parse(localStorage.getItem("selectedCharacter"));
+  if (savedChar) setCharacter(savedChar);
 
-    const savedData = JSON.parse(localStorage.getItem("playerData"));
-    if (savedData) {
-      setStatus(savedData.status || {});
-      setMoney(savedData.money || 0);
-      setInventory(savedData.inventory || []);
-    }
+  const savedData = JSON.parse(localStorage.getItem("playerData"));
+  if (savedData) {
+    setStatus(savedData.status || {});
+    setMoney(savedData.money || 0);
+    setInventory(savedData.inventory || []);
+  }
 
-    setUsername(localStorage.getItem("playerName") || "Player");
+  setUsername(localStorage.getItem("playerName") || "Player");
 
-    const savedTime = JSON.parse(localStorage.getItem("playerTime"));
-    if (savedTime) {
-      setCurrentMinute(savedTime.savedMinute);
-      setCurrentHour(savedTime.savedHour);
-      setCurrentDayIndex(savedTime.savedDay);
-    }
+  const savedTime = JSON.parse(localStorage.getItem("playerTime"));
+  if (savedTime) {
+    setCurrentMinute(savedTime.savedMinute);
+    setCurrentHour(savedTime.savedHour);
+    setCurrentDayIndex(savedTime.savedDay);
+  }
 
-    // Load forest-specific state if returning from dungeon
-    const forestState = JSON.parse(localStorage.getItem("forestGameState"));
-    if (forestState) {
-      setPosition(forestState.position || { x: 500, y: MAP_HEIGHT - SPRITE_SIZE });
-    }
-  }, []);
+  // Cek apakah ada posisi terakhir gameplay sebelum masuk forest
+  const lastPos = JSON.parse(localStorage.getItem("lastGameplayPosition"));
+  if (lastPos) {
+    // Jika ada lastPos berarti player baru balik dari gameplay,
+    // posisinya di forest tetap spawn bawah (jika mau)
+    // tapi bisa set posisi forest awal juga jika ingin spawn bawah forest
+    setPosition({ x: 500, y: MAP_HEIGHT - SPRITE_SIZE }); // spawn bawah forest
+  } else {
+    // Kalau tidak ada lastPos, misal masuk pertama kali, spawn di bawah forest
+    setPosition({ x: 500, y: MAP_HEIGHT - SPRITE_SIZE });
+  }
+}, []);
+
 
   // Time progression
   useEffect(() => {

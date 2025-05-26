@@ -384,259 +384,16 @@ html, body {
   box-shadow: 0 0 6px black;
 }
 
-.house-zone {
-  position: absolute;
-  left: 490px; /* sesuaikan dengan koordinat area rumah */
-  top: 2240px; /* sesuaikan juga */
-  width: 260px;
-  height: 235px;
-  background-color: rgba(255, 255, 255, 0.1);
-  border: 2px dashed rgba(255, 255, 255, 0.3);
-  z-index: 5;
-  pointer-events: none;
-}
 
-.lake-zone {
-  position: absolute;
-  left: 120px;
-  top: 1650px;
-  width: 550px;
-  height: 250px;
-  background-color: rgba(0, 100, 255, 0.15);
-  border: 2px dashed rgba(0, 100, 255, 0.4);
-  border-radius: 50%; /* biar tampil oval */
-  z-index: 5;
-  pointer-events: none;
-}
 
-.mountain-zone {
-  position: absolute;
-  background-color: rgba(160, 82, 45, 0.15);
-  border: 2px dashed rgba(160, 82, 45, 0.4);
-  z-index: 5;
-  pointer-events: none;
-}
 
-/* Area blok atas kiri gunung */
-.mountain-zone.part-1 {
-  position: absolute;
-  left: 1240px; /* posisi kiri gunung */
-  top: 850px;  /* posisi atas gunung */
-  width: 620px;
-  height: 350px;
-  background-color: rgba(139, 69, 19, 0.2);
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-  border: 2px dashed rgba(160, 82, 45, 0.5);
-  z-index: 5;
-  pointer-events: none;
-}
+
+
 
 /* Area tengah kanan gunung */
-.mountain-zone.part-2 {
-  left: 1200px;
-  top: 1200px;
-  width: 900px;
-  height: 250px;
-}
+
 
 /* Area bawah besar gunung */
-.mountain-zone.part-3 {
-  left: 1200px;
-  top: 1450px;
-  width: 900px;
-  height: 250px;
-}
-
-.beach-zone {
-  position: absolute;
-  left: 2000px;
-  top: 350px;
-  width: 1200px;
-  height: 450px;
-  background-color: rgba(255, 255, 0, 0.1);
-  border: 2px dashed rgba(255, 255, 0, 0.4);
-  z-index: 5;
-  pointer-events: none;
-}
-
-.beach-zone.part-a {
-  left: 1300px;
-  top: 0px;
-  width: 100px;
-  height: 400px;
-}
-
-.beach-zone.part-b {
-  left: 1400px;
-  top: 0px;
-  width: 300px;
-  height: 600px;
-}
-
-.beach-zone.part-c {
-  left: 1700px;
-  top: 290px;
-  width: 400px;
-  height: 400px;
-}
-
-.beach-zone.part-d {
-  left: 1200px;
-  top: 0px;
-  width: 100px;
-  height: 250px;
-}
-
-.beach-zone.part-e {
-  left: 1100px;
-  top: 0px;
-  width: 100px;
-  height: 100px;
-}
-
-.beach-zone.part-f {
-  left: 2000px;
-  top: 350px;
-  width: 1200px;
-  height: 450px;
-}
-
-.river-zone {
-  position: absolute;
-  background-color: rgba(0, 100, 255, 0.1);
-  border: 2px dashed rgba(0, 100, 255, 0.4);
-  z-index: 5;
-  pointer-events: none;
-}
-
-.river-zone.part-a {
-  left: 2990px;
-  top: 2080px;
-  width: 120px;
-  height: 50px;
-}
-
-.river-zone.part-b {
-  left: 2920px;
-  top: 2130px;
-  width: 150px;
-  height: 50px;
-}
-
-.river-zone.part-c {
-  left: 2860px;
-  top: 2180px;
-  width: 120px;
-  height: 50px;
-}
-
-.river-zone.part-d {
-  left: 2870px;
-  top: 2230px;
-  width: 45px;
-  height: 30px;
-}
-
-.river-zone.part-e {
-  left: 2730px;
-  top: 2300px;
-  width: 95px;
-  height: 80px;
-}
-
-.river-zone.part-f {
-  left: 2630px;
-  top: 2380px;
-  width: 130px;
-  height: 100px;
-}
-
-.river-zone.part-g {
-  left: 2560px;
-  top: 2480px;
-  width: 140px;
-  height: 100px;
-}
-
-.river-zone.part-h {
-  left: 2510px;
-  top: 2580px;
-  width: 130px;
-  height: 100px;
-}
-
-.river-zone.part-i {
-  left: 2450px;
-  top: 2680px;
-  width: 110px;
-  height: 80px;
-}
-
-.river-zone.part-j {
-  left: 2390px;
-  top: 2830px;
-  width: 80px;
-  height: 100px;
-}
-
-.river-zone.part-k {
-  left: 2350px;
-  top: 2930px;
-  width: 80px;
-  height: 100px;
-}
-
-.river-zone.part-l {
-  left: 2320px;
-  top: 3030px;
-  width: 80px;
-  height: 100px;
-}
-
-.river-zone.part-m {
-  left: 2300px;
-  top: 3130px;
-  width: 80px;
-  height: 100px;
-}
-
-.river-zone.part-n {
-  left: 2270px;
-  top: 3230px;
-  width: 80px;
-  height: 100px;
-}
-
-.river-zone.part-o {
-  left: 2250px;
-  top: 3330px;
-  width: 80px;
-  height: 200px;
-}
-
-.market-zone {
-  position: absolute;
-  left: 3100px;
-  top: 2780px;
-  width: 350px;
-  height: 260px;
-  background-color: rgba(0, 255, 0, 0.1);
-  border: 2px dashed rgba(0, 255, 0, 0.4);
-  z-index: 5;
-  pointer-events: none;
-}
-
-.forest-zone {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 900px;
-  height: 1250px;
-  background-color: rgba(34, 139, 34, 0.15);
-  border: 2px dashed rgba(34, 139, 34, 0.4);
-  z-index: 5;
-  pointer-events: none;
-}
 
 .time-display {
   position: absolute;
@@ -669,29 +426,8 @@ html, body {
   letter-spacing: 0.5px;
 }
 
-.water-zone {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  width: 100%;
-  height: 170px;
-  background-color: rgba(0, 0, 255, 0.1); /* transparan biru */
-  border: 2px dashed rgba(0, 0, 255, 0.5); /* garis kotak */
-  z-index: 5;
-  pointer-events: none;
-}
 
-.sunbathe-zone {
-  position: absolute;
-  left: 750px;
-  top: 240px;
-  width: 150px;
-  height: 140px;
-  background-color: rgba(255, 215, 0, 0.1); /* kuning transparan */
-  border: 2px dashed rgba(255, 215, 0, 0.6); /* kuning garis kotak */
-  z-index: 5;
-  pointer-events: none;
-}
+
 
 .exit-gradient-zone {
   position: absolute;
@@ -765,17 +501,7 @@ html, body {
   cursor: pointer;
 }
 
-.coconut-zone {
-  position: absolute;
-  left: 100px;    /* sesuaikan lokasi pohon kelapa */
-  top: 650px;
-  width: 200px;
-  height: 200px;
-  background-color: rgba(0, 255, 0, 0.2);
-  border: 2px dashed rgba(0, 255, 0, 0.6);
-  z-index: 5;
-  pointer-events: none;
-}
+
 
 .tap-text {
   position: absolute;
@@ -808,17 +534,6 @@ html, body {
   max-height: none;
 }
 
-.rock-zone {
-  position: absolute;
-  left: 1030px; /* ganti sesuai posisi batu */
-  top: 430px;
-  width: 400px;
-  height: 280px;
-  background-color: rgba(169, 169, 169, 0.1); /* abu transparan */
-  border: 2px dashed rgba(169, 169, 169, 0.5); /* garis putus-putus abu */
-  z-index: 5;
-  pointer-events: none;
-}
 
 .arrow-img {
   width: 36px;

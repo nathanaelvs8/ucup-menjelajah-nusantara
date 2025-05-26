@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
+import Inventory from './Inventory.jsx';  // pastikan path benar
 import mapImage from "../assets/map/Main.jpg";
 import mainMapImage from "../assets/map/MainMap.jpg";
 import mapIcon from "../assets/ui/Map.png";
@@ -7,6 +8,8 @@ import arrowUp from "../assets/ui/ArrowUP.png";
 import arrowDown from "../assets/ui/ArrowDOWN.png";
 import arrowLeft from "../assets/ui/ArrowLEFT.png";
 import arrowRight from "../assets/ui/ArrowRight.png";
+import gameplayAudio from "../assets/audio/gameplayaudio.mp3";
+
 
 const MAP_WIDTH = 4616;
 const MAP_HEIGHT = 3464;
@@ -16,29 +19,50 @@ const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
 
 export default function Gameplay() {
   const itemDetails = {
-    Wood: {
-      description: "Basic material for crafting tools and buildings.",
-      sellGold: 200,
-    },
-    "Special Fish Skin": {
-      description: "Rare fish skin used for crafting high-quality gear.",
-      sellGold: 0,
-    },
-    "Hunger Potion": {
-      description: "Herbal drink that reduces hunger and boosts energy.",
-      useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 100, 100) }),
-    },
-    "Fishing Rod": {
-      description: "Tool for catching fish in rivers, lakes, or sea.",
-    },
-    Pickaxe: {
-      description: "Strong tool for mining stones and minerals.",
-    },
-    Coconut: {
-      description: "Tropical fruit, edible or used for crafting.",
-      useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
-    },
-  };
+  Wood: {
+    description: "Basic material for crafting tools and buildings.",
+    sellGold: 200,
+  },
+  "Special Fish Skin": {
+    description: "Rare fish skin used for crafting high-quality gear.",
+    sellGold: 0,
+  },
+  "Hunger Potion": {
+    description: "Herbal drink that reduces hunger and boosts energy.",
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 100, 100) }),
+  },
+  "Fishing Rod": {
+    description: "Tool for catching fish in rivers, lakes, or sea.",
+  },
+  Pickaxe: {
+    description: "Strong tool for mining stones and minerals.",
+  },
+  Coconut: {
+    description: "Tropical fruit, edible or used for crafting.",
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
+  },
+  // Tambahkan efek untuk ikan-ikan berikut:
+  Goldfish: {
+    description: "Small golden fish, restores 20 meal when consumed.",
+    sellGold: 100,
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
+  },
+  Tuna: {
+    description: "Large nutritious fish, restores 50 meal when consumed.",
+    sellGold: 250,
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 50, 100) }),
+  },
+  Megalodon: {
+    description: "Ancient giant shark, fully restores all stats when consumed.",
+    sellGold: 1000,
+    useEffect: (stat) => ({
+      meal: 100,
+      sleep: 100,
+      happiness: 100,
+      cleanliness: 100,
+    }),
+  },
+};
 
 
   const [character, setCharacter] = useState(null);
@@ -77,27 +101,24 @@ export default function Gameplay() {
   const [currentDayIndex, setCurrentDayIndex] = useState(0); // Monday
   const [username, setUsername] = useState(localStorage.getItem("playerName") || "Player");
 
-  const [tooltipInfo, setTooltipInfo] = useState(null); // {item, index, x, y} atau null
+    const audioRef = useRef(null);
 
-  function showTooltip(e, item, index) {
-    e.stopPropagation(); // cegah event naik ke modal (agar modal tidak menutup tooltip)
-    const rect = e.currentTarget.getBoundingClientRect();
-    setTooltipInfo({
-      item,
-      index,
-      x: rect.right + window.scrollX + 10,
-      y: rect.top + window.scrollY,
-    });
-  }
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 0.2;  // atur volume jika perlu
+      audioRef.current.loop = true;   // agar musik looping terus
+      audioRef.current.play().catch(e => {
+        // bisa gagal autoplay di browser karena kebijakan user gesture
+        console.log("Audio play failed:", e);
+      });
+    }
+  }, []);
 
+  // Fungsi untuk handle use item dari komponen Inventory
+  const handleUseItem = (itemName) => {
+    const itemIndex = inventory.findIndex(item => item === itemName);
+    if (itemIndex === -1) return;
 
-  function hideTooltip() {
-    setTooltipInfo(null);
-  }
-
-  function handleUseItem(index) {
-    if (index < 0 || index >= inventory.length) return;
-    const itemName = inventory[index];
     const effectFn = itemDetails[itemName]?.useEffect;
     if (effectFn) {
       setStatus(prev => effectFn(prev));
@@ -106,30 +127,31 @@ export default function Gameplay() {
       alert(`Used ${itemName}`);
     }
 
-    const newInv = [...inventory];
-    newInv.splice(index, 1);
-    setInventory(newInv);
-    setTooltipInfo(null);
-    savePlayerData(newInv, money, status);
-  }
+    // Remove item dari inventory
+    const newInventory = [...inventory];
+    newInventory.splice(itemIndex, 1);
+    setInventory(newInventory);
+  };
 
-  function handleSellItem(index) {
-    if (index < 0 || index >= inventory.length) return;
-    const itemName = inventory[index];
+  // Fungsi untuk handle sell item dari komponen Inventory
+  const handleSellItem = (itemName) => {
+    const itemIndex = inventory.findIndex(item => item === itemName);
+    if (itemIndex === -1) return;
+
     const price = itemDetails[itemName]?.sellGold || 0;
     if (price <= 0) {
       alert(`Cannot sell ${itemName}`);
       return;
     }
-    alert(`Sold ${itemName} for ${price} gold.`);
 
-    const newInv = [...inventory];
-    newInv.splice(index, 1);
-    setInventory(newInv);
-    setMoney(money + price);
-    setTooltipInfo(null);
-    savePlayerData(newInv, money + price, status);
-  }
+    alert(`Sold ${itemName} for ${price} gold.`);
+    
+    // Remove item dan tambah money
+    const newInventory = [...inventory];
+    newInventory.splice(itemIndex, 1);
+    setInventory(newInventory);
+    setMoney(prev => prev + price);
+  };
 
   function savePlayerData(inv, mon, stat) {
     const playerDataRaw = localStorage.getItem("playerData");
@@ -380,6 +402,11 @@ export default function Gameplay() {
     setNearForestZone(touchingForest);
   }, [position]);
 
+  useEffect(() => {
+    savePlayerData(inventory, money, status);
+  }, [inventory, money, status]);
+
+
   const getSpriteOffset = () => {
     const directionMap = { down: 0, left: 1, right: 2, up: 3 };
     const row = directionMap[direction];
@@ -395,6 +422,7 @@ export default function Gameplay() {
   };
 
 const handleInteract = () => {
+  // Simpan data player seperti biasa
   const saveData = { character, position, status, money, inventory };
   localStorage.setItem("playerData", JSON.stringify(saveData));
   localStorage.setItem("playerTime", JSON.stringify({
@@ -413,12 +441,16 @@ const handleInteract = () => {
   } else if (inMarketZone) {
     window.location.href = "/market";
   } else if (nearForestZone) {
+    // Simpan posisi terakhir sebelum masuk forest
+    localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
     window.location.href = "/forest";
   }
 };
 
+
   return (
     <div className="viewport">
+       <audio ref={audioRef} src={gameplayAudio} />
       <div className="time-display">
         <div className="clock-text">{days[currentDayIndex]}, {formatTime(currentHour, currentMinute)}</div>
     </div>
@@ -485,71 +517,46 @@ const handleInteract = () => {
           <div className="money">Rp {money} 💰</div>
           <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
 
-          {/* Modal Inventory */}
+          {/* Modal Inventory menggunakan komponen Inventory yang sudah ada */}
           {inventoryVisible && (
-            <div className="inventory-modal" onClick={() => { setInventoryVisible(false); hideTooltip(); }}>
-              <div className="inventory-grid" onClick={(e) => e.stopPropagation()}>
-                {Array.from({ length: 50 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="inventory-slot"
-                    onClick={inventory[i] ? (e) => showTooltip(e, inventory[i], i) : undefined}
-                  >
-                    {inventory[i] ? (
-                      <div className="inventory-item">{inventory[i]}</div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-              <button className="close-inventory-btn" onClick={() => {
+          <div 
+            className="inventory-modal" 
+            onClick={(e) => {
+              if (e.target === e.currentTarget) {
                 setInventoryVisible(false);
-                hideTooltip();
-              }}>
-                Close
+              }
+            }}
+          >
+            <div style={{ 
+              background: 'transparent', // Hapus background
+              padding: '20px', 
+              maxWidth: '600px',
+              width: '90%'
+            }}>
+              <Inventory 
+                inventory={inventory}
+                onUseItem={handleUseItem}
+                onSellItem={handleSellItem}
+              />
+              <button 
+                className="close-inventory-btn" 
+                onClick={() => setInventoryVisible(false)}
+                style={{ 
+                  marginTop: '15px', 
+                  width: '100%',
+                  background: '#333',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Close Inventory
               </button>
             </div>
-          )}
-
-
-          {/* Tooltip Item */}
-          {tooltipInfo && (
-            <div
-              className="inventory-tooltip"
-              style={{
-                position: "absolute",
-                top: tooltipInfo.y,
-                left: tooltipInfo.x,
-                backgroundColor: "#222",
-                color: "white",
-                padding: 12,
-                borderRadius: 8,
-                boxShadow: "0 0 10px rgba(0,0,0,0.8)",
-                zIndex: 10000,
-                width: 220,
-                userSelect: "none",
-              }}
-            >
-              <div><strong>{tooltipInfo.item}</strong></div>
-              <div style={{ margin: "8px 0" }}>{itemDetails[tooltipInfo.item]?.description || "No description"}</div>
-
-              {itemDetails[tooltipInfo.item]?.sellGold > 0 && (
-                <div>Sell: get {itemDetails[tooltipInfo.item].sellGold} gold</div>
-              )}
-              {typeof itemDetails[tooltipInfo.item]?.useEffect === "function" && (
-                <div>Use: available</div>
-              )}
-
-              <div style={{ marginTop: 10, display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                {typeof itemDetails[tooltipInfo.item]?.useEffect === "function" && (
-                  <button onClick={() => handleUseItem(tooltipInfo.index)}>Use Item</button>
-                )}
-                {itemDetails[tooltipInfo.item]?.sellGold > 0 && (
-                  <button onClick={() => handleSellItem(tooltipInfo.index)}>Sell Item</button>
-                )}
-                <button onClick={hideTooltip}>Close</button>
-              </div>
-            </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
 

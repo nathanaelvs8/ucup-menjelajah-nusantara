@@ -10,6 +10,7 @@ import sleepIcon from "../assets/inventory-items/Sleep.png";
 import happyIcon from "../assets/inventory-items/Happiness.png";
 import cleanIcon from "../assets/inventory-items/Cleanliness.png";
 import coinGif from "../assets/ui/MoneyMoney.gif";
+import mesinImg from "../assets/images/mesin.png";
 
 const SPRITE_SIZE = 80;
 const MAP_WIDTH = 2000;
@@ -36,6 +37,70 @@ export default function Market() {
   const [currentHour, setCurrentHour] = useState(9);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [currentZoneName, setCurrentZoneName] = useState("");
+  const [showSlotMachine, setShowSlotMachine] = useState(false);
+  const [slotNumbers, setSlotNumbers] = useState([5, 5, 6]); // angka awal slot
+const [isSpinning, setIsSpinning] = useState(false);
+useEffect(() => {
+  const savedMoney = localStorage.getItem("playerMoney");
+  if (savedMoney !== null) {
+    setMoney(parseInt(savedMoney, 10));
+  } else {
+    setMoney(5000); // default awal
+  }
+}, []);
+
+const generateNumber = () => {
+  const weightedNumbers = [
+    1, 2, 3, 4,
+    5, 5, 5, 5, 5,
+    6, 6, 6, 6,
+    7, 8, 9
+  ];
+  const idx = Math.floor(Math.random() * weightedNumbers.length);
+  return weightedNumbers[idx];
+};
+
+const startSlot = () => {
+  if (isSpinning) return;
+  if (money < 1000) {
+    alert("Gold tidak cukup untuk bermain mesin slot!");
+    return;
+  }
+  
+  setIsSpinning(true);
+  setMoney(prev => prev - 1000);
+
+  let count = 0;
+  let finalResult = null; // Untuk menyimpan hasil akhir
+  
+  const interval = setInterval(() => {
+    const newNumbers = [
+      generateNumber(),
+      generateNumber(),
+      generateNumber()
+    ];
+    
+    setSlotNumbers(newNumbers);
+    
+    count++;
+    if (count > 20) {
+      clearInterval(interval);
+      setIsSpinning(false);
+      
+      // Simpan hasil akhir setelah animasi selesai
+      finalResult = newNumbers;
+      
+      // Hitung hadiah setelah 100ms untuk memastikan state terupdate
+      setTimeout(() => {
+        const slotValue = parseInt(finalResult.join(''), 10) * 10;
+        setMoney(prev => prev + slotValue);
+        alert(`Kamu mendapatkan ${slotValue} gold! (${finalResult.join('')} × 10)`);
+      }, 100);
+    }
+  }, 100);
+};
+
+
 
   const keysPressed = useRef({});
 
@@ -171,21 +236,25 @@ export default function Market() {
   const offsetY = Math.min(Math.max(-position.y + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
 
   const formatTime = (h, m) => `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+const handleInteract = () => {
+  const zone = marketZones.find(zone =>
+    position.x + SPRITE_SIZE > zone.x &&
+    position.x < zone.x + zone.width &&
+    position.y + SPRITE_SIZE > zone.y &&
+    position.y < zone.y + zone.height
+  );
 
-  const handleInteract = () => {
-    const zone = marketZones.find(zone =>
-      position.x + SPRITE_SIZE > zone.x &&
-      position.x < zone.x + zone.width &&
-      position.y + SPRITE_SIZE > zone.y &&
-      position.y < zone.y + zone.height
-    );
-
-    if (zone) {
-      alert(`🛒 Interaksi dengan ${zone.name}`);
+  if (zone) {
+    if (zone.name === "Mesin Slot") {
+      setShowSlotMachine(true);
     } else {
-      alert("⚠️ Tidak ada yang bisa diinteraksikan di sini.");
+      alert(`🛒 Interaksi dengan ${zone.name}`);
     }
-  };
+  } else {
+    alert("⚠️ Tidak ada yang bisa diinteraksikan di sini.");
+  }
+};
+
 
   return (
     <div className="viewport" style={{ position: "relative", backgroundColor: "#111", overflow: "hidden" }}>
@@ -199,19 +268,129 @@ export default function Market() {
         left: `${offsetX}px`,
         zIndex: 1
       }}>
-        {marketZones.map((zone, i) => (
-          <div key={i} style={{
-            position: "absolute",
-            left: zone.x,
-            top: zone.y,
-            width: zone.width,
-            height: zone.height,
-            border: "2px dashed limegreen",
-            backgroundColor: "rgba(0,255,0,0.1)",
-            pointerEvents: "none"
-          }} />
-        ))}
+    
+
+        
+
       </div>
+
+{showSlotMachine && (
+  <div
+    style={{
+      position: "fixed",
+      top: 0,
+      left: 0,
+      width: "100vw",
+      height: "100vh",
+      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      zIndex: 9999,
+    }}
+    onClick={() => setShowSlotMachine(false)}
+  >
+    <div
+  onClick={(e) => e.stopPropagation()}
+  style={{
+    position: "relative",   // PENTING supaya anak bisa pakai position absolute
+    width: 1300,
+    height: 800,
+    backgroundImage: `url(${mesinImg})`,
+    backgroundSize: "contain",
+    backgroundRepeat: "no-repeat",
+    // hapus flex dan justifyContent/alignItems
+    // display: "flex",
+    // flexDirection: "column",
+    // justifyContent: "center",
+    // alignItems: "center",
+    paddingTop: 60,
+  }}
+>
+<button
+  onClick={() => setShowSlotMachine(false)}
+  style={{
+    position: "absolute",
+    top: "80px",  // Sesuaikan dengan posisi vertikal yang diinginkan
+    right: "50px", // Sesuaikan dengan posisi horizontal yang diinginkan
+    width: "40px",
+    height: "40px",
+    borderRadius: "50%",
+    border: "none",
+    backgroundColor: "rgba(255,0,0,0.7)", // Warna merah untuk testing
+    color: "white",
+    fontWeight: "bold",
+    fontSize: "24px",
+    cursor: "pointer",
+    zIndex: 10000, // Pastikan di atas semua elemen
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 0,
+  }}
+  aria-label="Close"
+>
+  ×
+</button>
+      {/* Kotak angka */}
+<div
+  style={{
+    position: "absolute",
+    top: 500,   // sesuaikan jarak dari atas container modal mesin
+    left: 520,  // sesuaikan jarak dari kiri container modal mesin
+    display: "flex",
+    gap: 10,
+  }}
+>
+  {slotNumbers.map((num, i) => (
+    <div
+      key={i}
+      style={{
+        width: 60,
+        height: 80,
+        backgroundColor: "transparent",
+        borderRadius: 10,
+        fontSize: 48,
+        fontWeight: "bold",
+        color: "#333",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        userSelect: "none",
+      }}
+    >
+      {num}
+    </div>
+  ))}
+</div>
+
+
+      {/* Tombol Start */}
+<button
+  style={{
+    position: "absolute",
+    top: 610,
+    left: 560,
+    padding: "12px 30px",
+    fontSize: 20,
+    fontWeight: "bold",
+    cursor: isSpinning || money < 1000 ? "not-allowed" : "pointer",
+    backgroundColor: "transparent",  // transparan tanpa warna background
+    border: "none",                  // tanpa border
+    color: "#fff",                   // warna tulisan tetap putih (atau sesuaikan)
+    userSelect: "none",
+  }}
+  disabled={isSpinning || money < 1000}
+  onClick={startSlot}
+>
+  {isSpinning ? "Spinning..." : "Start"}
+</button>
+
+
+
+    </div>
+  </div>
+)}
 
       {character && (
         <div className="character" style={{
