@@ -2,6 +2,9 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Gameplay.css";
 import "./Forest.css";
+import { itemDetails } from "./Inventory.jsx";
+import Inventory from "./Inventory.jsx"; // path harus benar, sesuaikan dengan struktur folder kamu
+import inventoryIcon from "../assets/ui/Inventory.png";
 import forestMap from "../assets/map/Forest.jpg";
 import minigameBg from "../assets/map-assets/Forest/Wildtree_minigame.png";
 import wildFruitImg from "../assets/inventory-items/WildFruit.png";
@@ -112,39 +115,43 @@ export default function Forest() {
     }));
   };
 
-  // Load game state when component mounts
-useEffect(() => {
-  const savedChar = JSON.parse(localStorage.getItem("selectedCharacter"));
-  if (savedChar) setCharacter(savedChar);
+  useEffect(() => {
+    const savedChar = JSON.parse(localStorage.getItem("selectedCharacter"));
+    if (savedChar) setCharacter(savedChar);
 
-  const savedData = JSON.parse(localStorage.getItem("playerData"));
-  if (savedData) {
-    setStatus(savedData.status || {});
-    setMoney(savedData.money || 0);
-    setInventory(savedData.inventory || []);
-  }
+    const savedData = JSON.parse(localStorage.getItem("playerData"));
+    if (savedData) {
+      setStatus(savedData.status || {});
+      setMoney(savedData.money || 0);
+      setInventory(savedData.inventory || []);
+    }
 
-  setUsername(localStorage.getItem("playerName") || "Player");
+    setUsername(localStorage.getItem("playerName") || "Player");
 
-  const savedTime = JSON.parse(localStorage.getItem("playerTime"));
-  if (savedTime) {
-    setCurrentMinute(savedTime.savedMinute);
-    setCurrentHour(savedTime.savedHour);
-    setCurrentDayIndex(savedTime.savedDay);
-  }
+    const savedTime = JSON.parse(localStorage.getItem("playerTime"));
+    if (savedTime) {
+      setCurrentMinute(savedTime.savedMinute);
+      setCurrentHour(savedTime.savedHour);
+      setCurrentDayIndex(savedTime.savedDay);
+    }
 
-  // Cek apakah ada posisi terakhir gameplay sebelum masuk forest
-  const lastPos = JSON.parse(localStorage.getItem("lastGameplayPosition"));
-  if (lastPos) {
-    // Jika ada lastPos berarti player baru balik dari gameplay,
-    // posisinya di forest tetap spawn bawah (jika mau)
-    // tapi bisa set posisi forest awal juga jika ingin spawn bawah forest
-    setPosition({ x: 500, y: MAP_HEIGHT - SPRITE_SIZE }); // spawn bawah forest
-  } else {
-    // Kalau tidak ada lastPos, misal masuk pertama kali, spawn di bawah forest
-    setPosition({ x: 500, y: MAP_HEIGHT - SPRITE_SIZE });
-  }
-}, []);
+    // --- tambahkan pengecekan posisi terakhir forest (balik dari dungeon) ---
+    const lastForestPos = JSON.parse(localStorage.getItem("lastForestPosition"));
+    if (lastForestPos) {
+      setPosition(lastForestPos);
+      localStorage.removeItem("lastForestPosition");
+      return;
+    }
+
+    // --- cek posisi dari gameplay (main map ke forest) ---
+    const lastPos = JSON.parse(localStorage.getItem("lastGameplayPosition"));
+    if (lastPos) {
+      setPosition({ x: 500, y: MAP_HEIGHT - SPRITE_SIZE });
+    } else {
+      setPosition({ x: 500, y: MAP_HEIGHT - SPRITE_SIZE });
+    }
+  }, []);
+
 
 
   // Time progression
@@ -460,11 +467,13 @@ useEffect(() => {
     }
 
     if (canInteractDungeon) {
-      // Save current game state before navigating to dungeon
+      // Simpan posisi terakhir sebelum ke Dungeon
+      localStorage.setItem("lastForestPosition", JSON.stringify(position));
       saveGameState();
       navigate('/dungeon');
       return;
     }
+
 
     if (atBottom) {
       const saved = JSON.parse(localStorage.getItem("playerData")) || {};
@@ -564,26 +573,84 @@ useEffect(() => {
 
         <div className="status-money">
           <div className="money">Rp {money} 💰</div>
-          <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
-          {inventoryVisible && (
-            <div className="inventory-modal">
-              <div className="inventory-grid">
-                {Array.from({ length: 50 }).map((_, i) => (
-                  <div key={i} className="inventory-slot">
-                    {inventory[i] ? (
-                      <div className="inventory-item">{inventory[i]}</div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-              <button
-                className="close-inventory-btn"
-                onClick={() => setInventoryVisible(false)}
-              >
-                Close
-              </button>
-            </div>
-          )}
+          <button
+                        className="inventory-btn"
+                        onClick={() => setInventoryVisible(true)}
+                      >
+                        <img src={inventoryIcon} alt="Inventory" />
+                      </button>
+                    {inventoryVisible && (
+                      <>
+                        <div
+                          className="modal-overlay"
+                          onClick={() => setInventoryVisible(false)}
+                        />
+                        <div
+                          className="inventory-modal"
+                          onClick={e => {
+                            if (e.target === e.currentTarget) setInventoryVisible(false);
+                          }}
+                        >
+                          <div className="inventory-scroll-area">
+                            <Inventory
+                              inventory={inventory}
+                              onUseItem={itemName => {
+                                const idx = inventory.findIndex(it => it === itemName);
+                                if (idx !== -1) {
+                                  const details = itemDetails[itemName];
+                                  if (details && typeof details.useEffect === "function") {
+                                    setStatus(prev => details.useEffect(prev));
+                                  }
+                                  const newInventory = [...inventory];
+                                  newInventory.splice(idx, 1);
+                                  setInventory(newInventory);
+                                  const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                                  localStorage.setItem(
+                                    "playerData",
+                                    JSON.stringify({
+                                      ...saved,
+                                      inventory: newInventory,
+                                      status: details && typeof details.useEffect === "function" ? details.useEffect(status) : status,
+                                    })
+                                  );
+                                }
+                              }}
+                              onSellItem={itemName => {
+                                const idx = inventory.findIndex(it => it === itemName);
+                                if (idx !== -1) {
+                                  const details = itemDetails[itemName];
+                                  const price = details?.sellGold || 0;
+                                  if (price > 0) {
+                                    setMoney(prev => prev + price);
+                                  } else {
+                                    alert("Item cannot be sold!");
+                                  }
+                                  const newInventory = [...inventory];
+                                  newInventory.splice(idx, 1);
+                                  setInventory(newInventory);
+                                  const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                                  localStorage.setItem(
+                                    "playerData",
+                                    JSON.stringify({
+                                      ...saved,
+                                      inventory: newInventory,
+                                      money: price > 0 ? (saved.money || 0) + price : saved.money,
+                                    })
+                                  );
+                                }
+                              }}
+                            />
+          
+                          </div>
+                          <button
+                            className="close-inventory-btn"
+                            onClick={() => setInventoryVisible(false)}
+                          >
+                            Close
+                          </button>
+                        </div>
+                      </>
+                    )}
         </div>
       </div>
 
@@ -725,9 +792,22 @@ useEffect(() => {
                     document.body.removeChild(fade);
                     setShowChopMinigame(false);
                     setShowChopFinishImage(false);
-                    if (chopResult === "win") {
-                      setInventory(prev => [...prev, "Wood"]);
-                    }
+                      if (chopResult === "win") {
+                        setInventory(prev => {
+                          const newInv = [...prev, "Wood"];
+                          // Ambil semua state, jangan cuma inventory!
+                          const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                          localStorage.setItem("playerData", JSON.stringify({
+                            ...saved,
+                            inventory: newInv,
+                            status,   // tambahkan ini!
+                            money,    // dan ini!
+                            character // dan ini kalau ada!
+                          }));
+                          return newInv;
+                        });
+                      }
+
                   }, 800);
                 }}>OK</button>
               </div>

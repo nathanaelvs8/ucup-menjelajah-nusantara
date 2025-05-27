@@ -120,13 +120,54 @@ html, body {
 }
 
 .inventory-btn {
-  padding: 6px 12px;
-  font-size: 14px;
-  background: #333;
-  color: #fff8c6;
-  border: 1px solid #555;
-  border-radius: 6px;
+  width: 48px;
+  height: 48px;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px #0008;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
+  transition: transform 0.2s, background 0.2s, border 0.2s;
+}
+
+.inventory-btn img {
+  width: 300%;
+  height: 300%;
+  object-fit: contain;
+  border-radius: 8px;
+  filter: drop-shadow(0 0 5px black);
+  display: block;
+}
+
+.inventory-btn:hover {
+  transform: scale(1.05);
+  background: rgba(0,0,0,0.8);
+  border-color: #fbbf24;
+}
+
+.inventory-btn:focus {
+  outline: 2px solid #fbbf24;
+}
+
+.inventory-btn:hover::after {
+  content: "Inventory";
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #f0f0f0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'IM Fell English SC', serif;
+  white-space: nowrap;
+  box-shadow: 0 0 6px black;
+  z-index: 999;
 }
 
 .inventory-modal {
@@ -134,27 +175,47 @@ html, body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 520px;   /* lebih kecil */
-  height: 280px;  /* lebih kecil */
+  width: 520px;  /* boleh atur sesuai keinginan */
+  height: 360px; /* lebih tinggi supaya nyaman scroll */
   background-color: rgba(20, 20, 20, 0.95);
   border: 2px solid #888;
   border-radius: 12px;
   padding: 15px;
-  z-index: 999;
+  z-index: 999; /* Pastikan lebih tinggi dari overlay dan semua elemen lain */
   display: flex;
   flex-direction: column;
   align-items: center;
   box-shadow: 0 0 15px #000;
+  /* Tambahan: biar isi modal tidak keluar */
+  overflow: hidden;
+}
+
+.inventory-scroll-area {
+  flex: 1 1 auto;
+  width: 100%;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  /* biar nggak overflow ke bawah tombol */
 }
 
 .inventory-grid {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  grid-template-rows: repeat(5, 1fr);
-  gap: 4px;
+  grid-template-rows: repeat(10, 1fr);
+  gap: 6px;
   width: 100%;
-  height: 100%;
-  margin-bottom: 10px;
+  height: 400px;   /* atau sesuaikan dengan tinggi modal inventory kamu */
+  background: transparent;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 10, 10, 0.7); /* Bisa diatur opacity */
+  z-index: 998;
+  /* lebih rendah dari .inventory-modal tapi tetap di atas semua konten game */
 }
 
 .inventory-slot {
@@ -164,12 +225,38 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 10px;
-  color: #eee;
+  width: 40px;      /* Boleh atur agar slot square */
+  height: 40px;     /* Boleh sesuaikan */
   user-select: none;
   box-shadow: inset 0 0 5px #000;
-  width: 40px;
-  height: 40px;
+  transition: border 0.15s;
+  cursor: pointer;
+}
+
+.inventory-slot:hover {
+  border: 2px solid #ffeb3b;
+}
+
+.inventory-slot img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  .inventory-grid {
+    height: 300px;
+    gap: 3px;
+  }
+  .inventory-slot {
+    width: 28px;
+    height: 28px;
+  }
+  .inventory-slot img {
+    width: 20px;
+    height: 20px;
+  }
 }
 
 .inventory-item {
@@ -185,6 +272,49 @@ html, body {
   color: black;
   user-select: none;
 }
+
+.inventory-toggle-button {
+  position: fixed;
+  bottom: 88px;     /* sesuaikan supaya tidak tabrakan dengan tombol map */
+  right: 13px;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.6);
+  border: 2px solid white;
+  padding: 6px;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  box-shadow: 0 2px 10px #0008;
+}
+
+.inventory-toggle-button img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  border-radius: 8px;
+  filter: drop-shadow(0 0 5px black);
+}
+
+.inventory-toggle-button:hover {
+  transform: scale(1.05);
+  background: rgba(0,0,0,0.8);
+}
+
+.inventory-toggle-button:hover::after {
+  content: "Inventory (I)";
+  position: absolute;
+  bottom: 110%;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #f0f0f0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'IM Fell English SC', serif;
+  white-space: nowrap;
+  box-shadow: 0 0 6px black;
+}
+
 
 .close-inventory-btn {
   padding: 6px 16px;

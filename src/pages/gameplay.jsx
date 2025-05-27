@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
+import { itemDetails } from "./Inventory.jsx";
 import Inventory from './Inventory.jsx';  // pastikan path benar
+import inventoryIcon from "../assets/ui/Inventory.png"; // pastikan path sudah benar<button
 import mapImage from "../assets/map/Main.jpg";
 import mainMapImage from "../assets/map/MainMap.jpg";
 import mapIcon from "../assets/ui/Map.png";
@@ -18,51 +20,6 @@ const MINUTE_PER_REAL_SECOND = 4; // 1 detik = 4 menit in-game
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 export default function Gameplay() {
-  const itemDetails = {
-  Wood: {
-    description: "Basic material for crafting tools and buildings.",
-    sellGold: 200,
-  },
-  "Special Fish Skin": {
-    description: "Rare fish skin used for crafting high-quality gear.",
-    sellGold: 0,
-  },
-  "Hunger Potion": {
-    description: "Herbal drink that reduces hunger and boosts energy.",
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 100, 100) }),
-  },
-  "Fishing Rod": {
-    description: "Tool for catching fish in rivers, lakes, or sea.",
-  },
-  Pickaxe: {
-    description: "Strong tool for mining stones and minerals.",
-  },
-  Coconut: {
-    description: "Tropical fruit, edible or used for crafting.",
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
-  },
-  // Tambahkan efek untuk ikan-ikan berikut:
-  Goldfish: {
-    description: "Small golden fish, restores 20 meal when consumed.",
-    sellGold: 100,
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
-  },
-  Tuna: {
-    description: "Large nutritious fish, restores 50 meal when consumed.",
-    sellGold: 250,
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 50, 100) }),
-  },
-  Megalodon: {
-    description: "Ancient giant shark, fully restores all stats when consumed.",
-    sellGold: 1000,
-    useEffect: (stat) => ({
-      meal: 100,
-      sleep: 100,
-      happiness: 100,
-      cleanliness: 100,
-    }),
-  },
-};
 
 
   const [character, setCharacter] = useState(null);
@@ -448,194 +405,214 @@ const handleInteract = () => {
 };
 
 
-  return (
-    <div className="viewport">
-       <audio ref={audioRef} src={gameplayAudio} />
-      <div className="time-display">
-        <div className="clock-text">{days[currentDayIndex]}, {formatTime(currentHour, currentMinute)}</div>
+return (
+  <div className="viewport">
+    <audio ref={audioRef} src={gameplayAudio} />
+    <div className="time-display">
+      <div className="clock-text">{days[currentDayIndex]}, {formatTime(currentHour, currentMinute)}</div>
     </div>
-      <div
-        className="map"
-        style={{ backgroundImage: `url(${mapImage})`, left: `${offsetX}px`, top: `${offsetY}px` }}
-      >
-        {character && (
-          <div
-            className="character"
-            style={{
-              left: position.x,
-              top: position.y,
-              backgroundImage: `url(${character.sprite})`,
-              backgroundPosition: getSpriteOffset(),
-            }}
-          ></div>
-        )}
-        <div className="house-zone"></div>
-        <div className="lake-zone"></div>
-        <div className="mountain-zone part-1"></div>
-        <div className="mountain-zone part-2"></div>
-        <div className="mountain-zone part-3"></div>
-        <div className="beach-zone part-a"></div>
-        <div className="beach-zone part-b"></div>
-        <div className="beach-zone part-c"></div>
-        <div className="beach-zone part-d"></div>
-        <div className="beach-zone part-e"></div>
-        <div className="beach-zone part-f"></div>
-        <div className="river-zone part-a"></div>
-        <div className="river-zone part-b"></div>
-        <div className="river-zone part-c"></div>
-        <div className="river-zone part-d"></div>
-        <div className="river-zone part-e"></div>
-        <div className="river-zone part-f"></div>
-        <div className="river-zone part-g"></div>
-        <div className="river-zone part-h"></div>
-        <div className="river-zone part-i"></div>
-        <div className="river-zone part-j"></div>
-        <div className="river-zone part-k"></div>
-        <div className="river-zone part-l"></div>
-        <div className="river-zone part-m"></div>
-        <div className="river-zone part-n"></div>
-        <div className="river-zone part-o"></div>
-        <div className="market-zone"></div>
-        <div className="forest-zone"></div>
+    <div
+      className="map"
+      style={{ backgroundImage: `url(${mapImage})`, left: `${offsetX}px`, top: `${offsetY}px` }}
+    >
+      {character && (
+        <div
+          className="character"
+          style={{
+            left: position.x,
+            top: position.y,
+            backgroundImage: `url(${character.sprite})`,
+            backgroundPosition: getSpriteOffset(),
+          }}
+        ></div>
+      )}
+      <div className="house-zone"></div>
+      <div className="lake-zone"></div>
+      <div className="mountain-zone part-1"></div>
+      <div className="mountain-zone part-2"></div>
+      <div className="mountain-zone part-3"></div>
+      <div className="beach-zone part-a"></div>
+      <div className="beach-zone part-b"></div>
+      <div className="beach-zone part-c"></div>
+      <div className="beach-zone part-d"></div>
+      <div className="beach-zone part-e"></div>
+      <div className="beach-zone part-f"></div>
+      <div className="river-zone part-a"></div>
+      <div className="river-zone part-b"></div>
+      <div className="river-zone part-c"></div>
+      <div className="river-zone part-d"></div>
+      <div className="river-zone part-e"></div>
+      <div className="river-zone part-f"></div>
+      <div className="river-zone part-g"></div>
+      <div className="river-zone part-h"></div>
+      <div className="river-zone part-i"></div>
+      <div className="river-zone part-j"></div>
+      <div className="river-zone part-k"></div>
+      <div className="river-zone part-l"></div>
+      <div className="river-zone part-m"></div>
+      <div className="river-zone part-n"></div>
+      <div className="river-zone part-o"></div>
+      <div className="market-zone"></div>
+      <div className="forest-zone"></div>
+    </div>
 
+    <div className="status-ui">
+      <div className="status-left">
+        <div className="greeting-ui">
+          {getGreeting()}, {username}
+        </div>
+        <div className="status-bars">
+          <div className="status-item">🍗<div className="bar"><div style={{ width: `${status.meal}%` }}></div></div></div>
+          <div className="status-item">😴<div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div></div>
+          <div className="status-item">😊<div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div></div>
+          <div className="status-item">🛁<div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div></div>
+        </div>
       </div>
 
-      <div className="status-ui">
-        <div className="status-left">
-          <div className="greeting-ui">
-            {getGreeting()}, {username}
-          </div>
-          <div className="status-bars">
-            <div className="status-item">🍗<div className="bar"><div style={{ width: `${status.meal}%` }}></div></div></div>
-            <div className="status-item">😴<div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div></div>
-            <div className="status-item">😊<div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div></div>
-            <div className="status-item">🛁<div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div></div>
-          </div>
-        </div>
+      <div className="status-money">
+        <div className="money">{money} 💰</div>
+        <button
+          className="inventory-btn"
+          onClick={() => setInventoryVisible(true)}
+        >
+          <img src={inventoryIcon} alt="Inventory" />
+        </button>
+      </div>
 
-        <div className="status-money">
-          <div className="money">Rp {money} 💰</div>
-          <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
+    </div>
 
-          {/* Modal Inventory menggunakan komponen Inventory yang sudah ada */}
-          {inventoryVisible && (
-          <div 
-            className="inventory-modal" 
-            onClick={(e) => {
-              if (e.target === e.currentTarget) {
-                setInventoryVisible(false);
-              }
-            }}
-          >
-            <div style={{ 
-              background: 'transparent', // Hapus background
-              padding: '20px', 
-              maxWidth: '600px',
-              width: '90%'
-            }}>
-              <Inventory 
+    {/* Inventory Modal DAN Overlay - TAMPIL kalau inventoryVisible */}
+    {inventoryVisible && (
+      <>
+        <div
+          className="modal-overlay"
+          onClick={() => setInventoryVisible(false)}
+        />
+        <div
+          className="inventory-modal"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setInventoryVisible(false);
+            }
+          }}
+        >
+          <div style={{
+            background: 'transparent',
+            padding: '20px',
+            maxWidth: '600px',
+            width: '90%',
+            height: '320px',
+            display: 'flex',
+            flexDirection: 'column',
+          }}>
+            <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto' }}>
+              <Inventory
                 inventory={inventory}
                 onUseItem={handleUseItem}
                 onSellItem={handleSellItem}
               />
-              <button 
-                className="close-inventory-btn" 
-                onClick={() => setInventoryVisible(false)}
-                style={{ 
-                  marginTop: '15px', 
-                  width: '100%',
-                  background: '#333',
-                  color: 'white',
-                  border: 'none',
-                  padding: '10px',
-                  borderRadius: '8px',
-                  cursor: 'pointer'
-                }}
-              >
-                Close Inventory
-              </button>
             </div>
-          </div>
-        )}
-        </div>
-      </div>
-
-
-      <div className="analog-controls">
-      <button className="arrow up"
-        onMouseDown={() => handleAnalog("arrowup", true)}
-        onMouseUp={() => handleAnalog("arrowup", false)}
-        onTouchStart={() => handleAnalog("arrowup", true)}
-        onTouchEnd={() => handleAnalog("arrowup", false)}
-      >
-        <img src={arrowUp} alt="Up" className="arrow-img" />
-      </button>
-
-      <div className="horizontal">
-        <button className="arrow left"
-          onMouseDown={() => handleAnalog("arrowleft", true)}
-          onMouseUp={() => handleAnalog("arrowleft", false)}
-          onTouchStart={() => handleAnalog("arrowleft", true)}
-          onTouchEnd={() => handleAnalog("arrowleft", false)}
-        >
-          <img src={arrowLeft} alt="Left" className="arrow-img" />
-        </button>
-
-        <button className="arrow right"
-          onMouseDown={() => handleAnalog("arrowright", true)}
-          onMouseUp={() => handleAnalog("arrowright", false)}
-          onTouchStart={() => handleAnalog("arrowright", true)}
-          onTouchEnd={() => handleAnalog("arrowright", false)}
-        >
-          <img src={arrowRight} alt="Right" className="arrow-img" />
-        </button>
-      </div>
-
-      <button className="arrow down"
-        onMouseDown={() => handleAnalog("arrowdown", true)}
-        onMouseUp={() => handleAnalog("arrowdown", false)}
-        onTouchStart={() => handleAnalog("arrowdown", true)}
-        onTouchEnd={() => handleAnalog("arrowdown", false)}
-      >
-        <img src={arrowDown} alt="Down" className="arrow-img" />
-      </button>
-    </div>
-
-
-      <div className="event-panel">
-        <p className="event-text">
-          {inHouseZone
-            ? "🏠 Press Interact to enter the house"
-            : nearLakeZone
-            ? "🌊 Press Interact to fish"
-            : nearBeachZone
-            ? "🏖️ Press Interact to go to the beach"
-            : inMarketZone
-            ? "🛒 Press Interact to enter the market"
-            : nearForestZone
-            ? "🌲 Press Interact to enter the forest"
-            : "📍 Event info will appear here..."}
-        </p>
-        <button className="event-button" onClick={handleInteract}>Interact</button>
-      </div>
-
-      <button className="map-toggle-button" onClick={() => setShowMainMap(true)}>
-        <img src={mapIcon} alt="Map" />
-      </button>
-
-      {showMainMap && (
-        <div className="main-map-overlay">
-          <button className="close-map-button" onClick={() => setShowMainMap(false)}>✕</button>
-          <div className="main-map-container">
-            <img ref={mainMapRef} src={mainMapImage} alt="Main Map" className="main-map-img" />
-            {character && (
-              <div className="main-map-player-dot" style={getMainMapCharPosition()}>
-                <img src={character.face} alt="Player" />
-              </div>
-            )}
+            <button
+              className="close-inventory-btn"
+              onClick={() => setInventoryVisible(false)}
+              style={{
+                marginTop: '15px',
+                width: '100%',
+                background: '#333',
+                color: 'white',
+                border: 'none',
+                padding: '10px',
+                borderRadius: '8px',
+                cursor: 'pointer'
+              }}
+            >
+              Close Inventory
+            </button>
           </div>
         </div>
-      )}
-    </div>
-  );
+      </>
+    )}
+
+    {/* Semua UI bawah, panel event, analog, map, dsb HANYA tampil kalau inventory tidak terbuka */}
+    {!inventoryVisible && (
+      <>
+        <div className="analog-controls">
+          <button className="arrow up"
+            onMouseDown={() => handleAnalog("arrowup", true)}
+            onMouseUp={() => handleAnalog("arrowup", false)}
+            onTouchStart={() => handleAnalog("arrowup", true)}
+            onTouchEnd={() => handleAnalog("arrowup", false)}
+          >
+            <img src={arrowUp} alt="Up" className="arrow-img" />
+          </button>
+
+          <div className="horizontal">
+            <button className="arrow left"
+              onMouseDown={() => handleAnalog("arrowleft", true)}
+              onMouseUp={() => handleAnalog("arrowleft", false)}
+              onTouchStart={() => handleAnalog("arrowleft", true)}
+              onTouchEnd={() => handleAnalog("arrowleft", false)}
+            >
+              <img src={arrowLeft} alt="Left" className="arrow-img" />
+            </button>
+
+            <button className="arrow right"
+              onMouseDown={() => handleAnalog("arrowright", true)}
+              onMouseUp={() => handleAnalog("arrowright", false)}
+              onTouchStart={() => handleAnalog("arrowright", true)}
+              onTouchEnd={() => handleAnalog("arrowright", false)}
+            >
+              <img src={arrowRight} alt="Right" className="arrow-img" />
+            </button>
+          </div>
+
+          <button className="arrow down"
+            onMouseDown={() => handleAnalog("arrowdown", true)}
+            onMouseUp={() => handleAnalog("arrowdown", false)}
+            onTouchStart={() => handleAnalog("arrowdown", true)}
+            onTouchEnd={() => handleAnalog("arrowdown", false)}
+          >
+            <img src={arrowDown} alt="Down" className="arrow-img" />
+          </button>
+        </div>
+
+        <div className="event-panel">
+          <p className="event-text">
+            {inHouseZone
+              ? "🏠 Press Interact to enter the house"
+              : nearLakeZone
+              ? "🌊 Press Interact to fish"
+              : nearBeachZone
+              ? "🏖️ Press Interact to go to the beach"
+              : inMarketZone
+              ? "🛒 Press Interact to enter the market"
+              : nearForestZone
+              ? "🌲 Press Interact to enter the forest"
+              : "📍 Event info will appear here..."}
+          </p>
+          <button className="event-button" onClick={handleInteract}>Interact</button>
+        </div>
+
+        <button className="map-toggle-button" onClick={() => setShowMainMap(true)}>
+          <img src={mapIcon} alt="Map" />
+        </button>
+      </>
+    )}
+
+    {/* Overlay map tetap di luar kondisi */}
+    {showMainMap && (
+      <div className="main-map-overlay">
+        <button className="close-map-button" onClick={() => setShowMainMap(false)}>✕</button>
+        <div className="main-map-container">
+          <img ref={mainMapRef} src={mainMapImage} alt="Main Map" className="main-map-img" />
+          {character && (
+            <div className="main-map-player-dot" style={getMainMapCharPosition()}>
+              <img src={character.face} alt="Player" />
+            </div>
+          )}
+        </div>
+      </div>
+    )}
+  </div>
+)
 }

@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import alatPancing from "../assets/images/alatpancing.png";
 import kailPancing from "../assets/images/kail.png";
 import "./Fishing.css";
+import { itemDetails } from "./Inventory.jsx";
+import inventoryIcon from "../assets/ui/Inventory.png";
+import Inventory from './Inventory.jsx'; 
 import { useNavigate } from "react-router-dom";
 
 export default function Fishing() {
@@ -296,20 +299,58 @@ setKailTop(`${depth}px`);
           <div className="money">🎣 Fishing Mode - Stage: {stage}</div>
           <button
             className="inventory-btn"
-            onClick={() => setInventoryVisible((prev) => !prev)}
+            onClick={() => setInventoryVisible(true)}
           >
-            Inventory
+            <img src={inventoryIcon} alt="Inventory" />
           </button>
           {inventoryVisible && (
             <div className="inventory-modal">
-              <div className="inventory-grid">
-                {Array.from({ length: 50 }).map((_, i) => (
-                  <div key={i} className="inventory-slot">
-                    {inventory[i] ? (
-                      <div className="inventory-item">{inventory[i]}</div>
-                    ) : null}
-                  </div>
-                ))}
+              <div className="inventory-scroll-area">
+                <Inventory
+                  inventory={inventory}
+                  onUseItem={itemName => {
+                    const idx = inventory.findIndex(it => it === itemName);
+                    if (idx !== -1) {
+                      const details = itemDetails[itemName];
+                      // Jalankan efek kalau ada
+                      if (details && typeof details.useEffect === "function") {
+                        setStatus(prev => details.useEffect(prev));
+                      }
+                      const newInventory = [...inventory];
+                      newInventory.splice(idx, 1);
+                      setInventory(newInventory);
+
+                      // sync ke localStorage juga status
+                      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                      localStorage.setItem(
+                        "playerData",
+                        JSON.stringify({ ...saved, inventory: newInventory, status: details && typeof details.useEffect === "function" ? details.useEffect(status) : status })
+                      );
+                    }
+                  }}
+                  onSellItem={itemName => {
+                    const idx = inventory.findIndex(it => it === itemName);
+                    if (idx !== -1) {
+                      const details = itemDetails[itemName];
+                      const price = details?.sellGold || 0;
+                      if (price > 0) {
+                        setMoney(prev => prev + price);
+                      } else {
+                        alert("Item cannot be sold!");
+                      }
+                      const newInventory = [...inventory];
+                      newInventory.splice(idx, 1);
+                      setInventory(newInventory);
+                      // sync ke localStorage juga money
+                      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                      localStorage.setItem(
+                        "playerData",
+                        JSON.stringify({ ...saved, inventory: newInventory, money: price > 0 ? (saved.money || 0) + price : saved.money })
+                      );
+                    }
+                  }}
+                />
+
               </div>
               <button
                 className="close-inventory-btn"
@@ -319,6 +360,7 @@ setKailTop(`${depth}px`);
               </button>
             </div>
           )}
+
         </div>
 
         {stage === 1 && (

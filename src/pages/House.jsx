@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
 import "./House.css";
+import { itemDetails } from "./Inventory.jsx";
+import Inventory from "./Inventory.jsx";
+import inventoryIcon from "../assets/ui/Inventory.png";
 import homeMap from "../assets/map/Home.jpg";
 import blanket from "../assets/ui/blanket.png";
 import mandiVideo from "../assets/animation/Mandi.mp4";
@@ -13,10 +16,10 @@ import arrowUp from "../assets/ui/ArrowUP.png";
 import arrowDown from "../assets/ui/ArrowDOWN.png";
 import arrowLeft from "../assets/ui/ArrowLEFT.png";
 import arrowRight from "../assets/ui/ArrowRIGHT.png";
-import hungryIcon from "../assets/inventory-items/Hunger.png";
-import sleepIcon from "../assets/inventory-items/Sleep.png";
-import happyIcon from "../assets/inventory-items/Happiness.png";
-import cleanIcon from "../assets/inventory-items/Cleanliness.png";
+import hungryIcon from "../assets/ui/Hunger.png";
+import sleepIcon from "../assets/ui/Sleep.png";
+import happyIcon from "../assets/ui/Happiness.png";
+import cleanIcon from "../assets/ui/Cleanliness.png";
 import coinGif from "../assets/ui/MoneyMoney.gif";
 
 
@@ -685,26 +688,81 @@ useEffect(() => {
             {money}
             <img src={coinGif} alt="Gold" className="coin-icon" />
           </div>
-          <button className="inventory-btn" onClick={() => setInventoryVisible(prev => !prev)}>Inventory</button>
+            <button
+              className="inventory-btn"
+              onClick={() => setInventoryVisible(true)}
+            >
+              <img src={inventoryIcon} alt="Inventory" />
+            </button>
           {inventoryVisible && (
-            <div className="inventory-modal">
-              <div className="inventory-grid">
-                {Array.from({ length: 50 }).map((_, i) => (
-                  <div key={i} className="inventory-slot">
-                    {inventory[i] ? (
-                      <div className="inventory-item">{inventory[i]}</div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-              <button
-                className="close-inventory-btn"
+            <>
+              <div
+                className="modal-overlay"
                 onClick={() => setInventoryVisible(false)}
+              />
+              <div
+                className="inventory-modal"
+                onClick={e => {
+                  if (e.target === e.currentTarget) setInventoryVisible(false);
+                }}
               >
-                Close
-              </button>
-            </div>
+                <div className="inventory-scroll-area">
+                  <Inventory
+                    inventory={inventory}
+                    onUseItem={itemName => {
+                      const idx = inventory.findIndex(it => it === itemName);
+                      if (idx !== -1) {
+                        // Jalankan efek dari itemDetails jika ada
+                        const details = itemDetails[itemName];
+                        if (details && typeof details.useEffect === "function") {
+                          setStatus(prev => details.useEffect(prev));
+                        }
+                        const newInventory = [...inventory];
+                        newInventory.splice(idx, 1);
+                        setInventory(newInventory);
+
+                        // sync ke localStorage juga status
+                        const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                        localStorage.setItem(
+                          "playerData",
+                          JSON.stringify({ ...saved, inventory: newInventory, status: details && typeof details.useEffect === "function" ? details.useEffect(status) : status })
+                        );
+                      }
+                    }}
+                    onSellItem={itemName => {
+                      const idx = inventory.findIndex(it => it === itemName);
+                      if (idx !== -1) {
+                        const details = itemDetails[itemName];
+                        const price = details?.sellGold || 0;
+                        if (price > 0) {
+                          setMoney(prev => prev + price);
+                        } else {
+                          alert("Item cannot be sold!");
+                        }
+                        const newInventory = [...inventory];
+                        newInventory.splice(idx, 1);
+                        setInventory(newInventory);
+                        // sync ke localStorage juga money
+                        const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                        localStorage.setItem(
+                          "playerData",
+                          JSON.stringify({ ...saved, inventory: newInventory, money: price > 0 ? (saved.money || 0) + price : saved.money })
+                        );
+                      }
+                    }}
+                  />
+
+                </div>
+                <button
+                  className="close-inventory-btn"
+                  onClick={() => setInventoryVisible(false)}
+                >
+                  Close
+                </button>
+              </div>
+            </>
           )}
+
         </div>
       </div>
 
@@ -799,17 +857,29 @@ useEffect(() => {
         }}>×</button>
 
       <p>💧 Wastafel - Mau ngapain?</p>
-     <button onClick={() => {
-  setStatus(prev => ({ ...prev, meal: Math.min(prev.meal + 10, 100) }));
-}}>Minum langsung (+10 Meal)</button>
+    <button onClick={() => {
+      setStatus(prev => ({ ...prev, meal: Math.min(prev.meal + 10, 100) }));
+    }}>Minum langsung (+10 Meal)</button>
 
-<button onClick={() => {
-
-  setInventory(prev => [...prev, "Air"]);
-setShowNotification(true);
-setTimeout(() => setShowNotification(false), 2000);
-
-}}>Dapatkan Air (tambah inventory)</button>
+  <button onClick={() => {
+    setInventory(prev => {
+      const newInv = [...prev, "Water"];
+      // Sinkronkan ke localStorage biar scene lain (gameplay) kebaca!
+      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+      localStorage.setItem("playerData", JSON.stringify({
+        ...saved,
+        inventory: newInv,
+        status,
+        money,
+        character
+      }));
+      return newInv;
+    });
+    setShowNotification(true);
+    setTimeout(() => setShowNotification(false), 2000);
+  }}>
+    Dapatkan Air (tambah inventory)
+  </button>
 
 
 
