@@ -170,6 +170,82 @@ html, body {
   z-index: 999;
 }
 
+.craft-btn:hover::after {
+  content: "Craft";
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #f0f0f0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'IM Fell English SC', serif;
+  white-space: nowrap;
+  box-shadow: 0 0 6px black;
+  z-index: 999;
+}
+
+.craft-item-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin-right: 2px;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Tooltip saat hover item crafting */
+.craft-item-img:hover::after {
+  content: attr(data-name);
+  position: absolute;
+  left: 50%;
+  bottom: 120%;
+  transform: translateX(-50%);
+  background: rgba(20, 20, 20, 0.98);
+  color: #ffe66a;
+  padding: 5px 12px;
+  border-radius: 7px;
+  font-size: 14px;
+  font-family: 'IM Fell English SC', serif;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px #000b;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.craft-item-tooltip {
+  position: relative;
+  display: inline-block;
+}
+.craft-tooltip-text {
+  visibility: hidden;
+  opacity: 0;
+  width: max-content;
+  background: rgba(20,20,20,0.98);
+  color: #ffe66a;
+  text-align: center;
+  border-radius: 7px;
+  padding: 5px 12px;
+  position: absolute;
+  z-index: 1000;
+  left: 50%;
+  bottom: 125%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-family: 'IM Fell English SC', serif;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px #000b;
+  transition: opacity 0.12s;
+  pointer-events: none;
+}
+.craft-item-tooltip:hover .craft-tooltip-text {
+  visibility: visible;
+  opacity: 1;
+}
+
 .inventory-modal {
   position: fixed;
   top: 50%;

@@ -1,8 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
+import craftingRecipes from "./craftingRecipes";
+import { itemIcons } from "./Inventory.jsx";
 import { itemDetails } from "./Inventory.jsx";
 import Inventory from './Inventory.jsx';  // pastikan path benar
 import inventoryIcon from "../assets/ui/Inventory.png"; // pastikan path sudah benar<button
+import CraftIcon from "../assets/ui/Craft.png";
 import mapImage from "../assets/map/Main.jpg";
 import mainMapImage from "../assets/map/MainMap.jpg";
 import mapIcon from "../assets/ui/Map.png";
@@ -57,6 +60,10 @@ export default function Gameplay() {
   const [currentHour, setCurrentHour] = useState(9); // 0 - 23
   const [currentDayIndex, setCurrentDayIndex] = useState(0); // Monday
   const [username, setUsername] = useState(localStorage.getItem("playerName") || "Player");
+
+  const [showCraftModal, setShowCraftModal] = useState(false);
+const [craftingItem, setCraftingItem] = useState(null); // optional untuk animasi loading/craft
+
 
     const audioRef = useRef(null);
 
@@ -477,6 +484,13 @@ return (
         >
           <img src={inventoryIcon} alt="Inventory" />
         </button>
+        <button
+          className="inventory-btn craft-btn"
+          style={{ marginTop: 8 }}
+          onClick={() => setShowCraftModal(true)}
+        >
+          <img src={CraftIcon} alt="Craft" />
+        </button>
       </div>
 
     </div>
@@ -532,6 +546,121 @@ return (
         </div>
       </>
     )}
+
+    {showCraftModal && (
+      <div className="modal-overlay" onClick={() => setShowCraftModal(false)}>
+        <div
+          className="inventory-modal"
+          style={{ zIndex: 1100, minHeight: 350, maxHeight: 600, overflowY: 'auto', position: "relative" }}
+          onClick={e => e.stopPropagation()}
+        >
+          <div style={{ fontWeight: "bold", fontSize: 20, marginBottom: 16, color: "#ffe66a" }}>
+            Crafting
+          </div>
+          {craftingRecipes.map(recipe => {
+            // Hitung bahan
+            const materialCounts = recipe.materials.reduce((obj, mat) => {
+              obj[mat] = (obj[mat] || 0) + 1;
+              return obj;
+            }, {});
+            const hasResult = inventory.includes(recipe.result);
+            const enough = Object.entries(materialCounts).every(([mat, qty]) =>
+              inventory.filter(x => x === mat).length >= qty
+            ) && (!recipe.gold || money >= recipe.gold);
+
+            return (
+              <div
+                key={recipe.result}
+                style={{
+                  display: "flex", alignItems: "center", gap: 18,
+                  background: "#181818", borderRadius: 9, padding: "9px 14px", marginBottom: 12
+                }}
+              >
+                <span className="craft-item-tooltip">
+                  <img src={itemIcons[recipe.result]} alt={recipe.result} style={{ width: 38, height: 38 }} />
+                  <span className="craft-tooltip-text">{recipe.result}</span>
+                </span>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: "bold", color: "#ffe66a", fontSize: 16 }}>{recipe.result}</div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 2 }}>
+                    {Object.entries(materialCounts).map(([mat, qty]) => (
+                      <span key={mat} style={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        {itemIcons[mat]
+                          ? (
+                              <span className="craft-item-tooltip">
+                                <img
+                                  src={itemIcons[mat]}
+                                  alt={mat}
+                                  className="craft-item-img"
+                                />
+                                <span className="craft-tooltip-text">{mat}</span>
+                              </span>
+                            )
+                          : mat}
+
+                        <span style={{ fontSize: 13 }}>x{qty}</span>
+                      </span>
+                    ))}
+                    {recipe.gold && (
+                      <span style={{ color: "#ffd700", fontSize: 14, marginLeft: 6 }}>
+                        💰 {recipe.gold}
+                      </span>
+                    )}
+                  </div>
+                  {hasResult && <div style={{ color: "#f87171", fontSize: 13 }}>Only 1 allowed in inventory</div>}
+                </div>
+                <button
+                  style={{
+                    padding: "7px 13px",
+                    fontSize: "15px",
+                    background: enough && !hasResult ? "#3b82f6" : "#888",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 6,
+                    cursor: enough && !hasResult ? "pointer" : "not-allowed"
+                  }}
+                  disabled={!enough || hasResult}
+                  onClick={() => {
+                    // Remove bahan dari inventory
+                    let newInv = [...inventory];
+                    Object.entries(materialCounts).forEach(([mat, qty]) => {
+                      for (let i = 0; i < qty; i++) {
+                        const idx = newInv.indexOf(mat);
+                        if (idx !== -1) newInv.splice(idx, 1);
+                      }
+                    });
+                    let newMoney = money;
+                    if (recipe.gold) newMoney -= recipe.gold;
+                    newInv.push(recipe.result);
+                    setInventory(newInv);
+                    setMoney(newMoney);
+                    // Simpan ke localStorage
+                    const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                    localStorage.setItem("playerData",
+                      JSON.stringify({
+                        ...saved,
+                        inventory: newInv,
+                        money: newMoney
+                      })
+                    );
+                  }}
+                >
+                  Craft
+                </button>
+              </div>
+            );
+          })}
+          <button
+            className="close-inventory-btn"
+            onClick={() => setShowCraftModal(false)}
+            style={{ marginTop: 8 }}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    )}
+
 
     {/* Semua UI bawah, panel event, analog, map, dsb HANYA tampil kalau inventory tidak terbuka */}
     {!inventoryVisible && (

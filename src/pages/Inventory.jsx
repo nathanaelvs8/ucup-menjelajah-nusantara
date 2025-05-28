@@ -47,7 +47,7 @@ export const itemIcons = {
   "Ripped Cloth": RippedClothIcon,
   "Rod": RodIcon,
   "Rope": RopeIcon,
-  "Rust Metal": RustMetalIcon,
+  "Rusty Iron": RustMetalIcon,
   "Torch": TorchIcon,
   "Tuna": TunaIcon,
   "Water": WaterIcon,
@@ -82,13 +82,16 @@ export const itemDetails = {
   },
   "Goldfish": { 
     description: "Small golden fish, restores 20 meal when consumed.", 
-    sellGold: 100, useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }) 
+    sellGold: 100, 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }) 
   },
   "Juice Coconut": { 
-    description: "Coconut juice. Refreshing and tasty.", sellGold: 60, useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 15, 100) }) 
+    description: "Coconut juice. Refreshing and tasty.", sellGold: 60, 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 15, 100) }) 
   },
   "Juice Wild Fruit": { 
-    description: "Juice from wild fruit. Somewhat healthy.", sellGold: 60, useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 12, 100) }) 
+    description: "Juice from wild fruit. Somewhat healthy.", sellGold: 60, 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 12, 100) }) 
   },
   "Megalodon": { 
     description: "Ancient giant shark, fully restores all stats when consumed.", sellGold: 1000, useEffect: (stat) => ({ meal: 100, sleep: 100, happiness: 100, cleanliness: 100 }) 
@@ -119,7 +122,7 @@ export const itemDetails = {
     description: "Strong rope. Useful for various purposes.", 
     sellGold: 40 
   },
-  "Rust Metal": { 
+  "Rusty Iron": { 
     description: "Old rusty metal. Maybe can be recycled.", 
     sellGold: 40 
   },

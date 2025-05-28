@@ -23,6 +23,8 @@ import sleepIcon from "../assets/ui/Sleep.png";
 import happyIcon from "../assets/ui/Happiness.png";
 import cleanIcon from "../assets/ui/Cleanliness.png";
 import coinGif from "../assets/ui/MoneyMoney.gif";
+import rustyIronIcon from "../assets/inventory-items/RustMetal.png";
+
 
 import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
 
@@ -70,6 +72,7 @@ export default function Beach() {
   const [targetX, setTargetX] = useState(() => Math.random() * 80 + 10); // posisi target acak di tengah
   const [isPointerFrozen, setIsPointerFrozen] = useState(false);
   const [pickaxeSwinging, setPickaxeSwinging] = useState(false);
+  const [showRustyResult, setShowRustyResult] = useState(false);
 
   const [glassPos, setGlassPos] = useState(null);
   const [nearGlass, setNearGlass] = useState(false);
@@ -208,9 +211,16 @@ export default function Beach() {
         setInRockZone(rockStatus);
         
         if (glassPos) {
-          const near = Math.abs(glassPos.x - newPos.x) < 40 && Math.abs(glassPos.y - newPos.y) < 40;
+          // Titik tengah karakter dan ancient glass
+          const charCenterX = newPos.x + SPRITE_SIZE / 2;
+          const charCenterY = newPos.y + SPRITE_SIZE / 2;
+          const glassCenterX = glassPos.x + 20;
+          const glassCenterY = glassPos.y + 20;
+          // Lebarkan area deteksi (dari 40 → 60)
+          const near = Math.abs(glassCenterX - charCenterX) < 60 && Math.abs(glassCenterY - charCenterY) < 60;
           setNearGlass(near);
         }
+
 
         if (isInWater(newPos.x, newPos.y)) return prev;
         if (rockStatus) return prev;
@@ -230,10 +240,6 @@ export default function Beach() {
           newPos.y >= 240 && newPos.y <= 380
         );
 
-        if (glassPos) {
-          const near = Math.abs(glassPos.x - newPos.x) < 40 && Math.abs(glassPos.y - newPos.y) < 40;
-          setNearGlass(near);
-        }
 
 
         return newPos;
@@ -314,10 +320,11 @@ useEffect(() => {
         setTimeout(() => {
           setShowRockMinigame(false);
           setInventory(prev => [...prev, "Rusty Iron"]);
+          setShowRustyResult(true); // Tampilkan banner!
           setGameStage(1);
           setPointerX(0);
           setTargetX(Math.random() * 80 + 10);
-          setFadeOverlay(false); // reset overlay
+          setFadeOverlay(false);
           setLevelCleared(false);
         }, 1000); // ⬅️ waktu fade hitam sebelum balik
       }, 2000); // ⬅️ waktu tampil frame 4
@@ -327,13 +334,27 @@ useEffect(() => {
 
   useEffect(() => {
     const hasGlass = inventory.includes("Ancient Glass");
-    if (!hasGlass) {
+    if (!glassPos && !inventory.includes("Ancient Glass")) {
       setGlassPos(generateGlassPos());
     }
-  }, [inventory]);
+  }, [glassPos, inventory]);
+
+  useEffect(() => {
+    if (glassPos && position) {
+      const charCenterX = position.x + SPRITE_SIZE / 2;
+      const charCenterY = position.y + SPRITE_SIZE / 2;
+      const glassCenterX = glassPos.x + 20;
+      const glassCenterY = glassPos.y + 20;
+      const near = Math.abs(glassCenterX - charCenterX) < 60 && Math.abs(glassCenterY - charCenterY) < 60;
+      setNearGlass(near);
+    } else {
+      setNearGlass(false);
+    }
+  }, [glassPos, position]);
 
 
-  const getEventText = () => {
+
+    const getEventText = () => {
     if (nearGlass) return "🍶 Press Interact to collect Ancient Glass";
     if (inSunbatheZone) return "🌞 Press Interact to sunbathe";
     if (inCoconutZone) return "🥥 Press Interact to shake the coconut tree";
@@ -476,6 +497,21 @@ useEffect(() => {
         </div>
       )}
 
+      {showRustyResult && (
+        <div className="coconut-overlay result">
+          <div
+            className="obtained-banner"
+            style={{ backgroundImage: `url(${scrollBanner})` }}
+          >
+            <div className="obtained-text">You have obtained</div>
+            <img src={rustyIronIcon} alt="Rusty Iron" className="coconut-icon" />
+            <div className="item-name">Rusty Iron</div>
+            <button className="ok-button" onClick={() => setShowRustyResult(false)}>OK</button>
+          </div>
+        </div>
+      )}
+
+
       {showGlassResult && (
         <div className="coconut-overlay result">
           <div
@@ -499,18 +535,18 @@ useEffect(() => {
               setShowCoconutVideo(false);
               setShowCoconutResult(true);
               setInventory(prev => {
-              const updated = [...prev, "Rusty Iron"];
-              localStorage.setItem("playerData", JSON.stringify({
-                status,
-                money,
-                inventory: updated,
-                character,
-                position
-              }));
-              return updated;
-            });
+                const updated = [...prev, "Coconut"];
+                localStorage.setItem("playerData", JSON.stringify({
+                  status,
+                  money,
+                  inventory: updated,
+                  character,
+                  position
+                }));
+    return updated;
+  });
+}}
 
-            }}
             className="coconut-video"
           />
         </div>
@@ -681,6 +717,10 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
         </div>
 
         <div className="status-money">
+            <div className="money">
+                    {money}
+                    <img src={coinGif} alt="Gold" className="coin-icon" />
+                  </div>
             <button
               className="inventory-btn"
               onClick={() => setInventoryVisible(true)}
