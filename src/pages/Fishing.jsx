@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import alatPancing from "../assets/images/alatpancing.png";
 import kailPancing from "../assets/images/kail.png";
 import "./Fishing.css";
+import { getGreeting } from "./utils";
 import { itemDetails } from "./Inventory.jsx";
 import inventoryIcon from "../assets/ui/Inventory.png";
 import Inventory from './Inventory.jsx'; 

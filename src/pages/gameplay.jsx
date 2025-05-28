@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
+import { getGreeting } from "./utils";
 import craftingRecipes from "./craftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import { itemDetails } from "./Inventory.jsx";
@@ -14,13 +15,32 @@ import arrowDown from "../assets/ui/ArrowDOWN.png";
 import arrowLeft from "../assets/ui/ArrowLEFT.png";
 import arrowRight from "../assets/ui/ArrowRight.png";
 import gameplayAudio from "../assets/audio/gameplayaudio.mp3";
-
+import hungryIcon from "../assets/ui/Hunger.png";
+import sleepIcon from "../assets/ui/Sleep.png";
+import happyIcon from "../assets/ui/Happiness.png";
+import cleanIcon from "../assets/ui/Cleanliness.png";
+import EncyclopediaIcon from "../assets/ui/Encyclopedia.png";
 
 const MAP_WIDTH = 4616;
 const MAP_HEIGHT = 3464;
 const SPRITE_SIZE = 64;
 const MINUTE_PER_REAL_SECOND = 4; // 1 detik = 4 menit in-game
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+
+
+// Helper untuk discovered items
+function getDiscoveredItems() {
+  return JSON.parse(localStorage.getItem("discoveredItems") || "[]");
+}
+
+function addDiscoveredItem(item) {
+  const items = getDiscoveredItems();
+  if (!items.includes(item)) {
+    const updated = [...items, item];
+    localStorage.setItem("discoveredItems", JSON.stringify(updated));
+  }
+}
 
 export default function Gameplay() {
 
@@ -62,10 +82,30 @@ export default function Gameplay() {
   const [username, setUsername] = useState(localStorage.getItem("playerName") || "Player");
 
   const [showCraftModal, setShowCraftModal] = useState(false);
-const [craftingItem, setCraftingItem] = useState(null); // optional untuk animasi loading/craft
+  const [craftingItem, setCraftingItem] = useState(null); // optional untuk animasi loading/craft
+
+  const [showEncyclopedia, setShowEncyclopedia] = useState(false);
+  const [encyclopediaSelected, setEncyclopediaSelected] = useState(null);
+  const [discoveredItems, setDiscoveredItems] = useState(getDiscoveredItems());
 
 
-    const audioRef = useRef(null);
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    const currentDiscovered = getDiscoveredItems();
+    let changed = false;
+    for (const item of inventory) {
+      if (item && !currentDiscovered.includes(item)) {
+        currentDiscovered.push(item);
+        changed = true;
+      }
+    }
+    if (changed) {
+      localStorage.setItem("discoveredItems", JSON.stringify(currentDiscovered));
+      setDiscoveredItems([...currentDiscovered]);
+    }
+  }, [inventory]);
+
 
   useEffect(() => {
     if (audioRef.current) {
@@ -198,13 +238,6 @@ const [craftingItem, setCraftingItem] = useState(null); // optional untuk animas
   return () => clearTimeout(timeoutRef.current);
 }, []);
 
-
-
-  const getGreeting = () => {
-    if (currentHour >= 5 && currentHour < 12) return "Good Morning";
-    if (currentHour >= 12 && currentHour < 18) return "Good Afternoon";
-    return "Good Evening";
-  };
 
   const formatTime = (h, m) => `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 
@@ -370,6 +403,15 @@ const [craftingItem, setCraftingItem] = useState(null); // optional untuk animas
     savePlayerData(inventory, money, status);
   }, [inventory, money, status]);
 
+  useEffect(() => {
+    function syncDiscovered() {
+      setDiscoveredItems(getDiscoveredItems());
+    }
+    window.addEventListener('storage', syncDiscovered);
+    return () => window.removeEventListener('storage', syncDiscovered);
+  }, []);
+
+
 
   const getSpriteOffset = () => {
     const directionMap = { down: 0, left: 1, right: 2, up: 3 };
@@ -401,6 +443,9 @@ const handleInteract = () => {
   } else if (nearLakeZone) {
     window.location.href = "/fishing";
   } else if (nearBeachZone) {
+    // Simpan posisi terakhir di main map sebelum masuk beach
+    localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
+    // JANGAN overwrite playerData.position di sini!
     window.location.href = "/beach";
   } else if (inMarketZone) {
     window.location.href = "/market";
@@ -408,7 +453,7 @@ const handleInteract = () => {
     // Simpan posisi terakhir sebelum masuk forest
     localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
     window.location.href = "/forest";
-  }
+  } 
 };
 
 
@@ -465,15 +510,35 @@ return (
 
     <div className="status-ui">
       <div className="status-left">
-        <div className="greeting-ui">
-          {getGreeting()}, {username}
-        </div>
+        <div className="greeting-ui">{getGreeting(currentHour, username)}</div>
         <div className="status-bars">
-          <div className="status-item">🍗<div className="bar"><div style={{ width: `${status.meal}%` }}></div></div></div>
-          <div className="status-item">😴<div className="bar"><div style={{ width: `${status.sleep}%` }}></div></div></div>
-          <div className="status-item">😊<div className="bar"><div style={{ width: `${status.happiness}%` }}></div></div></div>
-          <div className="status-item">🛁<div className="bar"><div style={{ width: `${status.cleanliness}%` }}></div></div></div>
+          <div className="status-item">
+            <img src={hungryIcon} alt="Meal" className="status-icon" />
+            <div className={`bar${status.meal <= 30 ? " low" : ""}`}>
+              <div style={{ width: `${status.meal}%` }} />
+            </div>
+          </div>
+          <div className="status-item">
+            <img src={sleepIcon} alt="Sleep" className="status-icon" />
+            <div className={`bar${status.sleep <= 30 ? " low" : ""}`}>
+              <div style={{ width: `${status.sleep}%` }} />
+            </div>
+          </div>
+          <div className="status-item">
+            <img src={happyIcon} alt="Happiness" className="status-icon" />
+            <div className={`bar${status.happiness <= 30 ? " low" : ""}`}>
+              <div style={{ width: `${status.happiness}%` }} />
+            </div>
+          </div>
+          <div className="status-item">
+            <img src={cleanIcon} alt="Cleanliness" className="status-icon" />
+            <div className={`bar${status.cleanliness <= 30 ? " low" : ""}`}>
+              <div style={{ width: `${status.cleanliness}%` }} />
+            </div>
+          </div>
         </div>
+
+
       </div>
 
       <div className="status-money">
@@ -491,6 +556,15 @@ return (
         >
           <img src={CraftIcon} alt="Craft" />
         </button>
+        <button
+          className="inventory-btn encyclopedia-btn"
+          style={{ marginTop: 8 }}
+          onClick={() => setShowEncyclopedia(true)}
+        >
+          <img src={EncyclopediaIcon} alt="Encyclopedia" />
+        </button>
+
+
       </div>
 
     </div>
@@ -634,6 +708,7 @@ return (
                     newInv.push(recipe.result);
                     setInventory(newInv);
                     setMoney(newMoney);
+                    addDiscoveredItem(recipe.result);
                     // Simpan ke localStorage
                     const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                     localStorage.setItem("playerData",
@@ -661,9 +736,163 @@ return (
       </div>
     )}
 
+    {showEncyclopedia && (
+    <div
+      className="modal-overlay"
+      style={{
+        zIndex: 1200,
+        background: "rgba(30, 25, 14, 0.96)"
+      }}
+      onClick={() => setShowEncyclopedia(false)}
+    >
+      <div
+        className="encyclopedia-modal"
+        style={{
+          display: "flex",
+          flexDirection: "row",
+          width: "min(1040px, 96vw)",
+          height: "min(640px, 85vh)",
+          background: "linear-gradient(120deg, #f3e9c6 0%, #fbf7e2 100%)",
+          border: "4px solid #c5a356",
+          borderRadius: "22px",
+          boxShadow: "0 8px 60px #8d794dcb",
+          overflow: "hidden",
+          margin: "auto",
+          position: "absolute",
+          left: 0, top: 0, right: 0, bottom: 0,
+          fontFamily: "'IM Fell English SC', serif"
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* PANEL KIRI — LIST */}
+        <div className="encyclopedia-list"
+          style={{
+            width: 220,
+            background: "#ede3c2",
+            borderRight: "3.5px solid #bfae7e",
+            overflowY: "auto",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            padding: "30px 10px 18px 10px"
+          }}>
+          <div style={{fontWeight:"bold",color:"#b98b1e",fontSize:21,marginBottom:15,letterSpacing:1}}>Item List</div>
+          {Object.keys(itemIcons).map(item => {
+            const isFound = discoveredItems.includes(item);
+            return (
+              <div
+                key={item}
+                className="encyclopedia-item-slot"
+                style={{
+                  marginBottom: 15,
+                  cursor: "pointer",
+                  opacity: isFound ? 1 : 0.5,
+                  filter: isFound ? "none" : "grayscale(100%) brightness(1.25)",
+                  border: encyclopediaSelected === item ? "3px solid #bfa24a" : "2.5px solid #e2c07090",
+                  borderRadius: 11,
+                  background: encyclopediaSelected === item ? "#ffeab5" : "#f4e5bc",
+                  padding: "6px",
+                  transition: "border 0.13s, background 0.14s"
+                }}
+                onClick={() => setEncyclopediaSelected(item)}
+              >
+                <img src={itemIcons[item]} alt={item}
+                  style={{ width: 54, height: 54, display: "block", margin: "0 auto" }} />
+              </div>
+            );
+          })}
+        </div>
+        {/* PANEL KANAN — DETAIL */}
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: "40px 30px 10px 30px",
+            minWidth: 0,
+            textAlign: "center", // ini penting!
+          }}
+        >
+          <img
+            src={itemIcons[encyclopediaSelected]}
+            alt={encyclopediaSelected}
+            style={{
+              width: 120,
+              height: 120,
+              marginBottom: 22,
+              filter: discoveredItems.includes(encyclopediaSelected) ? "none" : "grayscale(100%) brightness(1.18)"
+            }}
+          />
+          <div style={{
+            fontSize: 32,
+            color: "#7a5318",
+            fontWeight: "bold",
+            marginBottom: 22,
+            letterSpacing: 1.2,
+            textShadow: "0 2px 0 #fffbe9"
+          }}>
+            {encyclopediaSelected}
+          </div>
+          <div style={{
+            fontSize: 19,
+            color: "#715b34",
+            marginBottom: 18,
+            lineHeight: 1.45
+          }}>
+            <b>Description:</b>
+            <br />
+            {itemDetails[encyclopediaSelected]?.description || "???"}
+          </div>
+          <div style={{
+            fontSize: 18,
+            color: "#937b41",
+            marginBottom: 18,
+            lineHeight: 1.3
+          }}>
+            <b>How to get:</b>
+            <br />
+            {itemDetails[encyclopediaSelected]?.source || "???"}
+          </div>
+          {!inventory.includes(encyclopediaSelected) && (
+            <div style={{
+              color: "#be2424",
+              fontWeight: "bold",
+              fontSize: 17,
+              marginTop: 18
+            }}>
+              Item not found yet!
+            </div>
+          )}
+        </div>
+
+
+        {/* Close button */}
+        <button
+          className="close-inventory-btn"
+          style={{
+            position: "absolute",
+            top: 20,
+            right: 22,
+            zIndex: 30,
+            background: "#e2c070",
+            color: "#514116",
+            border: "none",
+            fontWeight: "bold",
+            fontSize: 18
+          }}
+          onClick={() => setShowEncyclopedia(false)}
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  )}
+
 
     {/* Semua UI bawah, panel event, analog, map, dsb HANYA tampil kalau inventory tidak terbuka */}
-    {!inventoryVisible && (
+    {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
       <>
         <div className="analog-controls">
           <button className="arrow up"

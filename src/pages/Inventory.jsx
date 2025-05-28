@@ -58,95 +58,124 @@ export const itemIcons = {
 // === ITEM DETAILS (DESKRIPSI, EFEK, HARGA JUAL, DST) ===
 export const itemDetails = {
   "Ancient Glass": { 
-    description: "Antique glass, used for advanced crafting." 
+    description: "Antique glass, used for advanced crafting.",
+    sellGold: 400,
+    source: "Scattered fragments littering the beach shores, remnants of civilizations long past. Your inventory permits only a single specimen."
   },
   "Ancient Glass With Water": { 
-    description: "A glass filled with mysterious water." 
+    description: "A glass filled with mysterious water.", 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
+    source: "Meticulously assembled through deliberate crafting processes, combining ancient vessels with purified essence."
   },
   "Boat": { 
-    description: "A small boat. Maybe you can use it to cross water." 
+    description: "A small boat. Maybe you can use it to cross water.",
+    source: "Constructed through meticulous crafting techniques, requiring precise assembly of wooden components and binding materials."
   },
   "Coconut": { 
     description: "Tropical fruit, edible or used for crafting.", 
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }) 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
+    source: "Harvested from the towering palm trees that line the coastal regions, requiring careful extraction from elevated branches."
   },
   "Fish Nail": { 
-    description: "Rare nail from a fish. Useful for crafting."
+    description: "Rare nail from a fish. Useful for crafting.",
+    source: "Exclusively obtained from the solitary merchant residing beside the lake waters, a one-time acquisition opportunity."
   },
   "Special Fish Skin": { 
-    description: "Rare fish skin used for crafting high-quality gear." 
+    description: "Rare fish skin used for crafting high-quality gear.",
+    source: "Occasionally retrieved from the underground chambers, though fortune's favor determines success when casting lines into mysterious waters."
   },
   "Gem": { 
     description: "Beautiful gemstone. Can be sold for a high price.", 
-    sellGold: 800 
+    sellGold: 800,
+    source: "Concealed within the labyrinthine passages of underground chambers, awaiting discovery by persistent explorers."
   },
   "Goldfish": { 
     description: "Small golden fish, restores 20 meal when consumed.", 
     sellGold: 100, 
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }) 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
+    source: "Common aquatic specimens caught through patient angling in various water bodies throughout the region."
   },
   "Juice Coconut": { 
-    description: "Coconut juice. Refreshing and tasty.", sellGold: 60, 
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 15, 100) }) 
+    description: "Coconut juice. Refreshing and tasty.", 
+    sellGold: 60, 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 30, 100) }),
+    source: "Produced through systematic crafting procedures, extracting and processing the liquid essence from tropical fruits."
   },
   "Juice Wild Fruit": { 
-    description: "Juice from wild fruit. Somewhat healthy.", sellGold: 60, 
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 12, 100) }) 
+    description: "Juice from wild fruit. Somewhat healthy.", 
+    sellGold: 60, 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 50, 100) }),
+    source: "Created via specialized crafting methods, distilling the nutritional properties of untamed botanical specimens."
   },
   "Megalodon": { 
-    description: "Ancient giant shark, fully restores all stats when consumed.", sellGold: 1000, useEffect: (stat) => ({ meal: 100, sleep: 100, happiness: 100, cleanliness: 100 }) 
+    description: "Ancient giant shark, fully restores all stats when consumed.", 
+    sellGold: 5000, 
+    useEffect: (stat) => ({ meal: 100, sleep: 100, happiness: 100, cleanliness: 100 }),
+    source: "Extraordinarily rare aquatic behemoth that occasionally surfaces from the lake's deepest recesses, appearing unpredictably."
   },
   "Archipelago Talisman": { 
-    description: "Strange talisman from the jungle. It feels powerful.", 
-    sellGold: 200 
+    description: "Strange talisman from the jungle. It feels powerful.",
+    source: "Fashioned through intricate crafting rituals, incorporating mystical elements gathered from dense tropical vegetation."
   },
   "Pearl": { 
     description: "A shiny pearl. Valuable for trade or crafting.", 
-    sellGold: 400 
+    sellGold: 400,
+    source: "Exceptionally uncommon discovery obtained through persistent fishing endeavors, granted by aquatic providence."
   },
   "Pickaxe": { 
-    description: "Strong tool for mining stones and minerals."
+    description: "Strong tool for mining stones and minerals.",
+    source: "Standard equipment provided to every adventurer upon beginning their journey, fundamental survival apparatus."
   },
   "Rare Herbal Grass": { 
     description: "Very rare herb, used in special recipes.", 
-    ellGold: 300 
+    sellGold: 300,
+    source: "Exclusively acquired from the botanical specialist dwelling among the mountain peaks, keeper of highland flora."
   },
   "Ripped Cloth": { 
     description: "Torn cloth, can be reused for crafting.", 
-    sellGold: 25 
+    sellGold: 25,
+    source: "Discarded textile fragments dispersed across various terrains, abandoned possessions awaiting reclamation."
   },
   "Rod": { 
-    description: "Fishing rod for catching fish." 
+    description: "Fishing rod for catching fish.",
+    source: "Expertly assembled through deliberate crafting processes, combining materials into efficient angling equipment."
   },
   "Rope": { 
     description: "Strong rope. Useful for various purposes.", 
-    sellGold: 40 
+    sellGold: 40,
+    source: "Discovered among the dense forest undergrowth, naturally occurring fibrous materials suitable for binding purposes."
   },
   "Rusty Iron": { 
     description: "Old rusty metal. Maybe can be recycled.", 
-    sellGold: 40 
+    sellGold: 40,
+    source: "Extracted from weathered coastal rock formations through systematic demolition of mineral deposits."
   },
   "Torch": { 
-    description: "Simple torch. Lights up dark areas." 
+    description: "Simple torch. Lights up dark areas.",
+    source: "Manufactured through careful crafting procedures, combining combustible materials with sustainable flame sources."
   },
   "Tuna": { 
     description: "Large nutritious fish, restores 50 meal when consumed.", 
     sellGold: 250, 
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 50, 100) }) 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 50, 100) }),
+    source: "Moderately-sized aquatic creatures inhabiting the deeper sections of lake waters, caught through skilled angling."
   },
   "Water": { 
     description: "Clean water for drinking or crafting.", 
     sellGold: 5, 
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 3, 100) }) 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 3, 100) }),
+    source: "Continuously available from the residential water supply system, fundamental resource for sustenance and production."
   },
   "Wild Fruit": { 
     description: "Wild fruit, edible or used for recipes.", 
     sellGold: 10, 
-    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 10, 100) }) 
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 10, 100) }),
+    source: "Gathered from naturally occurring fruit-bearing trees scattered throughout untamed wilderness areas."
   },
-    "Wood": {
+  "Wood": {
     description: "Basic material for crafting tools and buildings.",
     sellGold: 200,
+    source: "Obtained from lifeless tree specimens found in desolate woodland areas, providing essential construction materials."
   },
 };
 

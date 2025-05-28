@@ -70,34 +70,101 @@ html, body {
 .status-bars {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 7px;
+  background: rgba(38, 33, 12, 0.45);
+  padding: 10px 12px 10px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #e2c070;
+  box-shadow: 0 1px 7px #0007, 0 1px 0 #e2c07040 inset;
+  min-width: 170px;
+  max-width: 270px;
+  margin-bottom: 5px;
 }
 
 .status-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .status-icon {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   object-fit: contain;
+  filter: drop-shadow(0 1px 4px #0008);
+  border-radius: 4px;
+  background: #231b00a0;
+  border: 1px solid #ffe66a60;
+  padding: 1.5px;
 }
 
 .bar {
   flex: 1;
-  background-color: #555;
-  border-radius: 10px;
+  height: 8px;
+  background: linear-gradient(90deg, #4b3c21 20%, #ac9555 95%);
+  border-radius: 5px;
+  border: 1px solid #e2c070;
+  box-shadow: 0 1px 3px #e2c07022 inset, 0 1px 2px #0004;
   overflow: hidden;
-  height: 10px;
+  margin-right: 2px;
+  position: relative;
 }
 
 .bar > div {
-  background-color: limegreen;
   height: 100%;
-  transition: width 0.2s ease-in-out;
+  background: linear-gradient(90deg, #97f462 55%, #36ba23 100%);
+  box-shadow: 0 0 7px #80ff9b7c, 0 1px 0 #fff3;
+  transition: width 0.16s, background 0.16s;
+  border-radius: 5px 0 0 5px;
+  position: relative;
+  z-index: 1;
+  animation: none;
 }
+
+.bar.low > div {
+  background: linear-gradient(90deg, #ff7979 65%, #ffe957 100%);
+  box-shadow: 0 0 7px #ff7b7b7a;
+  animation: pulsebar 0.75s infinite alternate;
+}
+
+@keyframes pulsebar {
+  0%   { filter: brightness(1); }
+  100% { filter: brightness(1.3); }
+}
+
+.encyclopedia-modal {
+  font-family: 'IM Fell English SC', serif;
+}
+.encyclopedia-list::-webkit-scrollbar {
+  width: 8px;
+  background: #eadca8;
+  border-radius: 6px;
+}
+.encyclopedia-list::-webkit-scrollbar-thumb {
+  background: #e2c070;
+  border-radius: 6px;
+}
+.encyclopedia-item-slot {
+  transition: border 0.14s, background 0.13s, filter 0.18s;
+}
+.encyclopedia-btn:hover::after {
+  content: "Encyclopedia";
+  position: absolute;
+  top: 110%;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.85);
+  color: #f0f0f0;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'IM Fell English SC', serif;
+  white-space: nowrap;
+  box-shadow: 0 0 6px black;
+  z-index: 999;
+}
+
+
 
 .status-money {
   display: flex;
@@ -153,7 +220,7 @@ html, body {
   outline: 2px solid #fbbf24;
 }
 
-.inventory-btn:hover::after {
+.inventory-btn:not(.craft-btn):not(.encyclopedia-btn):hover::after{
   content: "Inventory";
   position: absolute;
   top: 110%;
