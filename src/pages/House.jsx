@@ -1069,7 +1069,7 @@ useEffect(() => {
                     <br />
                     {itemDetails[encyclopediaSelected]?.source || "???"}
                   </div>
-                  {!inventory.includes(encyclopediaSelected) && (
+                  {!discoveredItems.includes(encyclopediaSelected) && (
                     <div style={{
                       color: "#be2424",
                       fontWeight: "bold",

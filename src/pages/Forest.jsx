@@ -32,6 +32,7 @@ const MAP_HEIGHT = 1247;
 const SPRITE_SIZE = 64;
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
+
 export default function Forest() {
   const navigate = useNavigate();
   const [status, setStatus] = useState({ meal: 50, sleep: 50, happiness: 50, cleanliness: 50 });
@@ -43,7 +44,7 @@ export default function Forest() {
   const [currentHour, setCurrentHour] = useState(9);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [position, setPosition] = useState({
-    x: 500,
+    x: 600,
     y: MAP_HEIGHT - SPRITE_SIZE
   });
 
@@ -104,9 +105,187 @@ export default function Forest() {
 
   const [showEncyclopedia, setShowEncyclopedia] = useState(false);
   const [encyclopediaSelected, setEncyclopediaSelected] = useState(null);
+
+  const [showRopeBanner, setShowRopeBanner] = useState(false);
+
   const [discoveredItems, setDiscoveredItems] = useState(() => {
     return JSON.parse(localStorage.getItem("discoveredItems") || "[]");
   });
+
+  const [nearRope, setNearRope] = useState(false);
+
+
+  // Ukuran karakter (disamakan dengan sprite atau 64x64 misal)
+  const CHAR_W = 64;
+  const CHAR_H = 64;
+
+  // Semua zona blok (A, B, C, dsb)
+  const blockZones = [
+    // --- Rectangle Atas map ---
+    { x: 10, y: 10, w: 1130, h: 340 },         // .zone-top-rect
+    { x: 1160, y: 10, w: 180, h: 190 },        // .zone-top-rect-b
+    { x: 1360, y: 10, w: 180, h: 80 },         // .zone-top-rect-c
+
+    // --- Triangle Kiri bawah ---
+    {
+      type: 'triangle',
+      x: 10,
+      y: 1247 - (1100 - 20) + 10, // = 157 + 10 = 167
+      w: 555,
+      h: 1080,
+      points: [
+        [0, 1080],    // kiri bawah
+        [0, 0],       // kiri atas
+        [555, 1080]   // kanan bawah
+      ]
+    },
+
+    // --- Triangle Tengah terbalik 1 ---
+    {
+      type: 'triangle',
+      x: 670 - ((290-20)/2) + 10, // 670-135+10 = 545
+      y: 350 + 10,
+      w: 270,
+      h: 160,
+      points: [
+        [135, 160],  // tengah bawah (awal 145,180)
+        [0, 0],      // kiri atas
+        [270, 0]     // kanan atas
+      ]
+    },
+
+    // --- Triangle Tengah terbalik 2 ---
+    {
+      type: 'triangle',
+      x: 730 - ((470-20)/2) + 10, // 730-225+10=515
+      y: 600 + 10,
+      w: 450,
+      h: 380,
+      points: [
+        [0.3*450, 380], // (135,400) -> (135,380)
+        [0, 0],         // kiri atas
+        [450, 20]       // kanan sedikit turun (470,40) -> (450,20)
+      ]
+    },
+
+    // --- Triangle Kanan bawah ---
+    {
+      type: 'triangle',
+      x: 1540 - (800-20) + 10,    // 1540-780+10=770
+      y: 1247 - (1050-20) + 10,   // 1247-1030+10=227
+      w: 780,
+      h: 1030,
+      points: [
+        [780, 1030],    // kanan bawah
+        [0, 1030],      // kiri bawah
+        [780, 0]        // kanan atas
+      ]
+    }
+  ];
+
+
+  function rectsOverlap(ax, ay, aw, ah, bx, by, bw, bh) {
+    return !(ax + aw <= bx || bx + bw <= ax || ay + ah <= by || by + bh <= ay);
+  }
+
+  // Cek apakah [px,py] di dalam segitiga [p0,p1,p2]
+  function pointInTriangle(px, py, p0, p1, p2) {
+    function sign(p1, p2, p3) {
+      return (p1[0] - p3[0]) * (p2[1] - p3[1]) - (p2[0] - p3[0]) * (p1[1] - p3[1]);
+    }
+    let b1 = sign([px, py], p0, p1) < 0.0;
+    let b2 = sign([px, py], p1, p2) < 0.0;
+    let b3 = sign([px, py], p2, p0) < 0.0;
+    return ((b1 === b2) && (b2 === b3));
+  }
+
+    const [ropePos, setRopePos] = useState(() => {
+    // Cek sudah pernah dapat Rope, kalau sudah: null
+    const savedData = JSON.parse(localStorage.getItem("playerData")) || {};
+    const inv = savedData.inventory || [];
+    if (inv.includes("Rope")) return null;
+
+
+    // Fungsi spawn random, cek tidak overlap dengan blok
+    function isInBlockedZone(x, y) {
+      const charSize = 64;
+
+      // --- CEK RECTANGLE / TRIANGLE COLLISION ---
+      const collision = blockZones.some(zone => {
+        if (!zone.type) {
+          return (
+            x + charSize/2 >= zone.x &&
+            x + charSize/2 <= zone.x + zone.w &&
+            y + charSize/2 >= zone.y &&
+            y + charSize/2 <= zone.y + zone.h
+          );
+        } else if (zone.type === "triangle") {
+          return pointInTriangle(x + charSize/2, y + charSize/2, 
+            ...zone.points.map(([xx,yy])=>[zone.x+xx,zone.y+yy])
+          );
+        }
+        return false;
+      });
+      if (collision) return true;
+
+      // --- CEK ZONA INTERAKSI FRUIT TREE ---
+      const dxFruit = (x + charSize/2 - fruitTree.x) / fruitTree.rx;
+      const dyFruit = (y + charSize/2 - fruitTree.y) / fruitTree.ry;
+      if ((dxFruit * dxFruit + dyFruit * dyFruit) < 1.1) return true; // lebih besar biar aman
+
+      // --- CEK ZONA INTERAKSI WOOD TREE ---
+      const dxWood = (x + charSize/2 - woodTree.x) / woodTree.rx;
+      const dyWood = (y + charSize/2 - woodTree.y) / woodTree.ry;
+      if ((dxWood * dxWood + dyWood * dyWood) < 1.1) return true;
+
+      // --- CEK ZONA INTERAKSI DUNGEON ---
+      const dxDung = (x + charSize/2 - dungeonZone.x) / dungeonZone.rx;
+      const dyDung = (y + charSize/2 - dungeonZone.y) / dungeonZone.ry;
+      if ((dxDung * dxDung + dyDung * dyDung) < 1.2) return true;
+
+      // --- BAWAH MAP ---
+      if (y > 960) return true; // biar ga spawn di bawah map
+
+      return false;
+    }
+
+
+    let x, y, tryCount = 0;
+    do {
+      x = Math.floor(Math.random() * (MAP_WIDTH - SPRITE_SIZE));
+      y = Math.floor(Math.random() * (MAP_HEIGHT - SPRITE_SIZE));
+      tryCount++;
+      if (tryCount > 2000) return null; // Tidak ketemu, skip
+    } while (isInBlockedZone(x, y));
+    return { x, y };
+  });
+
+
+  function isBlocked(newX, newY) {
+    // rectangle hitbox karakter
+    for (let zone of blockZones) {
+      if (!zone.type) {
+        if (rectsOverlap(newX, newY, CHAR_W, CHAR_H, zone.x, zone.y, zone.w, zone.h)) {
+          return true;
+        }
+      } else if (zone.type === 'triangle') {
+        // Cek semua sudut karakter, asal ada satu di dalam, blok
+        const corners = [
+          [newX, newY],
+          [newX+CHAR_W, newY],
+          [newX, newY+CHAR_H],
+          [newX+CHAR_W, newY+CHAR_H]
+        ];
+        const absPoints = zone.points.map(([xx,yy]) => [zone.x+xx, zone.y+yy]);
+        for (let [cx, cy] of corners) {
+          if (pointInTriangle(cx, cy, absPoints[0], absPoints[1], absPoints[2])) return true;
+        }
+      }
+    }
+    return false;
+  }
+
+
 
   useEffect(() => {
     function syncDiscovered() {
@@ -160,6 +339,8 @@ export default function Forest() {
     }));
   };
 
+
+
   useEffect(() => {
     const savedChar = JSON.parse(localStorage.getItem("selectedCharacter"));
     if (savedChar) setCharacter(savedChar);
@@ -191,10 +372,11 @@ export default function Forest() {
     // --- cek posisi dari gameplay (main map ke forest) ---
     const lastPos = JSON.parse(localStorage.getItem("lastGameplayPosition"));
     if (lastPos) {
-      setPosition({ x: 500, y: MAP_HEIGHT - SPRITE_SIZE });
+      setPosition({ x: 600, y: MAP_HEIGHT - SPRITE_SIZE });  // ← spawn agak ke kanan bawah
     } else {
-      setPosition({ x: 500, y: MAP_HEIGHT - SPRITE_SIZE });
+      setPosition({ x: 600, y: MAP_HEIGHT - SPRITE_SIZE });
     }
+
   }, []);
 
 
@@ -296,6 +478,8 @@ export default function Forest() {
         setCanInteractDungeon(nearDungeon);
 
         setAtBottom(newPos.y >= MAP_HEIGHT - SPRITE_SIZE);
+        // ---- BLOKIR DI SINI ----
+        if (isBlocked(newPos.x, newPos.y)) return prev;
         return newPos;
       });
 
@@ -473,6 +657,20 @@ export default function Forest() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [showChopMinigame, chopResult]);
 
+  useEffect(() => {
+    if (!ropePos) {
+      setNearRope(false);
+      return;
+    }
+    const charCenterX = position.x + SPRITE_SIZE / 2;
+    const charCenterY = position.y + SPRITE_SIZE / 2;
+    const itemCenterX = ropePos.x + 20;
+    const itemCenterY = ropePos.y + 20;
+    const near = Math.abs(charCenterX - itemCenterX) < 36 && Math.abs(charCenterY - itemCenterY) < 36;
+    setNearRope(near);
+  }, [position, ropePos]);
+
+
   const getSpriteOffset = () => {
     const directionMap = { down: 0, left: 1, right: 2, up: 3 };
     const row = directionMap[direction];
@@ -487,6 +685,34 @@ export default function Forest() {
 
   const handleInteract = () => {
     if (showMinigame || showChopMinigame) return;
+
+      // --- Rope Pickup Logic ---
+    if (nearRope && ropePos && !inventory.includes("Rope")) {
+      setInventory(inv => {
+        const newInv = [...inv, "Rope"];
+        // Simpan ke localStorage
+        const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+        localStorage.setItem(
+          "playerData",
+          JSON.stringify({ ...saved, inventory: newInv })
+        );
+        return newInv;
+      });
+      setRopePos(null);
+
+      // Update encyclopedia/discovered
+      const discovered = JSON.parse(localStorage.getItem("discoveredItems") || "[]");
+      if (!discovered.includes("Rope")) {
+        discovered.push("Rope");
+        localStorage.setItem("discoveredItems", JSON.stringify(discovered));
+        setDiscoveredItems([...discovered]);
+      }
+
+      setShowRopeBanner(true); // <-- Tambahkan ini
+      return;
+    }
+
+
 
     if (canInteractFruit) {
       const overlay = document.createElement("div");
@@ -556,6 +782,7 @@ export default function Forest() {
     if (canInteractFruit) return "🍎 Press Interact to pick wild fruit";
     if (canInteractWood) return "🪓 Press Interact to chop wood";
     if (canInteractDungeon) return "🕳️ Press Interact to enter dungeon";
+    if (nearRope && ropePos && !inventory.includes("Rope")) return "🪢 Press Interact to pick up Rope";
     if (atBottom) return "🌲 Press Interact to return to the main map";
     return "📍 Event info will appear here...";
   };
@@ -612,52 +839,86 @@ export default function Forest() {
         )}
 
         {/* Visualisasi Zona Interaksi */}
-<div
-  style={{
-    position: "absolute",
-    left: fruitTree.x - fruitTree.rx,
-    top: fruitTree.y - fruitTree.ry,
-    width: fruitTree.rx * 2,
-    height: fruitTree.ry * 2,
-    backgroundColor: "rgba(255, 0, 0, 0.3)", // Merah transparan
-    border: "2px dashed red",
-    zIndex: 3,
-    pointerEvents: "none"
-  }}
-/>
+        <div
+          style={{
+            position: "absolute",
+            left: fruitTree.x - fruitTree.rx,
+            top: fruitTree.y - fruitTree.ry,
+            width: fruitTree.rx * 2,
+            height: fruitTree.ry * 2,
+            backgroundColor: "rgba(255, 0, 0, 0.3)", // Merah transparan
+            border: "2px dashed red",
+            zIndex: 3,
+            pointerEvents: "none"
+          }}
+        />
 
-<div
-  style={{
-    position: "absolute",
-    left: woodTree.x - woodTree.rx,
-    top: woodTree.y - woodTree.ry,
-    width: woodTree.rx * 2,
-    height: woodTree.ry * 2,
-    backgroundColor: "rgba(0, 128, 0, 0.3)", // Hijau transparan
-    border: "2px dashed green",
-    zIndex: 3,
-    pointerEvents: "none"
-  }}
-/>
+        <div
+          style={{
+            position: "absolute",
+            left: woodTree.x - woodTree.rx,
+            top: woodTree.y - woodTree.ry,
+            width: woodTree.rx * 2,
+            height: woodTree.ry * 2,
+            backgroundColor: "rgba(0, 128, 0, 0.3)", // Hijau transparan
+            border: "2px dashed green",
+            zIndex: 3,
+            pointerEvents: "none"
+          }}
+        />
 
-<div
-  style={{
-    position: "absolute",
-    left: dungeonZone.x - dungeonZone.rx,
-    top: dungeonZone.y - dungeonZone.ry,
-    width: dungeonZone.rx * 2,
-    height: dungeonZone.ry * 2,
-    backgroundColor: "rgba(0, 0, 255, 0.3)", // Biru transparan
-    border: "2px dashed blue",
-    zIndex: 3,
-    pointerEvents: "none"
-  }}
-/>
+        <div
+          style={{
+            position: "absolute",
+            left: dungeonZone.x - dungeonZone.rx,
+            top: dungeonZone.y - dungeonZone.ry,
+            width: dungeonZone.rx * 2,
+            height: dungeonZone.ry * 2,
+            backgroundColor: "rgba(0, 0, 255, 0.3)", // Biru transparan
+            border: "2px dashed blue",
+            zIndex: 3,
+            pointerEvents: "none"
+          }}
+        />
+
+        {ropePos && !inventory.includes("Rope") && (
+          <img
+            src={itemIcons["Rope"]}
+            alt="Rope"
+            className="map-item"
+            style={{
+              position: "absolute",
+              left: ropePos.x,
+              top: ropePos.y,
+              width: 40,
+              height: 40,
+              zIndex: 12
+            }}
+          />
+        )}
 
 
         <div className="fruit-block-zone"></div>
         <div className="wood-block-zone"></div>
         <div className="dungeon-block-zone"></div>
+
+        {/* Persegi panjang bagian atas */}
+        <div className="zone-top-rect"></div>
+        <div className="zone-top-rect-b"></div>
+        <div className="zone-top-rect-c"></div>
+
+        {/* Segitiga siku-siku kiri bawah */}
+        <div className="zone-bottom-left-triangle"></div>
+
+        {/* Segitiga terbalik di tengah (2x) */}
+        <div className="zone-mid-inverted-triangle1"></div>
+        <div className="zone-mid-inverted-triangle2"></div>
+
+        {/* Segitiga siku-siku kanan bawah (2x) */}
+        <div className="zone-bottom-right-triangle1"></div>
+
+
+
       </div>
 
       <div className="time-display">
@@ -1027,7 +1288,7 @@ export default function Forest() {
                     <br />
                     {itemDetails[encyclopediaSelected]?.source || "???"}
                   </div>
-                  {!inventory.includes(encyclopediaSelected) && (
+                  {!discoveredItems.includes(encyclopediaSelected) && (
                     <div style={{
                       color: "#be2424",
                       fontWeight: "bold",
@@ -1082,6 +1343,24 @@ export default function Forest() {
       </div>
       </>
       )}
+
+      {showRopeBanner && (
+        <div className="coconut-overlay result">
+          <div className="obtained-banner" style={{ backgroundImage: `url(${scrollBanner})` }}>
+            <div className="obtained-text">
+              You found a Rope!
+            </div>
+            <img
+              src={itemIcons["Rope"]}
+              alt="Rope"
+              className="coconut-icon"
+            />
+            <div className="item-name">Rope</div>
+            <button className="ok-button" onClick={() => setShowRopeBanner(false)}>OK</button>
+          </div>
+        </div>
+      )}
+
 
       {/* Minigame overlays - keeping all existing minigame JSX */}
       {showMinigame && (

@@ -20,6 +20,8 @@ import sleepIcon from "../assets/ui/Sleep.png";
 import happyIcon from "../assets/ui/Happiness.png";
 import cleanIcon from "../assets/ui/Cleanliness.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png";
+import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
+
 
 const MAP_WIDTH = 4616;
 const MAP_HEIGHT = 3464;
@@ -89,6 +91,8 @@ export default function Gameplay() {
   const [discoveredItems, setDiscoveredItems] = useState(getDiscoveredItems());
 
   const [nearCloth, setNearCloth] = useState(false);
+  const [showClothBanner, setShowClothBanner] = useState(false);
+
 
 
   const riverZones = [
@@ -578,9 +582,12 @@ export default function Gameplay() {
       });
       setClothPos(null);
       addDiscoveredItem("Ripped Cloth");
-      setDiscoveredItems(getDiscoveredItems()); // <-- Tambahkan baris ini
+      setDiscoveredItems(getDiscoveredItems()); // <-- Sudah ada
+      // TAMBAHKAN INI:
+      setShowClothBanner(true);
       return;
     }
+
 
     // Simpan data player seperti biasa
     const saveData = { character, position, status, money, inventory };
@@ -743,6 +750,17 @@ return (
       </div>
 
     </div>
+
+    {showClothBanner && (
+      <div className="coconut-overlay result">
+        <div className="obtained-banner" style={{ backgroundImage: `url(${scrollBanner})` }}>
+          <div className="obtained-text">You found Ripped Cloth!</div>
+          <img src={itemIcons["Ripped Cloth"]} alt="Ripped Cloth" className="coconut-icon" />
+          <div className="item-name">Ripped Cloth</div>
+          <button className="ok-button" onClick={() => setShowClothBanner(false)}>OK</button>
+        </div>
+      </div>
+    )}
 
     {/* Inventory Modal DAN Overlay - TAMPIL kalau inventoryVisible */}
     {inventoryVisible && (
@@ -1030,7 +1048,7 @@ return (
             <br />
             {itemDetails[encyclopediaSelected]?.source || "???"}
           </div>
-          {!inventory.includes(encyclopediaSelected) && (
+          {!discoveredItems.includes(encyclopediaSelected) && (
             <div style={{
               color: "#be2424",
               fontWeight: "bold",
