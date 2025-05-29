@@ -329,6 +329,13 @@ export default function Dungeon({ onExit }) {
     }
   }
 
+       React.useEffect(() => {
+  if (audioRef.current) {
+    audioRef.current.volume = 1; // Atur sesuai selera
+    audioRef.current.play().catch(() => {});
+  }
+}, []);
+
   if (zone === 1) {
     let currentMazeImage = memorizePhase
       ? mazeIndex === 0
@@ -336,13 +343,7 @@ export default function Dungeon({ onExit }) {
         : mazeImages[mazeIndex - 1]
       : Zone1_default;
 
-      React.useEffect(() => {
-  if (audioRef.current) {
-    audioRef.current.volume = 1; // Atur sesuai selera
-    audioRef.current.play().catch(() => {});
-  }
-}, []);
-
+ 
 
     return (
        <>
