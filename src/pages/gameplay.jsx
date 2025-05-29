@@ -658,6 +658,7 @@ return (
       <div className="river-zone part-o"></div>
       <div className="market-zone"></div>
       <div className="forest-zone"></div>
+      <div className="bottom-black-zone"></div>
       <div className="bottom-block-zone"></div>
       <div className="rect-block-zone ocean-block-1"></div>
       <div className="rect-block-zone ocean-block-2"></div>
