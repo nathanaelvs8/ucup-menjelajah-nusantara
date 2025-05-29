@@ -506,6 +506,7 @@ return (
       <div className="river-zone part-o"></div>
       <div className="market-zone"></div>
       <div className="forest-zone"></div>
+      <div className="bottom-black-zone"></div>
     </div>
 
     <div className="status-ui">
