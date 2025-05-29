@@ -27,8 +27,8 @@ import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon-nya
 import forestMusic from "../assets/audio/forest.mp3";
 
 
-const MAP_WIDTH = 1283.2;
-const MAP_HEIGHT = 1039.2;
+const MAP_WIDTH = 1540;
+const MAP_HEIGHT = 1247;
 const SPRITE_SIZE = 64;
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
@@ -52,24 +52,24 @@ export default function Forest() {
 
 
   const fruitTree = {
-    x: 130 + 350 / 2,
-    y: 200 + 280 / 2,
+    x: 380,
+    y: 420,
     rx: 350 / 2,
     ry: 280 / 2
   };
   const [canInteractFruit, setCanInteractFruit] = useState(false);
 
   const woodTree = {
-    x: 900 + 150,
-    y: 300 + 175,
+    x: 1300,
+    y: 535,
     rx: 150,
     ry: 175
   };
   const [canInteractWood, setCanInteractWood] = useState(false);
 
   const dungeonZone = {
-    x: 1100 + 125,
-    y: 0 + 85,
+    x: 1450,
+    y: 120,
     rx: 125,
     ry: 85
   };
@@ -610,6 +610,50 @@ export default function Forest() {
             }}
           ></div>
         )}
+
+        {/* Visualisasi Zona Interaksi */}
+<div
+  style={{
+    position: "absolute",
+    left: fruitTree.x - fruitTree.rx,
+    top: fruitTree.y - fruitTree.ry,
+    width: fruitTree.rx * 2,
+    height: fruitTree.ry * 2,
+    backgroundColor: "rgba(255, 0, 0, 0.3)", // Merah transparan
+    border: "2px dashed red",
+    zIndex: 3,
+    pointerEvents: "none"
+  }}
+/>
+
+<div
+  style={{
+    position: "absolute",
+    left: woodTree.x - woodTree.rx,
+    top: woodTree.y - woodTree.ry,
+    width: woodTree.rx * 2,
+    height: woodTree.ry * 2,
+    backgroundColor: "rgba(0, 128, 0, 0.3)", // Hijau transparan
+    border: "2px dashed green",
+    zIndex: 3,
+    pointerEvents: "none"
+  }}
+/>
+
+<div
+  style={{
+    position: "absolute",
+    left: dungeonZone.x - dungeonZone.rx,
+    top: dungeonZone.y - dungeonZone.ry,
+    width: dungeonZone.rx * 2,
+    height: dungeonZone.ry * 2,
+    backgroundColor: "rgba(0, 0, 255, 0.3)", // Biru transparan
+    border: "2px dashed blue",
+    zIndex: 3,
+    pointerEvents: "none"
+  }}
+/>
+
 
         <div className="fruit-block-zone"></div>
         <div className="wood-block-zone"></div>

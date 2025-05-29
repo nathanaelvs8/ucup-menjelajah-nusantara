@@ -36,8 +36,8 @@ import beachMusic from "../assets/audio/beach.mp3";
 import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
 
 
-const MAP_WIDTH = 1384;
-const MAP_HEIGHT = 1039;
+const MAP_WIDTH = 1540;
+const MAP_HEIGHT = 1270;
 const SPRITE_SIZE = 64;
 
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
@@ -84,6 +84,8 @@ export default function Beach() {
   const [glassPos, setGlassPos] = useState(null);
   const [nearGlass, setNearGlass] = useState(false);
   const [showGlassResult, setShowGlassResult] = useState(false);
+  const debugZones = false;
+
 
   const [showCraftModal, setShowCraftModal] = useState(false);
 
@@ -214,7 +216,7 @@ export default function Beach() {
     let animationId
 
     const isInRockZone = (x, y) => {
-      return x >= 1000 && x <= 1430 && y >= 380 && y <= 710;
+      return x >= 1200 && x <= 1630 && y >= 500 && y <= 830;
     };
 
     ;
@@ -272,11 +274,11 @@ export default function Beach() {
         setIsMoving(moved);
         setNearExitZone(newPos.y >= MAP_HEIGHT - SPRITE_SIZE);
         setInCoconutZone(
-          newPos.x >= 100 && newPos.x <= 300 &&
-          newPos.y >= 650 && newPos.y <= 850
+          newPos.x >= 120 && newPos.x <= 320 &&
+          newPos.y >= 800 && newPos.y <= 1000
         );
         setInSunbatheZone(
-          newPos.x >= 750 && newPos.x <= 900 &&
+          newPos.x >= 880 && newPos.x <= 1050 &&
           newPos.y >= 240 && newPos.y <= 380
         );
 
@@ -308,12 +310,7 @@ export default function Beach() {
     const x = position.x;
     const y = position.y;
     const sprite = SPRITE_SIZE;
-
-    const inRock =
-      x + sprite > 1000 &&
-      x < 1430 &&
-      y + sprite > 380 &&
-      y < 710;
+const inRock = x >= 1200 && x <= 1630 && y >= 500 && y <= 830;
 
     setInRockZone(inRock);
   }, [position]);
@@ -427,8 +424,8 @@ useEffect(() => {
       setIsSunbathing(true);
       setSkipRequested(false);
       const isLeft = position.x < 825;
-      const targetX = isLeft ? 765 : 830;
-      const targetY = 290;
+      const targetX = isLeft ? 900 : 940;
+      const targetY = 330;
       setPosition({ x: targetX, y: targetY });
 
       // Reset skip
@@ -715,6 +712,21 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
           ></div>
         )}
 
+        {debugZones && (
+  <div style={{
+    position: "absolute",
+    left: 1200,
+    top: 500,
+    width: 430,
+    height: 330,
+    backgroundColor: "rgba(0, 128, 128, 0.3)", // warna teal transparan
+    border: "2px dashed teal",
+    zIndex: 5,
+    pointerEvents: "none"
+  }} />
+)}
+
+
         {glassPos && (
           <>
             <img
@@ -739,6 +751,25 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
             ></div>
           </>
         )}
+
+    
+
+
+{debugZones && (
+  <div style={{
+    position: "absolute",
+    left: 0,
+    top: MAP_HEIGHT - SPRITE_SIZE,
+    width: MAP_WIDTH,
+    height: SPRITE_SIZE,
+    backgroundColor: "rgba(0, 0, 255, 0.3)",
+    borderTop: "2px dashed blue",
+    zIndex: 5,
+    pointerEvents: "none"
+  }} />
+)}
+
+
 
         
         <div className="exit-gradient-zone"></div>

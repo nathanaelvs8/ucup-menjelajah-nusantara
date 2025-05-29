@@ -8,6 +8,7 @@ import inventoryIcon from "../assets/ui/Inventory.png";
 import Inventory from './Inventory.jsx'; 
 import { useNavigate } from "react-router-dom";
 
+
 export default function Fishing() {
   const [stage, setStage] = useState(1); // 1: power, 2: wait, 3: catch
   const [power, setPower] = useState(0);
@@ -34,6 +35,7 @@ const [kailBottom, setKailBottom] = useState(`${alatPancingBottom}px`);
 const [holding, setHolding] = useState(false);
 const holdInterval = useRef(null);
 const navigate = useNavigate();
+
 
 
 
