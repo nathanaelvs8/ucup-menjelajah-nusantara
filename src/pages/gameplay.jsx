@@ -109,7 +109,7 @@ export default function Gameplay() {
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.2;  // atur volume jika perlu
+      audioRef.current.volume = 0.6;  // atur volume jika perlu
       audioRef.current.loop = true;   // agar musik looping terus
       audioRef.current.play().catch(e => {
         // bisa gagal autoplay di browser karena kebijakan user gesture

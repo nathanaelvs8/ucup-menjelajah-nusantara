@@ -29,6 +29,7 @@ import cleanIcon from "../assets/ui/Cleanliness.png";
 import coinGif from "../assets/ui/MoneyMoney.gif";
 import rustyIronIcon from "../assets/inventory-items/RustMetal.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon
+import beachMusic from "../assets/audio/beach.mp3";
 
 
 
@@ -91,6 +92,7 @@ export default function Beach() {
   const [discoveredItems, setDiscoveredItems] = useState(() =>
     JSON.parse(localStorage.getItem("discoveredItems") || "[]")
   );
+  const audioRef = useRef();
 
   useEffect(() => {
     function syncDiscovered() {
@@ -525,8 +527,21 @@ useEffect(() => {
   };
 
   const formatTime = (h, m) => `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+useEffect(() => {
+  if (audioRef.current) {
+    audioRef.current.volume = 1; // atau angka lain (0-1)
+    audioRef.current.play().catch(() => {});
+  }
+}, []);
 
   return (
+    <>
+      <audio
+        ref={audioRef}
+        src={beachMusic}
+        autoPlay
+        loop
+        />
     <div className="viewport">
       {/* Coconut Minigame UI */}
       {showCoconutGame && (
@@ -1182,5 +1197,6 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
     </>
     )}
     </div>
+    </>
   );
 }

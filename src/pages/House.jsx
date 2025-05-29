@@ -26,6 +26,7 @@ import happyIcon from "../assets/ui/Happiness.png";
 import cleanIcon from "../assets/ui/Cleanliness.png";
 import coinGif from "../assets/ui/MoneyMoney.gif";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon
+import houseMusic from "../assets/audio/house.mp3";
 
 
 
@@ -80,6 +81,14 @@ export default function House() {
   const [discoveredItems, setDiscoveredItems] = useState(() =>
     JSON.parse(localStorage.getItem("discoveredItems") || "[]")
   );
+  const houseAudioRef = useRef();
+
+useEffect(() => {
+  if (houseAudioRef.current) {
+    houseAudioRef.current.volume = 0.6;
+    houseAudioRef.current.play().catch(() => {});
+  }
+}, []);
 
   useEffect(() => {
     function syncDiscovered() {
@@ -515,6 +524,13 @@ useEffect(() => {
 }, [interactionRequested]);
 
   return (
+    <>
+  <audio
+    ref={houseAudioRef}
+    src={houseMusic}
+    autoPlay
+    loop
+  />
     <div className="viewport">
       <div className="map" style={{
         backgroundImage: `url(${homeMap})`,
@@ -1218,5 +1234,6 @@ useEffect(() => {
 )}
 
     </div>
+    </>
   );
 }

@@ -11,6 +11,8 @@ import Zone1_maze5 from "../assets/map-assets/Dungeon/Zone1_maze5.png";
 import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
 import woodIcon from "../assets/inventory-items/Log.png";
 import fishSkinIcon from "../assets/inventory-items/FishSkin.png";
+import dungeonMusic from "../assets/audio/dungeon.mp3";
+
 
 const MAZE_ROWS = 5;
 const MAZE_COLS = 7;
@@ -136,6 +138,8 @@ export default function Dungeon({ onExit }) {
     { icon: <img src={fishSkinIcon} alt="Special Fish Skin" style={{ width: 64, height: 64 }} />, name: "Special Fish Skin" },
     { icon: "🍖", name: "Hunger Potion" },
   ];
+  const audioRef = React.useRef();
+
 
   React.useEffect(() => {
     if (zone === 1) {
@@ -332,7 +336,22 @@ export default function Dungeon({ onExit }) {
         : mazeImages[mazeIndex - 1]
       : Zone1_default;
 
+      React.useEffect(() => {
+  if (audioRef.current) {
+    audioRef.current.volume = 1; // Atur sesuai selera
+    audioRef.current.play().catch(() => {});
+  }
+}, []);
+
+
     return (
+       <>
+    <audio
+      ref={audioRef}
+      src={dungeonMusic}
+      autoPlay
+      loop
+    />
       <div className="dungeon-container">
         {errorMessage && (
           <p
@@ -425,6 +444,7 @@ export default function Dungeon({ onExit }) {
           />
         </div>
       </div>
+      </>
     );
   }
 

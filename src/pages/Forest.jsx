@@ -24,6 +24,7 @@ import sleepIcon from "../assets/ui/Sleep.png";
 import happyIcon from "../assets/ui/Happiness.png";
 import cleanIcon from "../assets/ui/Cleanliness.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon-nya
+import forestMusic from "../assets/audio/forest.mp3";
 
 
 const MAP_WIDTH = 1283.2;
@@ -47,6 +48,8 @@ export default function Forest() {
   });
 
   const [atBottom, setAtBottom] = useState(false);
+  const audioRef = useRef();
+
 
   const fruitTree = {
     x: 130 + 350 / 2,
@@ -326,6 +329,14 @@ export default function Forest() {
   }, [showMinigame, minigameStarted, minigameResult]);
 
   useEffect(() => {
+  if (audioRef.current) {
+    audioRef.current.volume = 1; // bisa diubah sesuai keinginan
+    audioRef.current.play().catch(() => {});
+  }
+}, []);
+
+
+  useEffect(() => {
     if (!showMinigame || !minigameStarted) return;
     const dropUpdate = setInterval(() => {
       const basketRect = basketRef.current?.getBoundingClientRect();
@@ -566,6 +577,13 @@ export default function Forest() {
   };
 
   return (
+    <>
+  <audio
+    ref={audioRef}
+    src={forestMusic}
+    autoPlay
+    loop
+  />
     <div className="viewport">
       <div
         className="map"
@@ -1169,5 +1187,6 @@ export default function Forest() {
         </div>
       )}
     </div>
+    </>
   );
 }

@@ -20,6 +20,7 @@ import cleanIcon from "../assets/ui/Cleanliness.png";
 import coinGif from "../assets/ui/MoneyMoney.gif";
 import mesinImg from "../assets/images/mesin.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon
+import marketMusic from "../assets/audio/market.mp3";
 
 
 const SPRITE_SIZE = 80;
@@ -51,6 +52,7 @@ export default function Market() {
   const [slotNumbers, setSlotNumbers] = useState([5, 5, 6]); // angka awal slot
 
   const [showCraftModal, setShowCraftModal] = useState(false);
+const marketAudioRef = useRef();
 
   const [showEncyclopedia, setShowEncyclopedia] = useState(false);
   const [encyclopediaSelected, setEncyclopediaSelected] = useState(null);
@@ -298,8 +300,22 @@ const handleInteract = () => {
   }
 };
 
+useEffect(() => {
+  if (marketAudioRef.current) {
+    marketAudioRef.current.volume = 0.6; // Atur volume sesuai selera
+    marketAudioRef.current.play().catch(() => {});
+  }
+}, []);
+
 
   return (
+    <>
+  <audio
+    ref={marketAudioRef}
+    src={marketMusic}
+    autoPlay
+    loop
+  />
     <div className="viewport" style={{ position: "relative", backgroundColor: "#111", overflow: "hidden" }}>
       <div className="map" style={{
         backgroundImage: `url(${marketMap})`,
@@ -915,5 +931,6 @@ const handleInteract = () => {
         🔙 Back to Gameplay
       </button>
     </div>
+    </>
   );
 }
