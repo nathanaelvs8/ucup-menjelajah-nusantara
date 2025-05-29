@@ -88,6 +88,63 @@ export default function Gameplay() {
   const [encyclopediaSelected, setEncyclopediaSelected] = useState(null);
   const [discoveredItems, setDiscoveredItems] = useState(getDiscoveredItems());
 
+  const [nearCloth, setNearCloth] = useState(false);
+
+
+  const riverZones = [
+    { x: 2990, y: 2080, w: 120, h: 50 },
+    { x: 2920, y: 2130, w: 150, h: 50 },
+    { x: 2860, y: 2180, w: 120, h: 30 },
+    { x: 2730, y: 2310, w: 95,  h: 70 },
+    { x: 2630, y: 2380, w: 130, h: 100 },
+    { x: 2560, y: 2480, w: 140, h: 100 },
+    { x: 2510, y: 2580, w: 130, h: 100 },
+    { x: 2450, y: 2680, w: 110, h: 50 },
+    { x: 2390, y: 2830, w: 80,  h: 100 },
+    { x: 2350, y: 2930, w: 80,  h: 100 },
+    { x: 2320, y: 3030, w: 80,  h: 100 },
+    { x: 2300, y: 3130, w: 80,  h: 100 },
+    { x: 2270, y: 3230, w: 80,  h: 100 },
+    { x: 2250, y: 3330, w: 80,  h: 200 }
+  ];
+
+  const [clothPos, setClothPos] = useState(() => {
+    // Cek apakah sudah pernah diambil, jika ya: null
+    //const alreadyGot = JSON.parse(localStorage.getItem("gotRippedCloth"));
+    //if (alreadyGot) return null;
+
+    // Fungsi validasi spawn
+    function isInBlockedZone(x, y) {
+      // Cek semua zone, harus sama logika collision-mu
+      // (pake area tengah bawah karakter biar adil)
+      const charSize = 64;
+      // Cek riverZones
+      const inRiver = riverZones.some(zone =>
+        x + charSize/2 >= zone.x && x + charSize/2 <= zone.x + zone.w &&
+        y + charSize >= zone.y && y + charSize <= zone.y + zone.h
+      );
+      // Ocean block, bottom block, triangle
+      const inBottom = x + charSize/2 >= 0 && x + charSize/2 <= 2316 &&
+                      y + charSize >= 3150 && y + charSize <= 3554;
+      const inRect1 = x + charSize/2 >= 1500 && x + charSize/2 <= 5000 && y + charSize >= 0 && y + charSize <= 350;
+      const inRect2 = x + charSize/2 >= 2970 && x + charSize/2 <= 4670 && y + charSize >= 350 && y + charSize <= 1300;
+      const inRect3 = x + charSize/2 >= 3080 && x + charSize/2 <= 4680 && y + charSize >= 1300 && y + charSize <= 2100;
+      const inTri1 = (x + charSize/2 >= 2920 && x + charSize/2 <= 4920 && y + charSize >= 2100 && y + charSize <= 4100
+        && y + charSize < ((2000/2000) * ((x + charSize/2) - 2920) + 2100));
+      // Tambah zone lain kalau perlu
+      return inRiver || inBottom || inRect1 || inRect2 || inRect3 || inTri1;
+    }
+
+    let x, y, tryCount = 0;
+    do {
+      x = Math.floor(Math.random() * (MAP_WIDTH - SPRITE_SIZE));
+      y = Math.floor(Math.random() * (MAP_HEIGHT - SPRITE_SIZE));
+      tryCount++;
+      if (tryCount > 1000) break; // jaga2 infinite loop
+    } while (isInBlockedZone(x, y));
+    return { x, y };
+  });
+
 
   const audioRef = useRef(null);
 
@@ -294,36 +351,75 @@ export default function Gameplay() {
           (newPos.x >= 1200 && newPos.x <= 2100 && newPos.y >= 1200 && newPos.y <= 1450) ||
           (newPos.x >= 1200 && newPos.x <= 2100 && newPos.y >= 1450 && newPos.y <= 1700);
 
-        const riverZones = [
-          { x: 2990, y: 2080, w: 120, h: 50 },
-          { x: 2920, y: 2130, w: 150, h: 50 },
-          { x: 2860, y: 2180, w: 120, h: 50 },
-          { x: 2870, y: 2230, w: 45,  h: 30 },
-          { x: 2730, y: 2300, w: 95,  h: 80 },
-          { x: 2630, y: 2380, w: 130, h: 100 },
-          { x: 2560, y: 2480, w: 140, h: 100 },
-          { x: 2510, y: 2580, w: 130, h: 100 },
-          { x: 2450, y: 2680, w: 110, h: 80 },
-          { x: 2390, y: 2830, w: 80,  h: 100 },
-          { x: 2350, y: 2930, w: 80,  h: 100 },
-          { x: 2320, y: 3030, w: 80,  h: 100 },
-          { x: 2300, y: 3130, w: 80,  h: 100 },
-          { x: 2270, y: 3230, w: 80,  h: 100 },
-          { x: 2250, y: 3330, w: 80,  h: 200 }
-        ];
 
-        const inRiver = riverZones.some(zone =>
-          newPos.x >= zone.x &&
-          newPos.x <= zone.x + zone.w &&
-          newPos.y >= zone.y &&
-          newPos.y <= zone.y + zone.h
+      const charSize = 64; // ukuran karakter
+
+      const inRiver = riverZones.some(zone => {
+        // Cek keempat sudut karakter, bisa juga cek bagian bawah tengah agar lebih natural
+        const charPoints = [
+          // pojok kiri atas
+          { x: newPos.x, y: newPos.y },
+          // pojok kanan atas
+          { x: newPos.x + charSize, y: newPos.y },
+          // pojok kiri bawah
+          { x: newPos.x, y: newPos.y + charSize },
+          // pojok kanan bawah
+          { x: newPos.x + charSize, y: newPos.y + charSize },
+          // titik tengah bawah (penting buat RPG logic!)
+          { x: newPos.x + charSize / 2, y: newPos.y + charSize }
+        ];
+        return charPoints.some(pt =>
+          pt.x >= zone.x &&
+          pt.x <= zone.x + zone.w &&
+          pt.y >= zone.y &&
+          pt.y <= zone.y + zone.h
         );
+      });
 
         const inForest =
           newPos.x >= 0 && newPos.x <= 900 &&
           newPos.y >= 0 && newPos.y <= 1250;
 
-        if (!insideLake && !inMountain && !inRiver && !inForest) {
+        const inBottomBlock =
+          newPos.x >= 0 &&
+          newPos.x <= 2316 &&
+          newPos.y >= 3150 &&
+          newPos.y <= 3554;
+
+        // Ocean block 1
+        const inRect1 = (
+          newPos.x >= 1500 && newPos.x <= 1500 + 3500 &&
+          newPos.y >= 0 && newPos.y <= 0 + 350
+        );
+
+        // Ocean block 2
+        // Persegi kedua (geser ke kiri 30px)
+        const inRect2 = (
+          newPos.x >= 2970 && newPos.x <= 2970 + 1700 &&
+          newPos.y >= 350 && newPos.y <= 350 + 950
+        );
+
+        // Persegi ketiga (geser ke kiri 30px)
+        const inRect3 = (
+          newPos.x >= 3080 && newPos.x <= 3080 + 1600 &&
+          newPos.y >= 1300 && newPos.y <= 1300 + 800
+        );
+
+
+        // Ocean triangle 1
+        const inTri1 = (
+          newPos.x >= 2920 && newPos.x <= 2920 + 2000 &&
+          newPos.y >= 2100 && newPos.y <= 2100 + 2000 &&
+          // Clip-path segitiga polygon(100% 0, 100% 100%, 0 0)
+          // Artinya: y < kemiringan garis dari pojok kanan atas ke bawah kiri
+          // Cek: y < slope * (x - left) + top
+          newPos.y < ((2000/2000) * (newPos.x - 2920) + 2100) // Slope = height/width
+        );
+
+
+
+
+        if (!insideLake && !inMountain && !inRiver && !inForest && !inBottomBlock && !inRect1 &&!inRect2 && !inRect3 && !inTri1) {
           setIsMoving(moved);
           return newPos;
         }
@@ -411,6 +507,49 @@ export default function Gameplay() {
     return () => window.removeEventListener('storage', syncDiscovered);
   }, []);
 
+  useEffect(() => {
+    if (!clothPos) {
+      setNearCloth(false); // <--- ini penting!
+      return;
+    }
+    const charCenterX = position.x + SPRITE_SIZE / 2;
+    const charCenterY = position.y + SPRITE_SIZE / 2;
+    const itemCenterX = clothPos.x + 20;
+    const itemCenterY = clothPos.y + 20;
+    const near = Math.abs(charCenterX - itemCenterX) < 36 && Math.abs(charCenterY - itemCenterY) < 36;
+    setNearCloth(near);
+  }, [position, clothPos]);
+
+  useEffect(() => {
+    // Jika inventory tidak punya ripped cloth dan clothPos belum ada, spawn lagi!
+    if (!inventory.includes("Ripped Cloth") && !clothPos) {
+      // SPAWN ULANG, logic sama seperti awal
+      function isInBlockedZone(x, y) {
+        const charSize = 64;
+        const inRiver = riverZones.some(zone =>
+          x + charSize/2 >= zone.x && x + charSize/2 <= zone.x + zone.w &&
+          y + charSize >= zone.y && y + charSize <= zone.y + zone.h
+        );
+        const inBottom = x + charSize/2 >= 0 && x + charSize/2 <= 2316 &&
+                        y + charSize >= 3150 && y + charSize <= 3554;
+        const inRect1 = x + charSize/2 >= 1500 && x + charSize/2 <= 5000 && y + charSize >= 0 && y + charSize <= 350;
+        const inRect2 = x + charSize/2 >= 2970 && x + charSize/2 <= 4670 && y + charSize >= 350 && y + charSize <= 1300;
+        const inRect3 = x + charSize/2 >= 3080 && x + charSize/2 <= 4680 && y + charSize >= 1300 && y + charSize <= 2100;
+        const inTri1 = (x + charSize/2 >= 2920 && x + charSize/2 <= 4920 && y + charSize >= 2100 && y + charSize <= 4100
+          && y + charSize < ((2000/2000) * ((x + charSize/2) - 2920) + 2100));
+        return inRiver || inBottom || inRect1 || inRect2 || inRect3 || inTri1;
+      }
+
+      let x, y, tryCount = 0;
+      do {
+        x = Math.floor(Math.random() * (MAP_WIDTH - SPRITE_SIZE));
+        y = Math.floor(Math.random() * (MAP_HEIGHT - SPRITE_SIZE));
+        tryCount++;
+        if (tryCount > 1000) break;
+      } while (isInBlockedZone(x, y));
+      setClothPos({ x, y });
+    }
+  }, [inventory, clothPos]);
 
 
   const getSpriteOffset = () => {
@@ -427,35 +566,49 @@ export default function Gameplay() {
     keysPressed.current[key] = value;
   };
 
-const handleInteract = () => {
-  // Simpan data player seperti biasa
-  const saveData = { character, position, status, money, inventory };
-  localStorage.setItem("playerData", JSON.stringify(saveData));
-  localStorage.setItem("playerTime", JSON.stringify({
-    startTimestamp: Date.now(),
-    savedMinute: currentMinute,
-    savedHour: currentHour,
-    savedDay: currentDayIndex
-  }));
+  const handleInteract = () => {
+    // Ambil ripped cloth jika di dekat item
+    if (nearCloth && clothPos) {
+      setInventory(inv => {
+        const newInv = [...inv, "Ripped Cloth"];
+        localStorage.setItem("playerData", JSON.stringify({
+          character, position, status, money, inventory: newInv
+        }));
+        return newInv;
+      });
+      setClothPos(null);
+      addDiscoveredItem("Ripped Cloth");
+      setDiscoveredItems(getDiscoveredItems()); // <-- Tambahkan baris ini
+      return;
+    }
 
-  if (inHouseZone) {
-    window.location.href = "/house";
-  } else if (nearLakeZone) {
-    window.location.href = "/fishing";
-  } else if (nearBeachZone) {
-    // Simpan posisi terakhir di main map sebelum masuk beach
-    localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
-    // JANGAN overwrite playerData.position di sini!
-    window.location.href = "/beach";
-  } else if (inMarketZone) {
-    window.location.href = "/market";
-  } else if (nearForestZone) {
-    // Simpan posisi terakhir sebelum masuk forest
-    localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
-    window.location.href = "/forest";
-  } 
-};
+    // Simpan data player seperti biasa
+    const saveData = { character, position, status, money, inventory };
+    localStorage.setItem("playerData", JSON.stringify(saveData));
+    localStorage.setItem("playerTime", JSON.stringify({
+      startTimestamp: Date.now(),
+      savedMinute: currentMinute,
+      savedHour: currentHour,
+      savedDay: currentDayIndex
+    }));
 
+    if (inHouseZone) {
+      window.location.href = "/house";
+    } else if (nearLakeZone) {
+      window.location.href = "/fishing";
+    } else if (nearBeachZone) {
+      // Simpan posisi terakhir di main map sebelum masuk beach
+      localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
+      // JANGAN overwrite playerData.position di sini!
+      window.location.href = "/beach";
+    } else if (inMarketZone) {
+      window.location.href = "/market";
+    } else if (nearForestZone) {
+      // Simpan posisi terakhir sebelum masuk forest
+      localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
+      window.location.href = "/forest";
+    } 
+  };
 
 return (
   <div className="viewport">
@@ -492,7 +645,6 @@ return (
       <div className="river-zone part-a"></div>
       <div className="river-zone part-b"></div>
       <div className="river-zone part-c"></div>
-      <div className="river-zone part-d"></div>
       <div className="river-zone part-e"></div>
       <div className="river-zone part-f"></div>
       <div className="river-zone part-g"></div>
@@ -506,6 +658,28 @@ return (
       <div className="river-zone part-o"></div>
       <div className="market-zone"></div>
       <div className="forest-zone"></div>
+      <div className="bottom-block-zone"></div>
+      <div className="rect-block-zone ocean-block-1"></div>
+      <div className="rect-block-zone ocean-block-2"></div>
+      <div className="rect-block-zone ocean-block-3"></div>
+      <div className="tri-block-zone ocean-tri-1"></div>
+
+      {clothPos && (
+        <img
+          src={itemIcons["Ripped Cloth"]}
+          alt="Ripped Cloth"
+          className="map-item"
+          style={{
+            position: "absolute",
+            left: clothPos.x,
+            top: clothPos.y,
+            width: 40,
+            height: 40,
+            zIndex: 12
+          }}
+        />
+      )}
+
     </div>
 
     <div className="status-ui">
@@ -936,7 +1110,9 @@ return (
 
         <div className="event-panel">
           <p className="event-text">
-            {inHouseZone
+            {nearCloth
+              ? "🧣 Press Interact to collect Ripped Cloth"
+              : inHouseZone
               ? "🏠 Press Interact to enter the house"
               : nearLakeZone
               ? "🌊 Press Interact to fish"
@@ -950,6 +1126,7 @@ return (
           </p>
           <button className="event-button" onClick={handleInteract}>Interact</button>
         </div>
+
 
         <button className="map-toggle-button" onClick={() => setShowMainMap(true)}>
           <img src={mapIcon} alt="Map" />

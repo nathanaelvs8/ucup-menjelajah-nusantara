@@ -826,3 +826,112 @@ html, body {
   border: 2px dashed #ff4b4b;         /* opsional biar kelihatan */
   pointer-events: none;               /* supaya karakter bisa tetap lewat kalau cuma visual */
 }
+
+.rect-block-zone.ocean-block-1 {
+  position: absolute;
+  left: 1500px; top: 0px;
+  width: 3500px; height: 350px;
+  background: rgba(0,0,255,0.12);
+  z-index: 30;
+  pointer-events: none;
+}
+.rect-block-zone.ocean-block-2 {  
+  position: absolute;
+  left: 3000px; top: 350px;
+  width: 1700px; height: 950px;
+  background: rgba(0,0,255,0.12);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.rect-block-zone.ocean-block-3 { 
+  position: absolute;
+  left: 3110px; top: 1300px;
+  width: 1600px; height: 800px;
+  background: rgba(0,0,255,0.12);
+  z-index: 30;
+  pointer-events: none;
+}
+
+.tri-block-zone.ocean-tri-1 {
+  position: absolute;
+  left: 2920px; top: 2100px;
+  width: 2000px; height: 2000px;
+  background: rgba(0,0,255,0.12);
+  z-index: 31;
+  clip-path: polygon(100% 0, 100% 100%, 0 0);
+  pointer-events: none;
+}
+
+.river-zone {
+  position: absolute;
+  background: rgba(0, 191, 255, 0.17); /* Biru transparan, mirip air */
+  z-index: 22;
+  pointer-events: none;
+  border: 1.5px solid #40a6ff6b;  /* Biar kelihatan */
+  border-radius: 9px;              /* Biar halus */
+}
+
+.river-zone.part-a { 
+  left: 2990px; top: 2080px; width: 120px; height: 50px; 
+}
+
+.river-zone.part-b { 
+  left: 2920px; top: 2130px; width: 150px; height: 50px; 
+}
+
+.river-zone.part-c { 
+  left: 2860px; top: 2180px; width: 120px; height: 30px; 
+}
+
+.river-zone.part-e { 
+  left: 2730px; top: 2310px; width: 95px; height: 70px; 
+}
+
+.river-zone.part-f { 
+  left: 2630px; top: 2380px; width: 130px; height: 100px; 
+}
+
+.river-zone.part-g { 
+  left: 2560px; top: 2480px; width: 140px; height: 100px; 
+}
+
+.river-zone.part-h { 
+  left: 2510px; top: 2580px; width: 130px; height: 100px; 
+}
+
+.river-zone.part-i { 
+  left: 2450px; top: 2680px; width: 110px; height: 50px; 
+}
+
+.river-zone.part-j { 
+  left: 2390px; top: 2830px; width: 80px; height: 100px; 
+}
+
+.river-zone.part-k { 
+  left: 2350px; top: 2930px; width: 80px; height: 100px; 
+}
+
+.river-zone.part-l { 
+  left: 2320px; top: 3030px; width: 80px; height: 100px; 
+}
+
+.river-zone.part-m { 
+  left: 2300px; top: 3130px; width: 80px; height: 100px; 
+}
+
+.river-zone.part-n { 
+  left: 2270px; top: 3230px; width: 80px; height: 100px; 
+}
+
+.river-zone.part-o { 
+  left: 2250px; top: 3330px; width: 80px; height: 200px; 
+}
+
+.map-item {
+  animation: bounce 0.8s infinite alternate;
+}
+@keyframes bounce {
+  0% { transform: translateY(0px);}
+  100% { transform: translateY(-8px);}
+}

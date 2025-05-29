@@ -102,3 +102,58 @@
   text-shadow: 2px 2px 6px black;
   z-index: 999;
 }
+
+/* Zona pohon buah (fruit) - ellipse atau persegi */
+.fruit-block-zone {
+  position: absolute;
+  left: 130px;    /* posisi X dari kiri map */
+  top: 200px;     /* posisi Y dari atas map */
+  width: 350px;   /* lebar zona */
+  height: 280px;  /* tinggi zona */
+  background: rgba(92, 210, 70, 0.25);  /* hijau transparan, bisa diganti */
+  border-radius: 50%;                   /* ellipse, bisa jadi 0 kalau persegi */
+  border: 2px dashed #49c24d;
+  z-index: 8;
+  pointer-events: none;                 /* hanya visual */
+}
+
+/* Zona pohon kayu (wood) - ellipse atau persegi */
+.wood-block-zone {
+  position: absolute;
+  left: 900px;
+  top: 300px;
+  width: 300px;
+  height: 350px;
+  background: rgba(145, 105, 60, 0.22);
+  border-radius: 45%;                   /* biar oval, kalau mau persegi pakai 0 */
+  border: 2px dashed #d1ae6e;
+  z-index: 8;
+  pointer-events: none;
+}
+
+/* Zona dungeon/portal (dungeon) - ellipse atau persegi */
+.dungeon-block-zone {
+  position: absolute;
+  left: 1100px;
+  top: 0px;
+  width: 250px;
+  height: 170px;
+  background: rgba(69, 97, 163, 0.23);
+  border-radius: 50%;
+  border: 2px dashed #4961a3;
+  z-index: 8;
+  pointer-events: none;
+}
+
+/* Contoh zona terlarang (misal area bawah map) */
+.blocked-bottom-zone {
+  position: absolute;
+  left: 0px;
+  top: 960px;
+  width: 1283.2px;
+  height: 80px;
+  background: rgba(255, 0, 0, 0.2);
+  border: 2px solid #ff6b6b;
+  z-index: 9;
+  pointer-events: none;
+}
