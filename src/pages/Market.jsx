@@ -21,6 +21,7 @@ import coinGif from "../assets/ui/MoneyMoney.gif";
 import mesinImg from "../assets/images/mesin.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon
 import marketMusic from "../assets/audio/market.mp3";
+import Shop from "./Shop.jsx"; // pastikan pathnya benar!
 
 
 const SPRITE_SIZE = 80;
@@ -50,8 +51,8 @@ export default function Market() {
   const [currentZoneName, setCurrentZoneName] = useState("");
   const [showSlotMachine, setShowSlotMachine] = useState(false);
   const [slotNumbers, setSlotNumbers] = useState([5, 5, 6]); // angka awal slot
-
-  const [showCraftModal, setShowCraftModal] = useState(false);
+  const [showShop, setShowShop] = useState(false);
+const [showCraftModal, setShowCraftModal] = useState(false);
 const marketAudioRef = useRef();
 
   const [showEncyclopedia, setShowEncyclopedia] = useState(false);
@@ -183,12 +184,30 @@ const startSlot = () => {
           if (newMinute >= 60) {
             newMinute = 0;
             hour += 1;
-            setStatus(prev => {
-              const newStatus = { ...prev };
-              for (let key in newStatus) newStatus[key] = Math.max(newStatus[key] - 2, 0);
-              if (Object.values(newStatus).every(val => val === 0)) window.location.href = "/ending";
-              return newStatus;
-            });
+           setStatus(prev => {
+  // Ambil info buff dari localStorage
+  const playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
+  const playerTime = JSON.parse(localStorage.getItem("playerTime") || "{}");
+  const currentDayIndex = playerTime.savedDay ?? 0;
+
+  // Hapus buff jika sudah lewat 3 hari
+  if (playerData.megalodonBuffUntil !== undefined && playerData.megalodonBuffUntil < currentDayIndex) {
+    delete playerData.megalodonBuffUntil;
+    localStorage.setItem("playerData", JSON.stringify(playerData));
+  }
+
+  // Jika buff aktif, status tetap 100
+  if (playerData.megalodonBuffUntil !== undefined && playerData.megalodonBuffUntil >= currentDayIndex) {
+    return { meal: 100, sleep: 100, happiness: 100, cleanliness: 100 };
+  }
+
+  // Kalau tidak ada buff, status turun seperti biasa
+  const newStatus = { ...prev };
+  for (let key in newStatus) newStatus[key] = Math.max(newStatus[key] - 2, 0);
+  if (Object.values(newStatus).every(val => val === 0)) window.location.href = "/ending";
+  return newStatus;
+});
+
           }
 
           if (hour >= 24) {
@@ -292,6 +311,8 @@ const handleInteract = () => {
   if (zone) {
     if (zone.name === "Mesin Slot") {
       setShowSlotMachine(true);
+    } else if (zone.name === "Toko Peralatan") {
+      setShowShop(true);
     } else {
       alert(`🛒 Interaksi dengan ${zone.name}`);
     }
@@ -299,6 +320,7 @@ const handleInteract = () => {
     alert("⚠️ Tidak ada yang bisa diinteraksikan di sini.");
   }
 };
+
 
 useEffect(() => {
   if (marketAudioRef.current) {
@@ -332,6 +354,18 @@ useEffect(() => {
         
 
       </div>
+
+      {showShop && (
+  <Shop
+    onClose={() => setShowShop(false)}
+    playerMoney={money}
+    setPlayerMoney={setMoney}
+    playerInventory={inventory}
+    setPlayerInventory={setInventory}
+    // ...prop lainnya sesuai kebutuhan Shop.jsx kamu
+  />
+)}
+
 
 {showSlotMachine && (
   <div

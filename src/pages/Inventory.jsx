@@ -26,6 +26,22 @@ import TorchIcon from "../assets/inventory-items/Torch.png";
 import TunaIcon from "../assets/inventory-items/Tuna.png";
 import WaterIcon from "../assets/inventory-items/Water.png";
 import WildFruitIcon from "../assets/inventory-items/WildFruit.png";
+import CookedTunaIcon from "../assets/inventory-items/CookedTuna.png";
+import CookedMegalodonIcon from "../assets/inventory-items/CookedMegalodon.png";
+import CookedGoldfishIcon from "../assets/inventory-items/CookedGoldfish.png";
+import GarlicIcon from "../assets/inventory-items/Garlic.png";
+import MagicPowderIcon from "../assets/inventory-items/MagicPower.png";
+import MagicSauceIcon from "../assets/inventory-items/MagicSauce.png";
+import OnionIcon from "../assets/inventory-items/Onion.png";
+import SaltIcon from "../assets/inventory-items/Salt.png";
+import ShallotIcon from "../assets/inventory-items/Shallot.png";
+import CleanlinessPotionIcon from "../assets/inventory-items/CleanlinessPotion.png";
+import HappinesPotionIcon from "../assets/inventory-items/HappinesPotion.png";
+import MealPotionIcon from "../assets/inventory-items/MealPotion.png";
+import MorningDewPotionIcon from "../assets/inventory-items/MorningDewPotion.png";
+
+
+
 
 // === ITEM ICONS MAPPING ===
 export const itemIcons = {
@@ -33,14 +49,21 @@ export const itemIcons = {
   "Ancient Glass With Water": AncientGlassWithWaterIcon,
   "Boat": BoatIcon,
   "Coconut": CoconutIcon,
+    "Cooked Tuna": CookedTunaIcon,
+  "Cooked Megalodon": CookedMegalodonIcon,
+  "Cooked Goldfish": CookedGoldfishIcon,
   "Fish Nail": FishNailIcon,
   "Special Fish Skin": SpecialFishSkinIcon,
   "Gem": GemIcon,
   "Goldfish": GoldfishIcon,
+    "Garlic": GarlicIcon,
   "Juice Coconut": CoconutJuiceIcon,
   "Juice Wild Fruit": WildFruitJuiceIcon,
   "Megalodon": MegalodonIcon,
+  "Magic Powder": MagicPowderIcon,
+  "Magic Sauce": MagicSauceIcon,
   "Archipelago Talisman": ArchipelagoTalismanIcon,
+  "Onion": OnionIcon,
   "Pearl": PearlIcon,
   "Pickaxe": PickaxeIcon,
   "Rare Herbal Grass": RareHerbalGrassIcon,
@@ -48,11 +71,17 @@ export const itemIcons = {
   "Rod": RodIcon,
   "Rope": RopeIcon,
   "Rusty Iron": RustMetalIcon,
-  "Torch": TorchIcon,
+    "Salt": SaltIcon,
+    "Shallot": ShallotIcon,
+    "Torch": TorchIcon,
   "Tuna": TunaIcon,
   "Water": WaterIcon,
   "Wild Fruit": WildFruitIcon,
   "Wood": LogIcon,
+    "Cleanliness Potion": CleanlinessPotionIcon,
+  "Happiness Potion": HappinesPotionIcon,
+  "Meal Potion": MealPotionIcon,
+  "Morning Dew Potion": MorningDewPotionIcon,
 };
 
 // === ITEM DETAILS (DESKRIPSI, EFEK, HARGA JUAL, DST) ===
@@ -70,6 +99,33 @@ export const itemDetails = {
   "Boat": { 
     description: "A small boat. Maybe you can use it to cross water.",
     source: "Constructed through meticulous crafting techniques, requiring precise assembly of wooden components and binding materials."
+  },
+  "Cooked Megalodon": {
+  description: "Roasted giant megalodon steak! All stats become 100 for 3 days.",
+  sellGold: 8000,
+  useEffect: (stat) => {
+    // Simpan buff ke localStorage, buff aktif sampai hari ke-N berikutnya
+    const playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
+    const nowDay = playerData.time ? playerData.time.day : 0; // sesuaikan dengan cara kamu simpan hari
+    playerData.megalodonBuffUntil = ((nowDay ?? 0) + 3) % 7; // 3 hari ke depan, wrap ke minggu
+    localStorage.setItem("playerData", JSON.stringify(playerData));
+    // Stat langsung 100
+    return { meal: 100, sleep: 100, happiness: 100, cleanliness: 100 };
+  },
+  source: "Cooked megalodon. Full buff for 3 days!"
+},
+
+  "Cooked Tuna": {
+    description: "Grilled tuna, delicious and filling. Restores 80 meal.",
+    sellGold: 350,
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 80, 100) }),
+    source: "Cook fresh Tuna on a campfire or grill."
+  },
+   "Cooked Goldfish": {
+    description: "A plate of seasoned, grilled goldfish. Restores 40 meal.",
+    sellGold: 180,
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 40, 100) }),
+    source: "Goldfish, after a good grilling. Yummy!"
   },
   "Coconut": { 
     description: "Tropical fruit, edible or used for crafting.", 
@@ -95,6 +151,12 @@ export const itemDetails = {
     useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
     source: "Common aquatic specimens caught through patient angling in various water bodies throughout the region."
   },
+  "Garlic": {
+  description: "Aromatic garlic, used for advanced recipes.",
+  sellGold: 15,
+  useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 5, 100) }),
+  source: "Available in the equipment shop or foraged in the wild."
+},
   "Juice Coconut": { 
     description: "Coconut juice. Refreshing and tasty.", 
     sellGold: 60, 
@@ -113,7 +175,25 @@ export const itemDetails = {
     useEffect: (stat) => ({ meal: 100, sleep: 100, happiness: 100, cleanliness: 100 }),
     source: "Extraordinarily rare aquatic behemoth that occasionally surfaces from the lake's deepest recesses, appearing unpredictably."
   },
-  "Archipelago Talisman": { 
+"Magic Powder": {
+  description: "MSG - Magic Powder. Adds umami to any dish!",
+  sellGold: 35,
+  useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 5, 100) }),
+  source: "Secret seasoning found in hidden merchant stalls."
+},
+"Magic Sauce": {
+  description: "A bottle of magic sauce. Elevates every meal.",
+  sellGold: 55,
+  useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 5, 100) }),
+  source: "Occasionally offered by rare wandering vendors."
+},
+"Onion": {
+  description: "Crunchy onion. Basic ingredient for cooking.",
+  sellGold: 10,
+  useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 5, 100) }),
+  source: "Gathered from vegetable patches around the village."
+},
+ "Archipelago Talisman": { 
     description: "Strange talisman from the jungle. It feels powerful.",
     source: "Fashioned through intricate crafting rituals, incorporating mystical elements gathered from dense tropical vegetation."
   },
@@ -150,6 +230,19 @@ export const itemDetails = {
     sellGold: 40,
     source: "Extracted from weathered coastal rock formations through systematic demolition of mineral deposits."
   },
+"Salt": {
+  description: "Salt. Essential for seasoning food.",
+  sellGold: 5,
+  useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 5, 100) }),
+  source: "Harvested from salt lakes or purchased in town."
+},
+"Shallot": {
+  description: "Mild shallot. Perfect for enhancing flavor.",
+  sellGold: 18,
+  useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 5, 100) }),
+  source: "Commonly found in wild fields or local markets."
+},
+
   "Torch": { 
     description: "Simple torch. Lights up dark areas.",
     source: "Manufactured through careful crafting procedures, combining combustible materials with sustainable flame sources."
@@ -177,6 +270,31 @@ export const itemDetails = {
     sellGold: 200,
     source: "Obtained from lifeless tree specimens found in desolate woodland areas, providing essential construction materials."
   },
+    "Cleanliness Potion": {
+    description: "A potion that instantly restores your cleanliness to full.",
+    sellGold: 60,
+    useEffect: (stat) => ({ ...stat, cleanliness: 50 }),
+    source: "Brewed by a mysterious alchemist from rare herbs."
+  },
+  "Happiness Potion": {
+    description: "This potion brings instant joy and restores happiness to 100.",
+    sellGold: 60,
+    useEffect: (stat) => ({ ...stat, happiness: 50 }),
+    source: "Distilled from rainbow droplets and magical smiles."
+  },
+  "Meal Potion": {
+    description: "A quick-fix potion to fully restore your meal bar.",
+    sellGold: 60,
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 20, 100) }),
+    source: "Commonly found in adventure starter packs."
+  },
+  "Morning Dew Potion": {
+    description: "Keeps you awake and restores your sleep stat to full.",
+    sellGold: 60,
+    useEffect: (stat) => ({ ...stat, sleep: 50 }),
+    source: "Collected from the leaves at dawn in enchanted forests."
+  },
+
 };
 
 export default function Inventory({ inventory, onUseItem, onSellItem }) {

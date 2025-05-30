@@ -271,14 +271,32 @@ export default function Gameplay() {
       hour += 1;
 
       setStatus((prev) => {
-        const newStatus = { ...prev };
-        for (let key in newStatus) {
-          newStatus[key] = Math.max(newStatus[key] - 2, 0);
-        }
-        const allZero = Object.values(newStatus).every(val => val === 0);
-        if (allZero) window.location.href = "/ending";
-        return newStatus;
-      });
+  // Ambil info buff dari localStorage
+  const playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
+  const playerTime = JSON.parse(localStorage.getItem("playerTime") || "{}");
+  const currentDayIndex = playerTime.savedDay ?? 0;
+
+  // Hapus buff jika sudah lewat 3 hari
+  if (playerData.megalodonBuffUntil !== undefined && playerData.megalodonBuffUntil < currentDayIndex) {
+    delete playerData.megalodonBuffUntil;
+    localStorage.setItem("playerData", JSON.stringify(playerData));
+  }
+
+  // Jika buff aktif, status tetap 100
+  if (playerData.megalodonBuffUntil !== undefined && playerData.megalodonBuffUntil >= currentDayIndex) {
+    return { meal: 100, sleep: 100, happiness: 100, cleanliness: 100 };
+  }
+
+  // Kalau tidak ada buff, status turun seperti biasa
+  const newStatus = { ...prev };
+  for (let key in newStatus) {
+    newStatus[key] = Math.max(newStatus[key] - 2, 0);
+  }
+  const allZero = Object.values(newStatus).every(val => val === 0);
+  if (allZero) window.location.href = "/ending";
+  return newStatus;
+});
+
     }
 
     if (hour >= 24) {
