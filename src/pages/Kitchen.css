@@ -1,0 +1,174 @@
+/* src/Kitchen.css */
+
+.kitchen-container {
+  width: 100vw;
+  height: 100vh;
+  background-size: cover; /* Membuat gambar menutupi seluruh area */
+  background-position: center; /* Posisi gambar di tengah */
+  background-repeat: no-repeat; /* Agar gambar tidak berulang */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Mencegah scrollbar jika konten lebih besar */
+  position: relative; /* Untuk positioning overlay */
+  font-family: 'Arial', sans-serif; /* Contoh font */
+}
+
+.game-overlay {
+  background-color: rgba(0, 0, 0, 0.5); /* Overlay gelap transparan agar teks lebih mudah dibaca */
+  padding: 20px;
+  border-radius: 10px;
+  color: white;
+  text-align: center;
+  max-width: 80%;
+  max-height: 80%;
+  overflow-y: auto; /* Scroll jika konten overlay terlalu banyak */
+}
+
+.recipe-menu h2,
+.recipe-details h3,
+.minigame-area h4,
+.result-display h3 {
+  margin-top: 0;
+  color: #ffdd57; /* Warna kuning untuk judul */
+}
+
+.recipe-menu ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.recipe-menu li {
+  background-color: rgba(255, 255, 255, 0.1);
+  margin: 8px 0;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.recipe-menu li:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.recipe-details ul {
+  list-style-type: none;
+  padding: 0;
+  margin-bottom: 15px;
+}
+.recipe-details li {
+  margin-bottom: 5px;
+}
+
+
+button {
+  background-color: #4CAF50; /* Warna hijau untuk tombol */
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.2s ease-in-out;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.feedback-message {
+  background-color: #f44336; /* Merah untuk pesan feedback negatif */
+  color: white;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+/* Jika feedback positif, bisa gunakan warna lain */
+.feedback-message.success {
+  background-color: #4CAF50; /* Hijau untuk sukses */
+}
+
+.minigame-area p {
+    margin: 10px 0;
+}
+
+.result-display p {
+    margin: 10px 0;
+    font-size: 1.1em;
+}
+
+.minigame-container {
+  display: flex;
+  flex-direction: column; /* Susun elemen di dalamnya secara vertikal */
+  justify-content: center; /* Pusatkan secara vertikal di dalam .game-overlay */
+  align-items: center;   /* Pusatkan secara horizontal di dalam .game-overlay */
+  width: 100%; /* Ambil lebar penuh dari .game-overlay */
+  padding: 10px; /* Beri sedikit padding jika .game-overlay tidak punya */
+}
+
+.minigame-play-area {
+  background-color: rgba(34, 139, 34, 0.5); /* Warna hijau hutan (Forest Green) dengan 50% transparansi */
+  /* Alternatif warna hijau lain: rgba(76, 175, 80, 0.5); untuk hijau material design */
+  border: 3px solid #006400; /* Warna hijau tua untuk border */
+  border-radius: 50px;      /* Ini akan membuat sudut sangat melengkung, memberi kesan "lonjong" */
+                            /* Anda bisa coba nilai lain seperti 25px atau 30px jika terlalu bulat */
+  padding: 25px 35px;       /* Padding di dalam blok hijau */
+  width: 75%;               /* Lebar blok, bisa disesuaikan (misalnya 600px jika ingin fixed) */
+  max-width: 650px;         /* Lebar maksimal agar tidak terlalu besar di layar lebar */
+  min-height: 250px;        /* Tinggi minimal untuk blok */
+  text-align: center;       /* Teks di dalamnya rata tengah */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Bayangan halus agar lebih menonjol */
+  color: white;             /* Warna teks di dalam blok hijau (jika tidak di-override) */
+  margin-bottom: 20px;      /* Jarak dari blok hijau ke tombol batal di bawahnya */
+}
+
+.minigame-play-area h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #f5f5dc; /* Warna krem/beige untuk judul di atas background hijau */
+  font-size: 1.5em;
+}
+
+.minigame-play-area p {
+  margin: 8px 0;
+  font-size: 1.1em;
+}
+
+/* Area spesifik di dalam blok hijau tempat item-item game akan muncul */
+.minigame-items-display {
+  background-color: rgba(0, 0, 0, 0.15); /* Background sedikit lebih gelap untuk kontras item */
+  border-radius: 20px; /* Sudut melengkung juga untuk area item */
+  padding: 20px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  width: 100%; /* Ambil lebar penuh dari .minigame-play-area */
+  min-height: 100px; /* Tinggi minimal untuk area item */
+  display: flex; /* Untuk mengatur item di dalamnya nanti (misal, berjejer) */
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap; /* Jika item banyak, bisa wrap */
+  gap: 10px; /* Jarak antar item (jika ada beberapa) */
+}
+
+.minigame-items-display p { /* Styling untuk teks placeholder di area item */
+    color: rgba(255, 255, 255, 0.7);
+    font-style: italic;
+}
+
+.minigame-cancel-button {
+  background-color: #d9534f; /* Warna merah untuk tombol batal */
+  padding: 10px 20px;
+  font-size: 1em;
+}
+
+.minigame-cancel-button:hover {
+  background-color: #c9302c;
+}

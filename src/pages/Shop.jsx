@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import "./Shop.css";
 import Inventory from "./Inventory.jsx"; // path harus benar, sesuaikan dengan struktur folder kamu
 import inventoryIcon from "../assets/ui/Inventory.png";
@@ -22,7 +22,8 @@ import ShallotIcon from "../assets/inventory-items/Shallot.png";
 import TunaIcon from "../assets/inventory-items/Tuna.png";
 import WaterIcon from "../assets/inventory-items/Water.png";
 import MegalodonIcon from "../assets/inventory-items/Megalodon.png"; // Impor ikon Megalodon
-
+import OilIcon from "../assets/inventory-items/Oil.png"; 
+import CookedMegalodonIcon from "../assets/inventory-items/CookedMegalodon.png";
 const defaultItemList = [
   {
     id: "happiness_potion",
@@ -160,6 +161,13 @@ const cookingItemList = [
     price: 750,
     maxStock: 15,
   },
+   {
+    id: "oil", // ID unik untuk minyak
+    name: "Oil",  // Nama item
+    icon: OilIcon, // Ikon yang sudah diimpor
+    price: 80,    // Contoh harga, sesuaikan jika perlu
+    maxStock: 40, // Contoh stok maksimal, sesuaikan jika perlu
+  },
 ];
 
 // Daftar item eksklusif
@@ -171,6 +179,13 @@ const exclusiveItemList = [
     price: 1000000, // Contoh harga, item eksklusif biasanya mahal
     maxStock: 1, // Contoh stok, item eksklusif biasanya sangat terbatas
   },
+  {
+    id : "cooked_megalodon",
+    name : "Cooked Megalodon",
+    icon : CookedMegalodonIcon,
+    price : 2,
+    maxStock : 100,
+  }
   // Tambahkan item eksklusif lainnya di sini jika ada
 ];
 
@@ -190,7 +205,89 @@ function Shop({ onClose, playerMoney, setPlayerMoney, playerInventory, setPlayer
   const [itemStock, setItemStock] = useState({});
   const [shopItems, setShopItems] = useState([]);
   const [lastRefresh, setLastRefresh] = useState(0);
+const itemGridRef = useRef(null);
 
+useEffect(() => {
+  const grid = itemGridRef.current;
+  if (!grid) return;
+
+  let isDown = false;
+  let startX, scrollLeft;
+
+  // Mouse events
+  const mouseDown = (e) => {
+    isDown = true;
+    grid.classList.add('dragging');
+    startX = e.pageX - grid.offsetLeft;
+    scrollLeft = grid.scrollLeft;
+  };
+  const mouseLeave = () => {
+    isDown = false;
+    grid.classList.remove('dragging');
+  };
+  const mouseUp = () => {
+    isDown = false;
+    grid.classList.remove('dragging');
+  };
+  const mouseMove = (e) => {
+    if (!isDown) return;
+    e.preventDefault();
+    const x = e.pageX - grid.offsetLeft;
+    const walk = (x - startX) * 1.3;
+    grid.scrollLeft = scrollLeft - walk;
+  };
+
+  // Touch events
+  const touchStart = (e) => {
+    isDown = true;
+    startX = e.touches[0].pageX - grid.offsetLeft;
+    scrollLeft = grid.scrollLeft;
+  };
+  const touchEnd = () => {
+    isDown = false;
+  };
+  const touchMove = (e) => {
+    if (!isDown) return;
+    const x = e.touches[0].pageX - grid.offsetLeft;
+    const walk = (x - startX) * 1.4;
+    grid.scrollLeft = scrollLeft - walk;
+  };
+
+  // Add listeners
+  grid.addEventListener('mousedown', mouseDown);
+  grid.addEventListener('mouseleave', mouseLeave);
+  grid.addEventListener('mouseup', mouseUp);
+  grid.addEventListener('mousemove', mouseMove);
+  grid.addEventListener('touchstart', touchStart);
+  grid.addEventListener('touchend', touchEnd);
+  grid.addEventListener('touchmove', touchMove);
+
+  // Clean up
+  return () => {
+    grid.removeEventListener('mousedown', mouseDown);
+    grid.removeEventListener('mouseleave', mouseLeave);
+    grid.removeEventListener('mouseup', mouseUp);
+    grid.removeEventListener('mousemove', mouseMove);
+    grid.removeEventListener('touchstart', touchStart);
+    grid.removeEventListener('touchend', touchEnd);
+    grid.removeEventListener('touchmove', touchMove);
+    return () => {
+  // ...event lain yang sudah ada (drag, touch, dst)...
+  grid.removeEventListener("wheel", wheelHandler);
+};
+
+  };
+
+    const wheelHandler = (e) => {
+    if (e.deltaY !== 0) {
+      e.preventDefault();
+      grid.scrollLeft += e.deltaY;
+    }
+  };
+  grid.addEventListener("wheel", wheelHandler, { passive: false });
+}, []);
+
+  
   useEffect(() => {
     const savedShopItems = JSON.parse(localStorage.getItem("shopItems") || "null");
     const savedLastRefresh = parseInt(localStorage.getItem("shopLastRefresh") || "0", 10);
@@ -233,6 +330,8 @@ function Shop({ onClose, playerMoney, setPlayerMoney, playerInventory, setPlayer
     localStorage.setItem("shopStock", JSON.stringify(initialStock));
 
   }, []); // Hanya berjalan sekali saat mount
+
+  
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -342,7 +441,8 @@ function Shop({ onClose, playerMoney, setPlayerMoney, playerInventory, setPlayer
       </div>
       <div className="shop-category-container">
         {activeTab === "Item" && (
-          <div className="shop-item-grid scroll-x">
+   <div className="shop-item-grid scroll-x" ref={itemGridRef}>
+
             {shopItems.map(item => ( // shopItems adalah item acak dari defaultItemList
               <div className="shop-item-card" key={item.id}>
                 <img src={item.icon} alt={item.name} />

@@ -7,6 +7,7 @@ import { itemIcons } from "./Inventory.jsx";
 import CraftIcon from "../assets/ui/Craft.png";
 import { itemDetails } from "./Inventory.jsx";
 import Inventory from "./Inventory.jsx";
+import Kitchen from "./Kitchen.jsx";
 import inventoryIcon from "../assets/ui/Inventory.png";
 import homeMap from "../assets/map/Home.jpg";
 import blanket from "../assets/ui/blanket.png";
@@ -53,6 +54,7 @@ export default function House() {
   const [isMoving, setIsMoving] = useState(false);
   const keysPressed = useRef({});
   const [showWastafelOptions, setShowWastafelOptions] = useState(false);
+  const [showKitchen, setShowKitchen] = useState(false);
   const [showNotification, setShowNotification] = useState(false);
   const [isSleeping, setIsSleeping] = useState(false);
   const [showSleepOverlay, setShowSleepOverlay] = useState(false);
@@ -395,6 +397,11 @@ const handleKeyUp = (e) => {
 setPositionLock(position);
       setIsInteracting(true);
   setShowWastafelOptions(true);
+  return;
+}
+else if (zone.name === "Kitchen"){ 
+ setShowKitchen(true);
+  setIsInteracting(true);
   return;
 }
 else if (zone.name === "Bed") {
@@ -1238,6 +1245,21 @@ useEffect(() => {
     </div>
   </div>
 )}
+
+{showKitchen && (
+      <Kitchen
+        onClose={() => {
+          setShowKitchen(false);
+          setIsInteracting(false); // biar bisa gerak lagi
+}}
+       status={status}
+  setStatus={setStatus}
+  money={money}
+  setMoney={setMoney}
+  inventory={inventory}
+  setInventory={setInventory}
+  />
+    )}
 
 {showNotification && (
   <div className="notification">

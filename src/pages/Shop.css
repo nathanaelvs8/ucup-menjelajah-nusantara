@@ -69,6 +69,14 @@
   scrollbar-width: thin;
   scrollbar-color: #eab100 #23242c;
   min-height: 245px;
+   -webkit-overflow-scrolling: touch; /* Biar momentum scroll di iOS/Android */
+  touch-action: pan-x; /* Prioritaskan gesture horizontal */
+  scroll-behavior: smooth; /* Scroll-nya halus */
+  cursor: grab;
+}
+
+.shop-item-grid.dragging {
+  cursor: grabbing;
 }
 .shop-item-card {
   background: #2b2d38;

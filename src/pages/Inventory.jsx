@@ -39,7 +39,7 @@ import CleanlinessPotionIcon from "../assets/inventory-items/CleanlinessPotion.p
 import HappinesPotionIcon from "../assets/inventory-items/HappinesPotion.png";
 import MealPotionIcon from "../assets/inventory-items/MealPotion.png";
 import MorningDewPotionIcon from "../assets/inventory-items/MorningDewPotion.png";
-
+import OilIcon from "../assets/inventory-items/Oil.png"; 
 
 
 
@@ -64,6 +64,7 @@ export const itemIcons = {
   "Magic Sauce": MagicSauceIcon,
   "Archipelago Talisman": ArchipelagoTalismanIcon,
   "Onion": OnionIcon,
+  "Oil": OilIcon, 
   "Pearl": PearlIcon,
   "Pickaxe": PickaxeIcon,
   "Rare Herbal Grass": RareHerbalGrassIcon,
@@ -193,6 +194,12 @@ export const itemDetails = {
   useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 5, 100) }),
   source: "Gathered from vegetable patches around the village."
 },
+ "Oil": { // Tambahkan ini
+    description: "Cooking oil for various recipes.", // Contoh deskripsi
+    sellGold: 10, // Contoh harga jual
+    useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 2, 100) }), // Contoh efek jika bisa dimakan langsung
+    source: "Purchased from the shop or found in kitchens." // Contoh sumber
+ },
  "Archipelago Talisman": { 
     description: "Strange talisman from the jungle. It feels powerful.",
     source: "Fashioned through intricate crafting rituals, incorporating mystical elements gathered from dense tropical vegetation."
