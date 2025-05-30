@@ -935,3 +935,23 @@ html, body {
   0% { transform: translateY(0px);}
   100% { transform: translateY(-8px);}
 }
+
+.npc-dialog-panel {
+  animation: fadeinNPCPanel 0.28s;
+}
+@keyframes fadeinNPCPanel { from { opacity:0; transform: translateY(30px);} to {opacity:1; transform: translateY(0);} }
+
+.player-dialog-sprite {
+  border-radius: 18px;
+  box-shadow: 0 3px 16px #0028;
+  background-repeat: no-repeat;
+}
+.writing-cursor {
+  animation: blink 1s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0;} }
+
+.map-npc {
+  pointer-events: none; /* Biar ga ganggu klik, interaksi tetap via tombol */
+  user-select: none;
+}

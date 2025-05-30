@@ -21,6 +21,9 @@ import happyIcon from "../assets/ui/Happiness.png";
 import cleanIcon from "../assets/ui/Cleanliness.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png";
 import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
+import houseNPCImg from "../assets/NPC/HouseNPC.png"; // path disesuaikan dengan struktur project kamu
+import lakeNPCImg from "../assets/NPC/LakeNPC.png"; // ganti ke path gambar NPC kamu
+import mountainNPCImg from "../assets/NPC/MountainNPC.png"; // ganti path sesuai aset
 
 
 const MAP_WIDTH = 4616;
@@ -43,6 +46,7 @@ function addDiscoveredItem(item) {
     localStorage.setItem("discoveredItems", JSON.stringify(updated));
   }
 }
+
 
 export default function Gameplay() {
 
@@ -92,6 +96,42 @@ export default function Gameplay() {
 
   const [nearCloth, setNearCloth] = useState(false);
   const [showClothBanner, setShowClothBanner] = useState(false);
+
+  const [showHouseNPCDialog, setShowHouseNPCDialog] = useState(false);
+  const [npcDialogState, setNPCDialogState] = useState({ stage: 0, textIdx: 0 });
+
+  const houseNPCPos = { x: 625, y: 2460 }; // Sesuaikan posisinya di map
+  const [nearHouseNPC, setNearHouseNPC] = useState(false);
+
+  useEffect(() => {
+    // Hitung jarak char ke NPC
+    const dx = position.x + SPRITE_SIZE / 2 - houseNPCPos.x;
+    const dy = position.y + SPRITE_SIZE / 2 - houseNPCPos.y;
+    setNearHouseNPC(Math.sqrt(dx * dx + dy * dy) < 60); // Radius interaksi
+  }, [position]);
+
+  const lakeNPCPos = { x: 600, y: 1910 }; // Contoh, geser sesuai posisi di map-mu
+  const [showLakeNPCDialog, setShowLakeNPCDialog] = useState(false);
+  const [lakeDialogState, setLakeDialogState] = useState({ stage: 0, textIdx: 0 });
+  const [nearLakeNPC, setNearLakeNPC] = useState(false);
+
+  useEffect(() => {
+    const dx = position.x + SPRITE_SIZE / 2 - lakeNPCPos.x;
+    const dy = position.y + SPRITE_SIZE / 2 - lakeNPCPos.y;
+    setNearLakeNPC(Math.sqrt(dx * dx + dy * dy) < 60);
+  }, [position]);
+
+  const mountainNPCPos = { x: 1670, y: 1810 }; // bawah gunung, edit sesuai map kamu
+  const [showMountainNPCDialog, setShowMountainNPCDialog] = useState(false);
+  const [mountainDialogState, setMountainDialogState] = useState({ stage: 0, textIdx: 0, followUp: false });
+  const [nearMountainNPC, setNearMountainNPC] = useState(false);
+
+  useEffect(() => {
+    const dx = position.x + SPRITE_SIZE / 2 - mountainNPCPos.x;
+    const dy = position.y + SPRITE_SIZE / 2 - mountainNPCPos.y;
+    setNearMountainNPC(Math.sqrt(dx * dx + dy * dy) < 64);
+  }, [position]);
+
 
 
 
@@ -606,6 +646,24 @@ export default function Gameplay() {
       return;
     }
 
+    if (nearHouseNPC) {
+      setShowHouseNPCDialog(true);
+      setNPCDialogState({ stage: 0, textIdx: 0 });
+      return;
+    }
+
+    if (nearLakeNPC) {
+      setShowLakeNPCDialog(true);
+      setLakeDialogState({ stage: 0, textIdx: 0 });
+      return;
+    }
+
+    if (nearMountainNPC) {
+      setShowMountainNPCDialog(true);
+      setMountainDialogState({ stage: 0, textIdx: 0, followUp: false });
+      return;
+    }
+
 
     // Simpan data player seperti biasa
     const saveData = { character, position, status, money, inventory };
@@ -656,6 +714,64 @@ return (
           }}
         ></div>
       )}
+
+        {/* NPC di depan rumah */}
+      <img
+        src={houseNPCImg}
+        alt="House NPC"
+        className="map-npc"
+        style={{
+          position: "absolute",
+          left: houseNPCPos.x,
+          top: houseNPCPos.y,
+          width: 64,
+          height: 64,
+          zIndex: 9,
+          imageRendering: "pixelated",
+          filter: showHouseNPCDialog ? "brightness(0.7)" : "none",
+          transition: "filter 0.2s"
+        }}
+        draggable={false}
+      />
+
+      <img
+        src={lakeNPCImg}
+        alt="Lake NPC"
+        className="map-npc"
+        style={{
+          position: "absolute",
+          left: lakeNPCPos.x,
+          top: lakeNPCPos.y,
+          width: 64,
+          height: 64,
+          zIndex: nearLakeNPC ? 7 : 11,
+          imageRendering: "pixelated",
+          filter: showLakeNPCDialog ? "brightness(0.7)" : "none",
+          transition: "filter 0.2s"
+        }}
+        draggable={false}
+      />
+
+      <img
+        src={mountainNPCImg}
+        alt="Mountain NPC"
+        className="map-npc"
+        style={{
+          position: "absolute",
+          left: mountainNPCPos.x,
+          top: mountainNPCPos.y,
+          width: 64,
+          height: 64,
+          zIndex: nearMountainNPC ? 7 : 11,
+          imageRendering: "pixelated",
+          filter: showMountainNPCDialog ? "brightness(0.7)" : "none",
+          transition: "filter 0.2s"
+        }}
+        draggable={false}
+      />
+
+
+
       <div className="house-zone"></div>
       <div className="lake-zone"></div>
       <div className="mountain-zone part-1"></div>
@@ -1149,6 +1265,12 @@ return (
           <p className="event-text">
             {nearCloth
               ? "🧣 Press Interact to collect Ripped Cloth"
+              : nearHouseNPC
+              ? "👩 Press Interact to talk to Mom"
+              : nearLakeNPC
+              ? "🎣 Press Interact to talk to Fisherman"
+              : nearMountainNPC
+              ? "⛰️ Press Interact to talk to Hermit"
               : inHouseZone
               ? "🏠 Press Interact to enter the house"
               : nearLakeZone
@@ -1185,6 +1307,891 @@ return (
         </div>
       </div>
     )}
+
+    {nearHouseNPC && !showHouseNPCDialog && (
+      <button
+        className="event-button"
+        style={{
+          position: "absolute",
+          left: houseNPCPos.x - offsetX,
+          top: houseNPCPos.y - offsetY + 70,
+          zIndex: 100
+        }}
+        onClick={() => {
+          setShowHouseNPCDialog(true);
+          setNPCDialogState({ stage: 0, textIdx: 0 });
+        }}
+      >
+        Interact
+      </button>
+    )}
+
+    {showHouseNPCDialog && (
+      <div className="coconut-overlay" style={{ background: "rgba(0,0,0,0.87)", zIndex: 350 }}>
+        <HouseNPCDialogPanel
+          state={npcDialogState}
+          setState={setNPCDialogState}
+          setShowDialog={setShowHouseNPCDialog}
+          characterSprite={character?.sprite}
+          username={username}
+        />
+      </div>
+    )}
+
+    {nearLakeNPC && !showLakeNPCDialog && (
+      <button
+        className="event-button"
+        style={{
+          position: "absolute",
+          left: lakeNPCPos.x - offsetX,
+          top: lakeNPCPos.y - offsetY + 70,
+          zIndex: 100
+        }}
+        onClick={() => {
+          setShowLakeNPCDialog(true);
+          setLakeDialogState({ stage: 0, textIdx: 0 });
+        }}
+      >
+        Interact
+      </button>
+    )}
+
+    {showLakeNPCDialog && (
+      <div className="coconut-overlay" style={{ background: "rgba(0,0,0,0.87)", zIndex: 350 }}>
+        <LakeNPCDialogPanel
+          state={lakeDialogState}
+          setState={setLakeDialogState}
+          setShowDialog={setShowLakeNPCDialog}
+          characterSprite={character?.sprite}
+          username={username}
+          condition={
+            !inventory.includes("Fish Nail")
+              ? 0
+              : !inventory.includes("Rod")
+                ? 1
+                : 2
+          }
+          giveFishNail={() => {
+            // Dapat Fish Nail (Fish Claw)
+            if (!inventory.includes("Fish Nail")) {
+              const newInv = [...inventory, "Fish Nail"];
+              setInventory(newInv);
+              addDiscoveredItem("Fish Nail");
+            }
+          }}
+        />
+      </div>
+    )}
+
+    {nearMountainNPC && !showMountainNPCDialog && (
+      <button
+        className="event-button"
+        style={{
+          position: "absolute",
+          left: mountainNPCPos.x - offsetX,
+          top: mountainNPCPos.y - offsetY + 70,
+          zIndex: 100
+        }}
+        onClick={() => {
+          setShowMountainNPCDialog(true);
+          setMountainDialogState(prev => ({ stage: 0, textIdx: 0, followUp: prev.followUp }));
+        }}
+
+      >
+        Interact
+      </button>
+    )}
+
+    {showMountainNPCDialog && (
+      <div className="coconut-overlay" style={{ background: "rgba(0,0,0,0.87)", zIndex: 350 }}>
+        <MountainNPCDialogPanel
+          state={mountainDialogState}
+          setState={setMountainDialogState}
+          setShowDialog={setShowMountainNPCDialog}
+          characterSprite={character?.sprite}
+          username={username}
+          inventory={inventory}
+          setInventory={setInventory}
+          addDiscoveredItem={addDiscoveredItem}
+        />
+      </div>
+    )}
+
+
+
+
   </div>
 )
+}
+
+// Komponen Dialog Panel NPC House
+function HouseNPCDialogPanel({
+  state, setState, setShowDialog, characterSprite, username
+}) {
+  const dialogScript = [
+    // Awal interaksi
+    [
+      { npc: "Dear, have you eaten? I just finished cooking. The house smells warm, doesn’t it?" },
+      { npc: "You look tired. You can always rest here." },
+      { npc: "And if there’s something on your mind, just say the word." },
+      { choice: true }
+    ],
+    // Who am I?
+    [
+      { player: "Do you know who I am?" },
+      { npc: "Honestly… I wish I knew more." },
+      { npc: "I found you by the river after the storm, all alone." },
+      { player: "I don’t remember anything before that." },
+      { npc: "That’s what worries me. Maybe you’re from another world." },
+      { npc: "Whatever the reason, you’re safe now. This home is yours." }
+    ],
+    // Can I stay here?
+    [
+      { player: "Can I… stay here for a while?" },
+      { npc: "Of course you can, dear. This house is your home now." },
+      { player: "I’m not sure where else to go." },
+      { npc: "You can eat, rest, and stay as long as you want. You’re not a burden." }
+    ],
+    // How do I go back?
+    [
+      { player: "Do you know how I can return to… my world?" },
+      { npc: "That’s something I’ve wondered too…" },
+      { npc: "I don’t know how—but someone might." },
+      { player: "Who?" },
+      { npc: "There’s an old man near the mountain. A hermit, they say. He knows things most people forgot." },
+      { npc: "If there’s a way back, I think he’d be the one to help." }
+    ],
+    // Nevermind
+    [
+      { player: "Nevermind, sorry." },
+      { npc: "That’s okay, sweetie. I’m always here if you need to talk." }
+    ]
+  ];
+  const choices = [
+    "Who am I?",
+    "Can I stay here?",
+    "How do I go back to my world?",
+    "Nevermind."
+  ];
+
+  const [shownText, setShownText] = React.useState("");
+  const textDone = React.useRef(true);
+
+  const d = dialogScript[state.stage][state.textIdx];
+
+  React.useEffect(() => {
+    setShownText("");
+    textDone.current = false;
+    if (!d) return;
+    let idx = 0;
+    function type() {
+      setShownText(d.npc?.slice(0, idx) || d.player?.slice(0, idx) || "");
+      if (idx < (d.npc?.length || d.player?.length || 0)) {
+        idx++;
+        setTimeout(type, 17 + Math.random() * 13);
+      } else {
+        textDone.current = true;
+      }
+    }
+    type();
+  }, [state.stage, state.textIdx]);
+
+  function handleDialogClick() {
+    if (!textDone.current) {
+      setShownText(d.npc || d.player || "");
+      textDone.current = true;
+      return;
+    }
+    if (state.stage === 0) {
+      if (d?.choice) return;
+      if (state.textIdx < dialogScript[0].length - 1) {
+        setState({ ...state, textIdx: state.textIdx + 1 });
+      }
+    } else {
+      if (state.textIdx < dialogScript[state.stage].length - 1) {
+        setState({ ...state, textIdx: state.textIdx + 1 });
+      } else {
+        if (state.stage === 4) {
+          setShowDialog(false);
+        } else {
+          setState({ stage: 0, textIdx: dialogScript[0].length - 1 });
+        }
+      }
+    }
+  }
+
+  // INI FIX PALING BENER
+  if (state.stage === 0 && d?.choice) {
+    return (
+      <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <img src={houseNPCImg} alt="NPC" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        </div>
+        <div style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+          <div style={{ fontSize: 22, color: "#ffe69c", margin: "12px 0 16px" }}>What do you want to ask?</div>
+          {choices.map((ch, i) => (
+            <button key={i}
+              className="event-button"
+              style={{ fontSize: 17, marginBottom: 7, width: 320 }}
+              onClick={() => setState({ stage: i + 1, textIdx: 0 })}>
+              {ch}
+            </button>
+          ))}
+        </div>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="player-dialog-sprite" style={{
+              width: 32,
+              height: 32,
+              background: `url(${characterSprite})`,
+              backgroundPosition: "0px 0px",         // frame kiri atas
+              backgroundSize: "128px 128px",
+              imageRendering: "pixelated",
+              transform: "scale(5.15625)",
+              transformOrigin: "center"
+            }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render dialog branch atau baris dialog utama (bukan pilihan)
+  return (
+    <div
+      className="npc-dialog-panel"
+      style={{
+        display: "flex",
+        width: 740,
+        height: 320,
+        background: "rgba(0,0,0,0.89)",
+        borderRadius: 32,
+        alignItems: "center",
+        boxShadow: "0 3px 60px #000a",
+        cursor: "pointer",
+        userSelect: "none"
+      }}
+      onClick={handleDialogClick}
+    >
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <img src={houseNPCImg} alt="NPC" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        <div style={{ color: "#ffecb0", fontSize: 15, marginTop: 8, opacity: 0.82 }}>Mom</div>
+      </div>
+      <div style={{ flex: 2.1, minHeight: 60, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      {d.npc ? (
+        <div style={{
+          background: "rgba(70,50,10,0.18)",
+          borderRadius: 14,
+          fontSize: 19,
+          color: "#ffeec9",
+          padding: "23px 26px",
+          margin: "0 6px",
+          fontFamily: "inherit",
+          textAlign: "left"
+        }}>
+          <b style={{ color: "#ffe69c", fontSize: 17 }}>Mom</b>
+          <br />
+          <span style={{ transition: "all 0.12s", display: "block", textAlign: "left" }}>{shownText}</span>
+          {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+        </div>
+      ) : (
+        <div style={{
+          background: "rgba(70,50,10,0.18)",
+          borderRadius: 14,
+          fontSize: 19,
+          color: "#aaf4fd",
+          padding: "23px 26px",
+          margin: "0 6px",
+          fontFamily: "inherit",
+          textAlign: "right"
+        }}>
+          <b style={{ color: "#aaf4fd", fontSize: 17 }}>{username}</b>
+          <br />
+          <span style={{ transition: "all 0.12s", display: "block", textAlign: "right" }}>{shownText}</span>
+          {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+        </div>
+      )}
+
+        <div style={{ fontSize: 12, color: "#e6d9a7", margin: "10px 0 0 8px" }}>Click to continue…</div>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="player-dialog-sprite" style={{
+              width: 32,
+              height: 32,
+              background: `url(${characterSprite})`,
+              backgroundPosition: "0px 0px",         // frame kiri atas
+              backgroundSize: "128px 128px",
+              imageRendering: "pixelated",
+              transform: "scale(5.15625)",
+              transformOrigin: "center"
+            }}></div>
+          </div>
+        <div style={{ color: "#a4f1fd", fontSize: 15, marginTop: 8, opacity: 0.81 }}>{username}</div>
+      </div>
+    </div>
+  );
+}
+
+function LakeNPCDialogPanel({
+  state, setState, setShowDialog, characterSprite, username, giveFishNail, condition // condition: 0,1,2
+}) {
+  // Dialog Script berdasarkan kondisi
+  // 0 = Belum punya fish claw
+  // 1 = Sudah punya fish claw tapi belum rod
+  // 2 = Sudah punya rod
+  const dialogScripts = [
+    [ // KONDISI 0
+      // Dialog utama, menu pilihan
+      [
+        { npc: "Shhh… the fish here are sensitive to noise." },
+        { npc: "The lake looks peaceful, but it’s full of stories. You need the right tools to fish here." },
+        { choice: true }
+      ],
+      // Teach me?
+      [
+        { player: "Can you teach me how to fish here?" },
+        { npc: "Of course. Fishing takes patience, not just luck." },
+        { npc: "Here, take this fish claw. Craft it into a hook, and you’ll be ready." },
+        { player: "A fish claw?" },
+        { npc: "Yes. With it, you might even catch something… legendary." }
+      ],
+      // Special item?
+      [
+        { player: "You mentioned special items in the lake?" },
+        { npc: "There are a few rare things here. One of them is this—take it." },
+        { npc: "It’s a fish claw. Might be useful one day." },
+        { player: "Thanks. I’ll be careful." },
+        { npc: "And patient. The lake hides secrets under its silence." }
+      ],
+      // Nevermind
+      [
+        { player: "Nevermind." },
+        { npc: "Sometimes, just listening to the lake is enough." }
+      ]
+    ],
+    [ // KONDISI 1 (punya fish claw, belum rod)
+      [
+        { npc: "Back again, I see. Did you catch anything?" },
+        { npc: "Wait—that’s a fish claw in your bag, isn’t it?" },
+        { player: "Yeah… but I haven’t done anything with it yet." },
+        { npc: "You need to craft it into a rod first. Stick, line, and claw." },
+        { choice: true }
+      ],
+      // What should I do?
+      [
+        { player: "What should I do again?" },
+        { npc: "Take the claw, combine it with a stick and strong thread. Then it’s ready." },
+        { npc: "Check your crafting menu if you’re unsure." }
+      ],
+      // Nevermind
+      [
+        { player: "Nevermind." },
+        { npc: "Alright. Come back when you’re ready." }
+      ]
+    ],
+    [ // KONDISI 2 (punya rod)
+      [
+        { npc: "Ah! That rod looks well made. I’m impressed." },
+        { player: "Thanks. So… now what?" },
+        { npc: "Now you can reach the deeper fish." },
+        { choice: true }
+      ],
+      // Where to fish?
+      [
+        { player: "Where should I fish?" },
+        { npc: "Try near the willow tree or old dock." },
+        { npc: "And be quiet. They sense everything." }
+      ],
+      // Special fish?
+      [
+        { player: "Any rare fish around here?" },
+        { npc: "A golden-scaled one at dawn, and a glowing shadow fish at night, they say." },
+        { player: "Sounds… mysterious." },
+        { npc: "Keep your eyes open." }
+      ],
+      // Nevermind
+      [
+        { player: "Nevermind." },
+        { npc: "Enjoy the calm while it lasts." }
+      ]
+    ]
+  ];
+
+  // Choice untuk tiap kondisi
+  const choicesArr = [
+    ["Teach me?", "Special item?", "Nevermind."],
+    ["What should I do?", "Nevermind."],
+    ["Where to fish?", "Special fish?", "Nevermind."]
+  ];
+  const dialogScript = dialogScripts[condition];
+  const choices = choicesArr[condition];
+  const d = dialogScript[state.stage][state.textIdx];
+
+  const [shownText, setShownText] = React.useState("");
+  const textDone = React.useRef(true);
+
+  React.useEffect(() => {
+    setState({ stage: 0, textIdx: 0 });
+  }, [condition]);
+
+  React.useEffect(() => {
+    setShownText("");
+    textDone.current = false;
+    if (!d) return;
+    let idx = 0;
+    function type() {
+      setShownText(d.npc?.slice(0, idx) || d.player?.slice(0, idx) || "");
+      if (idx < (d.npc?.length || d.player?.length || 0)) {
+        idx++;
+        setTimeout(type, 17 + Math.random() * 13);
+      } else {
+        textDone.current = true;
+      }
+    }
+    type();
+  }, [state.stage, state.textIdx]);
+
+  function handleDialogClick() {
+    if (!textDone.current) {
+      setShownText(d.npc || d.player || "");
+      textDone.current = true;
+      return;
+    }
+    if (d?.choice) return;
+
+    if (state.stage === 0) {
+      if (state.textIdx < dialogScript[0].length - 1) {
+        setState({ ...state, textIdx: state.textIdx + 1 });
+      }
+    } else {
+      if (state.textIdx < dialogScript[state.stage].length - 1) {
+        setState({ ...state, textIdx: state.textIdx + 1 });
+      } else {
+        // === Logic close dialog ===
+        if (condition === 0) {
+          // Give fish claw setelah pilih 1/2, selesai tutup
+          if (state.stage === 1 || state.stage === 2) {
+            giveFishNail();
+          }
+        }
+        setShowDialog(false);
+      }
+    }
+  }
+
+  // Render pilihan
+  if (d?.choice) {
+    return (
+      <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <img src={lakeNPCImg} alt="Old Fisherman" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        </div>
+        <div style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+          <div style={{ fontSize: 22, color: "#ffe69c", margin: "12px 0 16px" }}>
+            {condition === 0 ? "What do you want to ask?" : condition === 1 ? "Still confused?" : "Curious?"}
+          </div>
+          {choices.map((ch, i) => (
+            <button key={i}
+              className="event-button"
+              style={{ fontSize: 17, marginBottom: 7, width: 320 }}
+              onClick={() => setState({ stage: i + 1, textIdx: 0 })}>
+              {ch}
+            </button>
+          ))}
+        </div>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="player-dialog-sprite" style={{
+              width: 32,
+              height: 32,
+              background: `url(${characterSprite})`,
+              backgroundPosition: "0px 0px",
+              backgroundSize: "128px 128px",
+              imageRendering: "pixelated",
+              transform: "scale(5.15625)",
+              transformOrigin: "center"
+            }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render percakapan (dialog branch)
+  return (
+    <div
+      className="npc-dialog-panel"
+      style={{
+        display: "flex",
+        width: 740,
+        height: 320,
+        background: "rgba(0,0,0,0.89)",
+        borderRadius: 32,
+        alignItems: "center",
+        boxShadow: "0 3px 60px #000a",
+        cursor: "pointer",
+        userSelect: "none"
+      }}
+      onClick={handleDialogClick}
+    >
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <img src={lakeNPCImg} alt="Old Fisherman" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        <div style={{ color: "#ffecb0", fontSize: 15, marginTop: 8, opacity: 0.82 }}>Old Fisherman</div>
+      </div>
+      <div style={{ flex: 2.1, minHeight: 60, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+      {d.npc ? (
+        <div style={{
+          background: "rgba(70,50,10,0.18)",
+          borderRadius: 14,
+          fontSize: 19,
+          color: "#ffeec9",
+          padding: "23px 26px",
+          margin: "0 6px",
+          fontFamily: "inherit",
+          textAlign: "left"
+        }}>
+          <b style={{ color: "#ffe69c", fontSize: 17 }}>Old Fisherman</b>
+          <br />
+          <span style={{ transition: "all 0.12s", display: "block", textAlign: "left" }}>{shownText}</span>
+          {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+        </div>
+      ) : (
+        <div style={{
+          background: "rgba(70,50,10,0.18)",
+          borderRadius: 14,
+          fontSize: 19,
+          color: "#aaf4fd",
+          padding: "23px 26px",
+          margin: "0 6px",
+          fontFamily: "inherit",
+          textAlign: "right"
+        }}>
+          <b style={{ color: "#aaf4fd", fontSize: 17 }}>{username}</b>
+          <br />
+          <span style={{ transition: "all 0.12s", display: "block", textAlign: "right" }}>{shownText}</span>
+          {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+        </div>
+      )}
+
+        <div style={{ fontSize: 12, color: "#e6d9a7", margin: "10px 0 0 8px" }}>Click to continue…</div>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="player-dialog-sprite" style={{
+            width: 32,
+            height: 32,
+            background: `url(${characterSprite})`,
+            backgroundPosition: "0px 0px",
+            backgroundSize: "128px 128px",
+            imageRendering: "pixelated",
+            transform: "scale(5.15625)",
+            transformOrigin: "center"
+          }}></div>
+        </div>
+        <div style={{ color: "#a4f1fd", fontSize: 15, marginTop: 8, opacity: 0.81 }}>{username}</div>
+      </div>
+    </div>
+  );
+}
+
+function MountainNPCDialogPanel({
+  state, setState, setShowDialog, characterSprite, username, inventory, setInventory, addDiscoveredItem
+}) {
+  // Ambil status quest dari localStorage, persistent antar sesi
+  const [questStarted, setQuestStarted] = React.useState(() => {
+    return localStorage.getItem("mountainQuestStarted") === "true";
+  });
+
+  // Trigger quest setelah player dapat tugas (setelah pilih "Where am I?" atau "Your story?")
+  function triggerQuest() {
+    setQuestStarted(true);
+    localStorage.setItem("mountainQuestStarted", "true");
+  }
+
+  // Cek apakah inventori sudah punya kedua juice
+  const hasWildFruitJuice = inventory.includes("Juice Wild Fruit");
+  const hasCoconutJuice = inventory.includes("Juice Coconut");
+
+  // --- DIALOG SCRIPT ---
+
+  // Dialog utama (sebelum quest dimulai)
+  const dialogMain = [
+    [
+      { npc: "Whoa, a traveler? Haven’t seen anyone up here in ages." },
+      { npc: "Most who come here are searching for something." },
+      { player: "I think… I want to go home." },
+      { choice: true }
+    ],
+    // Where am I?
+    [
+      { player: "Where am I, exactly?" },
+      { npc: "You’re in a world far from yours. This land has its own rules." },
+      { npc: "To go home, you’ll need the Archipelago Talisman." },
+      { player: "How do I get it?" },
+      { npc: "I can make it—but I need rare herbal grass. Bring me wild fruit juice and coconut juice." },
+      { endQuest: true }
+    ],
+    // Your story?
+    [
+      { player: "What’s your story?" },
+      { npc: "I’ve lived here longer than I can count." },
+      { npc: "I’ve helped others like you. But nothing is ever easy." },
+      { player: "So you’ll help me too?" },
+      { npc: "If you help me first. Find the juices, and I’ll show you the way." },
+      { endQuest: true }
+    ],
+    // Nevermind
+    [
+      { player: "Nevermind." },
+      { npc: "Then take care. The mountain watches." },
+      { endQuest: true }
+    ]
+  ];
+
+  const choicesMain = [
+    "Where am I?",
+    "Your story?",
+    "Nevermind."
+  ];
+
+  // Dialog setelah quest dimulai
+  const dialogFollowUp = [
+    [
+      { npc: "Did you find the wild fruit juice and coconut juice?" },
+      { choice: true }
+    ],
+    // Not yet
+    [
+      { player: "Not yet." },
+      { npc: "No rush. But the talisman cannot be made without them." }
+    ],
+    // Here you go!
+    hasWildFruitJuice && hasCoconutJuice
+      ? [
+          { player: "Here you go!" },
+          { npc: "Perfect. Thank you." },
+          { npc: "Here’s the rare herbal grass. Treat it well—your journey home depends on it." },
+          { giveItem: "Rare Herbal Grass" }
+        ]
+      : [
+          { player: "Here you go!" },
+          { npc: "Hmm, you’re still missing something. I need both juices, remember?" }
+        ],
+    // What should I do again?
+    [
+      { player: "What should I do again?" },
+      { npc: "Fruit juice from berries on the mountain. Coconut juice from the beach." },
+      { npc: "Bring both. Then I’ll give you the rare grass you need." }
+    ],
+    // Nevermind
+    [
+      { player: "Nevermind." },
+      { npc: "Come back when you’re ready. The mountain will be here." }
+    ]
+  ];
+
+  const choicesFollowUp = [
+    "Not yet.",
+    "Here you go!",
+    "What should I do again?",
+    "Nevermind."
+  ];
+
+  // Pilih script sesuai progress quest
+  let dialogScript, choices;
+  if (questStarted) {
+    dialogScript = dialogFollowUp;
+    choices = choicesFollowUp;
+  } else {
+    dialogScript = dialogMain;
+    choices = choicesMain;
+  }
+  const d = dialogScript[state.stage][state.textIdx];
+
+  // Teks typing effect
+  const [shownText, setShownText] = React.useState("");
+  const textDone = React.useRef(true);
+
+  React.useEffect(() => {
+    setShownText("");
+    textDone.current = false;
+    if (!d) return;
+    let idx = 0;
+    function type() {
+      setShownText(d.npc?.slice(0, idx) || d.player?.slice(0, idx) || "");
+      if (idx < (d.npc?.length || d.player?.length || 0)) {
+        idx++;
+        setTimeout(type, 16 + Math.random() * 13);
+      } else {
+        textDone.current = true;
+      }
+    }
+    type();
+    // eslint-disable-next-line
+  }, [state.stage, state.textIdx, hasWildFruitJuice, hasCoconutJuice]);
+
+  // Handler klik dialog
+  function handleDialogClick() {
+    if (!textDone.current) {
+      setShownText(d.npc || d.player || "");
+      textDone.current = true;
+      return;
+    }
+    // Jika pilihan muncul, jangan lanjut
+    if (d?.choice) return;
+
+    // Jika player dapat "Rare Herbal Grass" (berikan item)
+    if (d?.giveItem) {
+      setInventory(inv => {
+        let newInv = inv.filter(x => x !== "Juice Wild Fruit" && x !== "Juice Coconut");
+        newInv.push("Rare Herbal Grass");
+        addDiscoveredItem("Rare Herbal Grass");
+        return newInv;
+      });
+      setShowDialog(false); // Tutup panel dialog
+      return;
+    }
+
+    // MAIN LOGIC BRANCH
+    if (questStarted) {
+      // Dialog FOLLOW-UP quest
+      if (state.textIdx < dialogScript[state.stage].length - 1) {
+        setState({ ...state, textIdx: state.textIdx + 1 });
+      } else {
+        // Jika "Nevermind", tutup dialog, selain itu balik ke menu utama follow-up
+        if (state.stage === 4) setShowDialog(false);
+        else setState({ stage: 0, textIdx: 0 });
+      }
+    } else {
+      // Dialog UTAMA (belum quest)
+      if (state.stage === 0) {
+        // Bagian pembuka, lanjut terus sampai choice
+        if (state.textIdx < dialogScript[0].length - 1) {
+          setState({ ...state, textIdx: state.textIdx + 1 });
+        }
+      } else {
+        // Branch utama ("Where am I", "Your story", "Nevermind")
+        if (state.textIdx < dialogScript[state.stage].length - 2) {
+          setState({ ...state, textIdx: state.textIdx + 1 });
+        } else {
+          // Setelah quest dimulai, set questStarted dan reset ke follow-up
+          triggerQuest();
+          setState({ stage: 0, textIdx: 0 });
+        }
+      }
+    }
+  }
+
+  // Panel PILIHAN (choice)
+  if (d?.choice) {
+    return (
+      <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <img src={mountainNPCImg} alt="Mountain NPC" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        </div>
+        <div style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+          <div style={{ fontSize: 22, color: "#ffe69c", margin: "12px 0 16px" }}>
+            {questStarted ? "Bring the items, or ask again." : "What do you want to ask?"}
+          </div>
+          {choices.map((ch, i) => (
+            <button key={i}
+              className="event-button"
+              style={{ fontSize: 17, marginBottom: 7, width: 320 }}
+              onClick={() => setState({ stage: i + 1, textIdx: 0 })}>
+              {ch}
+            </button>
+          ))}
+        </div>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="player-dialog-sprite" style={{
+              width: 32,
+              height: 32,
+              background: `url(${characterSprite})`,
+              backgroundPosition: "0px 0px",
+              backgroundSize: "128px 128px",
+              imageRendering: "pixelated",
+              transform: "scale(5.15625)",
+              transformOrigin: "center"
+            }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Panel dialog utama (percakapan NPC-Player)
+  return (
+    <div
+      className="npc-dialog-panel"
+      style={{
+        display: "flex",
+        width: 740,
+        height: 320,
+        background: "rgba(0,0,0,0.89)",
+        borderRadius: 32,
+        alignItems: "center",
+        boxShadow: "0 3px 60px #000a",
+        cursor: "pointer",
+        userSelect: "none"
+      }}
+      onClick={handleDialogClick}
+    >
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <img src={mountainNPCImg} alt="Mountain NPC" style={{ width: 165, height: 165, objectFit: "contain" }} />
+
+        <div style={{ color: "#ffecb0", fontSize: 15, marginTop: 8, opacity: 0.82 }}>Hermit</div>
+      </div>
+      <div style={{ flex: 2.1, minHeight: 60, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        {d.npc ? (
+          <div style={{
+            background: "rgba(70,50,10,0.18)",
+            borderRadius: 14,
+            fontSize: 19,
+            color: "#ffeec9",
+            padding: "23px 26px",
+            margin: "0 6px",
+            fontFamily: "inherit",
+            textAlign: "left"
+          }}>
+            <b style={{ color: "#ffe69c", fontSize: 17 }}>Hermit</b>
+            <span style={{ display: "block", marginTop: 4 }}>{shownText}</span>
+            {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+          </div>
+        ) : (
+          <div style={{
+            background: "rgba(70,50,10,0.18)",
+            borderRadius: 14,
+            fontSize: 19,
+            color: "#aaf4fd",
+            padding: "23px 26px",
+            margin: "0 6px",
+            fontFamily: "inherit",
+            textAlign: "right"
+          }}>
+            <b style={{ color: "#aaf4fd", fontSize: 17 }}>{username}</b>
+            <span style={{ display: "block", marginTop: 4 }}>{shownText}</span>
+            {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+          </div>
+        )}
+        <div style={{ fontSize: 12, color: "#e6d9a7", margin: "10px 0 0 8px" }}>Click to continue…</div>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="player-dialog-sprite" style={{
+            width: 32,
+            height: 32,
+            background: `url(${characterSprite})`,
+            backgroundPosition: "0px 0px",
+            backgroundSize: "128px 128px",
+            imageRendering: "pixelated",
+            transform: "scale(5.15625)",
+            transformOrigin: "center"
+          }}></div>
+        </div>
+        <div style={{ color: "#a4f1fd", fontSize: 15, marginTop: 8, opacity: 0.81 }}>{username}</div>
+      </div>
+    </div>
+  );
 }
