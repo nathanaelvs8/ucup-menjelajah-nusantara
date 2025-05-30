@@ -93,7 +93,7 @@ export default function Intro() {
 
   return (
     <div className="intro-container">
-      <h1 className="title-text">Ucup Menjelajah Nusantara</h1>
+      <h1 className="title-text">ARCHIPELAGO SAGA</h1>
 
       <audio ref={audioRef} loop>
         <source src={introMusic} type="audio/mp3" />
@@ -129,11 +129,11 @@ export default function Intro() {
   {step === "fill-form" && (
   <div className="login-card">
     <img src={cardImage} alt="Header" className="card-header" />
-    <div className="login-title">Masukkan Informasi</div>
+    <div className="login-title">Enter Information</div>
 
     <input
       type="text"
-      placeholder="Masukkan Nama"
+      placeholder="Enter name"
       value={playerName}
       onChange={(e) => setPlayerName(e.target.value)}
     />
@@ -141,7 +141,7 @@ export default function Intro() {
     {!isGuest && (
       <input
         type="password"
-        placeholder="Masukkan Password"
+        placeholder="Enter password"
         value={playerPassword}
         onChange={(e) => setPlayerPassword(e.target.value)}
       />

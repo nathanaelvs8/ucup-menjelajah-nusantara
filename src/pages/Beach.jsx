@@ -30,6 +30,8 @@ import coinGif from "../assets/ui/MoneyMoney.gif";
 import rustyIronIcon from "../assets/inventory-items/RustMetal.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon
 import beachMusic from "../assets/audio/beach.mp3";
+import beachNPCImg from "../assets/NPC/BeachNPC.png"; // Pastikan path benar
+
 
 
 
@@ -94,6 +96,14 @@ export default function Beach() {
   const [discoveredItems, setDiscoveredItems] = useState(() =>
     JSON.parse(localStorage.getItem("discoveredItems") || "[]")
   );
+
+  const [showBeachNPCDialog, setShowBeachNPCDialog] = React.useState(false);
+  const [beachNPCDialogState, setBeachNPCDialogState] = React.useState({ stage: 0, textIdx: 0 });
+
+  const [beachNPCPos, setBeachNPCPos] = useState({ x: 500, y: 1100 }); // Edit sesuai posisi NPC di map-mu
+  const [nearBeachNPC, setNearBeachNPC] = useState(false);
+
+
   const audioRef = useRef();
 
   useEffect(() => {
@@ -413,6 +423,7 @@ useEffect(() => {
     if (inSunbatheZone) return "🌞 Press Interact to sunbathe";
     if (inCoconutZone) return "🥥 Press Interact to shake the coconut tree";
     if (inRockZone) return "⛏️ Press Interact to mine the rock";
+    if (nearBeachNPC) return "🏝️ Press Interact to talk to Beach Guy";
     if (nearExitZone) return "🔙 Press Interact to return to the main map";
     return "📍 Event info will appear here...";
   };
@@ -500,6 +511,13 @@ useEffect(() => {
       }, 800); // durasi fade
       return;
     }
+
+    if (nearBeachNPC) {
+      setShowBeachNPCDialog(true);
+      setBeachNPCDialogState({ stage: 0, textIdx: 0 });
+      return;
+    }
+
     
   if (nearExitZone) {
     // Ambil posisi gameplay sebelum masuk ke Beach
@@ -541,12 +559,19 @@ useEffect(() => {
   };
 
   const formatTime = (h, m) => `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-useEffect(() => {
-  if (audioRef.current) {
-    audioRef.current.volume = 1; // atau angka lain (0-1)
-    audioRef.current.play().catch(() => {});
-  }
-}, []);
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = 1; // atau angka lain (0-1)
+      audioRef.current.play().catch(() => {});
+    }
+  }, []);
+
+  useEffect(() => {
+    const dx = position.x + SPRITE_SIZE / 2 - beachNPCPos.x;
+    const dy = position.y + SPRITE_SIZE / 2 - beachNPCPos.y;
+    setNearBeachNPC(Math.sqrt(dx * dx + dy * dy) < 60); // Radius interaksi
+  }, [position]);
+
 
   return (
     <>
@@ -728,6 +753,23 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
             }}
           ></div>
         )}
+
+        {/* NPC Beach Guy di map */}
+        <img
+          src={beachNPCImg}
+          alt="Beach Guy"
+          style={{
+            position: "absolute",
+            left: beachNPCPos.x,
+            top: beachNPCPos.y,
+            width: 64,
+            height: 64,
+            zIndex: 6,
+            filter: nearBeachNPC ? "drop-shadow(0 0 12px #ffe66a)" : "none"
+          }}
+          draggable={false}
+        />
+
 
         {debugZones && (
   <div style={{
@@ -1244,7 +1286,227 @@ const inZone = pointerX >= targetX && pointerX <= targetX + hitWidth;
       </div>
     </>
     )}
+
+
+    // Render (mirip render panel lain)
+    {showBeachNPCDialog && (
+      <div className="coconut-overlay" style={{ background: "rgba(0,0,0,0.87)", zIndex: 350 }}>
+        <BeachNPCDialogPanel
+          state={beachNPCDialogState}
+          setState={setBeachNPCDialogState}
+          setShowDialog={setShowBeachNPCDialog}
+          characterSprite={character?.sprite}
+          username={username}
+        />
+      </div>
+    )}
     </div>
     </>
+  );
+}
+
+function BeachNPCDialogPanel({
+  state, setState, setShowDialog, characterSprite, username
+}) {
+  // === SCRIPT DIALOG
+  const dialogScript = [
+    // AWAL INTERAKSI (pilihan)
+    [
+      { npc: "Hey there, welcome to the beach! Great weather today, huh? You can almost smell the salt in the air." },
+      { npc: "I come here almost every day, just to feel the breeze and listen to the waves." },
+      { npc: "Not many people take the time to really look around, you know. Sometimes, the beach has secrets for those who pay attention." },
+      { choice: true }
+    ],
+    // COOL BEACH!
+    [
+      { player: "Cool beach!" },
+      { npc: "You bet! This place is my paradise." },
+      { npc: "But did you know, people say there’s an ancient cup hidden somewhere under the sand?" },
+      { player: "Like, a real treasure?" },
+      { npc: "Kind of a local legend. Nobody I know has actually found it." },
+      { npc: "If you feel lucky, why not give it a try? You never know what you’ll find." },
+      { npc: "Good luck finding that ancient cup. Who knows, maybe you’ll be the first!" },
+      { loop: true }
+    ],
+    // SECRETS?
+    [
+      { player: "You said something about secrets?" },
+      { npc: "Absolutely, dude! There’s a rumor of an ancient cup buried near the big rock by the shore." },
+      { player: "Really? Has anyone ever found it?" },
+      { npc: "Some dig for it, but no one I’ve met succeeded. If you’ve got sharp eyes, maybe you’ll uncover it." },
+      { npc: "Don’t be afraid to explore. Sometimes, the beach rewards the curious." },
+      { loop: true }
+    ],
+    // NEVERMIND
+    [
+      { player: "Nevermind." },
+      { npc: "No worries! Just chill and enjoy the beach." },
+      { npc: "If you ever want to talk or need some tips, I’m always here." },
+      { end: true }
+    ]
+  ];
+
+  const choices = [
+    "Cool beach!",
+    "Secrets?",
+    "Nevermind."
+  ];
+
+  const [shownText, setShownText] = React.useState("");
+  const textDone = React.useRef(true);
+
+  // Dialog data
+  const d = dialogScript[state.stage][state.textIdx];
+
+  React.useEffect(() => {
+    setShownText("");
+    textDone.current = false;
+    if (!d) return;
+    let idx = 0;
+    function type() {
+      setShownText(d.npc?.slice(0, idx) || d.player?.slice(0, idx) || "");
+      if (idx < (d.npc?.length || d.player?.length || 0)) {
+        idx++;
+        setTimeout(type, 17 + Math.random() * 13);
+      } else {
+        textDone.current = true;
+      }
+    }
+    type();
+  }, [state.stage, state.textIdx]);
+
+  function handleDialogClick() {
+    if (!textDone.current) {
+      setShownText(d.npc || d.player || "");
+      textDone.current = true;
+      return;
+    }
+    // Jika ada pilihan, tidak lanjut tap (harus pilih)
+    if (d?.choice) return;
+
+    // Loop kembali ke awal dialog setelah selesai (kecuali Nevermind)
+    if (d?.loop) {
+      setState({ stage: 0, textIdx: 3 }); // kembali ke panel pilihan
+      return;
+    }
+    // Tutup jika end
+    if (d?.end) {
+      setShowDialog(false);
+      return;
+    }
+    // Lanjut baris berikutnya
+    if (state.textIdx < dialogScript[state.stage].length - 1) {
+      setState({ ...state, textIdx: state.textIdx + 1 });
+    }
+  }
+
+  // Render panel pilihan (choice)
+  if (state.stage === 0 && d?.choice) {
+    return (
+      <div className="npc-dialog-panel" style={{
+        display: "flex", width: 740, height: 320,
+        background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a"
+      }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <img src={beachNPCImg} alt="Beach NPC" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        </div>
+        <div style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+          <div style={{ fontSize: 22, color: "#ffe69c", margin: "12px 0 16px" }}>What do you want to talk about?</div>
+          {choices.map((ch, i) => (
+            <button key={i}
+              className="event-button"
+              style={{ fontSize: 17, marginBottom: 7, width: 320 }}
+              onClick={() => setState({ stage: i + 1, textIdx: 0 })}>
+              {ch}
+            </button>
+          ))}
+        </div>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="player-dialog-sprite" style={{
+              width: 32, height: 32,
+              background: `url(${characterSprite})`,
+              backgroundPosition: "0px 0px",
+              backgroundSize: "128px 128px",
+              imageRendering: "pixelated",
+              transform: "scale(5.15625)",
+              transformOrigin: "center"
+            }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render dialog branch/baris dialog biasa
+  return (
+    <div
+      className="npc-dialog-panel"
+      style={{
+        display: "flex",
+        width: 740,
+        height: 320,
+        background: "rgba(0,0,0,0.89)",
+        borderRadius: 32,
+        alignItems: "center",
+        boxShadow: "0 3px 60px #000a",
+        cursor: "pointer",
+        userSelect: "none"
+      }}
+      onClick={handleDialogClick}
+    >
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <img src={beachNPCImg} alt="Beach NPC" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        <div style={{ color: "#ffecb0", fontSize: 15, marginTop: 8, opacity: 0.82 }}>Beach Guy</div>
+      </div>
+      <div style={{ flex: 2.1, minHeight: 60, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        {d.npc ? (
+          <div style={{
+            background: "rgba(70,50,10,0.18)",
+            borderRadius: 14,
+            fontSize: 19,
+            color: "#ffeec9",
+            padding: "23px 26px",
+            margin: "0 6px",
+            fontFamily: "inherit",
+            textAlign: "left"
+          }}>
+            <b style={{ color: "#ffe69c", fontSize: 17 }}>Beach Guy</b>
+            <span style={{ display: "block", marginTop: 4 }}>{shownText}</span>
+            {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+          </div>
+        ) : (
+          <div style={{
+            background: "rgba(70,50,10,0.18)",
+            borderRadius: 14,
+            fontSize: 19,
+            color: "#aaf4fd",
+            padding: "23px 26px",
+            margin: "0 6px",
+            fontFamily: "inherit",
+            textAlign: "right"
+          }}>
+            <b style={{ color: "#aaf4fd", fontSize: 17 }}>{username}</b>
+            <span style={{ display: "block", marginTop: 4 }}>{shownText}</span>
+            {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+          </div>
+        )}
+        <div style={{ fontSize: 12, color: "#e6d9a7", margin: "10px 0 0 8px" }}>Click to continue…</div>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="player-dialog-sprite" style={{
+            width: 32, height: 32,
+            background: `url(${characterSprite})`,
+            backgroundPosition: "0px 0px",
+            backgroundSize: "128px 128px",
+            imageRendering: "pixelated",
+            transform: "scale(5.15625)",
+            transformOrigin: "center"
+          }}></div>
+        </div>
+        <div style={{ color: "#a4f1fd", fontSize: 15, marginTop: 8, opacity: 0.81 }}>{username}</div>
+      </div>
+    </div>
   );
 }

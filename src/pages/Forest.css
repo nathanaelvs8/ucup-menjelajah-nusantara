@@ -109,6 +109,9 @@
 
 
 /* Contoh zona terlarang (misal area bawah map) */
+
+
+/*
 .blocked-bottom-zone {
   position: absolute;
   left: 0px;
@@ -121,14 +124,12 @@
   pointer-events: none;
 }
 
-
-/* Zona persegi panjang bagian atas */
 .zone-top-rect {
   position: absolute;
   top: 0;
   left: 0;
-  width: 1150px;         /* Ubah sesuai kebutuhan */
-  height: 360px;        /* Ubah sesuai kebutuhan */
+  width: 1150px;       
+  height: 360px;        
   background: rgba(200,0,0,0.24);
   border-bottom: 2px solid #b00000;
   z-index: 8;
@@ -139,8 +140,8 @@
   position: absolute;
   top: 0;
   left: 1150px;
-  width: 200px;         /* Ubah sesuai kebutuhan */
-  height: 210px;        /* Ubah sesuai kebutuhan */
+  width: 200px;        
+  height: 210px;      
   background: rgba(24, 93, 98, 0.24);
   border-bottom: 2px solid #264064;
   z-index: 8;
@@ -151,15 +152,14 @@
   position: absolute;
   top: 0;
   left: 1350px;
-  width: 200px;         /* Ubah sesuai kebutuhan */
-  height: 100px;        /* Ubah sesuai kebutuhan */
+  width: 200px;     
+  height: 100px;       
   background: rgba(33, 30, 128, 0.24);
   border-bottom: 2px solid #8d9c16;
   z-index: 8;
   pointer-events: none;
 }
 
-/* Zona segitiga siku-siku kiri bawah */
 .zone-bottom-left-triangle {
   position: absolute;
   left: 0;
@@ -172,13 +172,12 @@
   pointer-events: none;
 }
 
-/* Zona segitiga terbalik di tengah */
 .zone-mid-inverted-triangle1{
   position: absolute;
   width: 290px;
   height: 180px;
   left: 670px;
-  top: 350px; /* Posisi pertama */
+  top: 350px;
   clip-path: polygon(50% 100%, 0 0, 100% 0);
   transform: translateX(-50%);
   background: rgba(240,180,0,0.19);
@@ -191,7 +190,7 @@
   width: 470px;
   height: 400px;
   left: 730px;
-  top: 600px; /* Posisi kedua */
+  top: 600px;
   clip-path: polygon(30% 100%, 0 0, 100% 10%);
   transform: translateX(-50%);
   background: rgba(240,180,0,0.19);
@@ -200,7 +199,6 @@
 }
 
 
-/* Zona segitiga siku-siku kanan bawah #1 */
 .zone-bottom-right-triangle1 {
   position: absolute;
   right: 0;
@@ -212,4 +210,4 @@
   z-index: 8;
   pointer-events: none;
 }
-
+*/

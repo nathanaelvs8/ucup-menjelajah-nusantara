@@ -25,6 +25,8 @@ import happyIcon from "../assets/ui/Happiness.png";
 import cleanIcon from "../assets/ui/Cleanliness.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon-nya
 import forestMusic from "../assets/audio/forest.mp3";
+import forestNPCImg from "../assets/NPC/ForestNPC.png";
+
 
 
 const MAP_WIDTH = 1540;
@@ -113,6 +115,23 @@ export default function Forest() {
   });
 
   const [nearRope, setNearRope] = useState(false);
+
+  const forestNPCPos = { x: 500, y: 1050 }; // EDIT sesuai posisi map kamu
+  const [showForestNPCDialog, setShowForestNPCDialog] = useState(false);
+  const [forestDialogState, setForestDialogState] = useState({ stage: 0, textIdx: 0 });
+  const [nearForestNPC, setNearForestNPC] = useState(false);
+  
+  const [dungeonTorchNotif, setDungeonTorchNotif] = useState(false);
+  const [dungeonTorchNotifFade, setDungeonTorchNotifFade] = useState(false);
+  const [dungeonCooldownLeft, setDungeonCooldownLeft] = useState(0);
+
+  // Cek apakah dekat dengan NPC (panggil di useEffect yang memonitor posisi karakter)
+  useEffect(() => {
+    const dx = position.x + 32 - forestNPCPos.x;
+    const dy = position.y + 32 - forestNPCPos.y;
+    setNearForestNPC(Math.sqrt(dx * dx + dy * dy) < 60);
+  }, [position]);
+
 
 
   // Ukuran karakter (disamakan dengan sprite atau 64x64 misal)
@@ -688,6 +707,24 @@ export default function Forest() {
     setNearRope(near);
   }, [position, ropePos]);
 
+  useEffect(() => {
+    const lastDungeonTimeRaw = localStorage.getItem("lastDungeonEntry");
+    if (lastDungeonTimeRaw) {
+      const lastDungeonTime = JSON.parse(lastDungeonTimeRaw);
+      let curr = { day: currentDayIndex, hour: currentHour, minute: currentMinute };
+      const toMinute = t => (t.day * 24 * 60) + (t.hour * 60) + t.minute;
+      const diff = toMinute(curr) - toMinute(lastDungeonTime);
+      if (diff < 180 && diff >= 0) {
+        setDungeonCooldownLeft(180 - diff); // sisa menit
+      } else {
+        setDungeonCooldownLeft(0);
+      }
+    } else {
+      setDungeonCooldownLeft(0);
+    }
+  }, [currentMinute, currentHour, currentDayIndex]);
+
+
 
   const getSpriteOffset = () => {
     const directionMap = { down: 0, left: 1, right: 2, up: 3 };
@@ -703,6 +740,16 @@ export default function Forest() {
 
   const handleInteract = () => {
     if (showMinigame || showChopMinigame) return;
+
+    if (canInteractDungeon && dungeonCooldownLeft > 0) return;
+
+
+    if (nearForestNPC && !showForestNPCDialog) {
+      setShowForestNPCDialog(true);
+      setForestDialogState({ stage: 0, textIdx: 0 });
+      return;
+    }
+
 
       // --- Rope Pickup Logic ---
     if (nearRope && ropePos && !inventory.includes("Rope")) {
@@ -764,12 +811,51 @@ export default function Forest() {
     }
 
     if (canInteractDungeon) {
-      // Simpan posisi terakhir sebelum ke Dungeon
-      localStorage.setItem("lastForestPosition", JSON.stringify(position));
-      saveGameState();
-      navigate('/dungeon');
+      // Ambil waktu terakhir masuk dungeon (dalam satuan jam dan menit game)
+      const lastDungeonTimeRaw = localStorage.getItem("lastDungeonEntry");
+      let canEnter = true;
+      if (lastDungeonTimeRaw) {
+        const lastDungeonTime = JSON.parse(lastDungeonTimeRaw); // { hour, minute, day }
+        let curr = { day: currentDayIndex, hour: currentHour, minute: currentMinute };
+        // Konversi semua ke menit sejak hari Senin jam 00:00
+        const toMinute = t => (t.day * 24 * 60) + (t.hour * 60) + t.minute;
+        const diff = toMinute(curr) - toMinute(lastDungeonTime);
+        if (diff < 180 && diff >= 0) { // Kurang dari 3 jam (180 menit) sejak terakhir masuk
+          canEnter = false;
+        }
+      }
+
+      if (!canEnter) {
+        setDungeonTorchNotif(true);
+        setDungeonTorchNotifFade(false);
+        setTimeout(() => setDungeonTorchNotifFade(true), 2000);
+        setTimeout(() => setDungeonTorchNotif(false), 2500);
+        // Ganti isi notifikasinya (lihat bawah)
+        setCustomDungeonMsg("Dungeon is sealed. Come back in 3 in-game hours!");
+        return;
+      }
+
+      if (inventory.includes("Torch")) {
+        // Simpan waktu sekarang ke localStorage
+        localStorage.setItem("lastDungeonEntry", JSON.stringify({
+          hour: currentHour,
+          minute: currentMinute,
+          day: currentDayIndex
+        }));
+        // Simpan posisi terakhir sebelum ke Dungeon
+        localStorage.setItem("lastForestPosition", JSON.stringify(position));
+        saveGameState();
+        navigate('/dungeon');
+      } else {
+        setDungeonTorchNotif(true);
+        setDungeonTorchNotifFade(false);
+        setTimeout(() => setDungeonTorchNotifFade(true), 2000);
+        setTimeout(() => setDungeonTorchNotif(false), 2500);
+        setCustomDungeonMsg("You need a torch to enter the dungeon!");
+      }
       return;
     }
+
 
 
     if (atBottom) {
@@ -797,6 +883,8 @@ export default function Forest() {
   };
 
   const getEventText = () => {
+    if (showForestNPCDialog) return "";
+    if (nearForestNPC) return "🌲 Press Interact to talk to Forest Sage";
     if (canInteractFruit) return "🍎 Press Interact to pick wild fruit";
     if (canInteractWood) return "🪓 Press Interact to chop wood";
     if (canInteractDungeon) return "🕳️ Press Interact to enter dungeon";
@@ -856,7 +944,27 @@ export default function Forest() {
           ></div>
         )}
 
+        <img
+          src={forestNPCImg}
+          alt="Forest NPC"
+          className="map-npc"
+          style={{
+            position: "absolute",
+            left: forestNPCPos.x,
+            top: forestNPCPos.y,
+            width: 64,
+            height: 64,
+            zIndex: nearForestNPC ? 1 : 11,
+            imageRendering: "pixelated",
+            filter: showForestNPCDialog ? "brightness(0.7)" : "none",
+            transition: "filter 0.2s"
+          }}
+          draggable={false}
+        />
+
+
         {/* Visualisasi Zona Interaksi */}
+        {/*
         <div
           style={{
             position: "absolute",
@@ -864,7 +972,7 @@ export default function Forest() {
             top: fruitTree.y - fruitTree.ry,
             width: fruitTree.rx * 2,
             height: fruitTree.ry * 2,
-            backgroundColor: "rgba(255, 0, 0, 0.3)", // Merah transparan
+            backgroundColor: "rgba(255, 0, 0, 0.3)", 
             border: "2px dashed red",
             zIndex: 3,
             pointerEvents: "none"
@@ -878,7 +986,7 @@ export default function Forest() {
             top: woodTree.y - woodTree.ry,
             width: woodTree.rx * 2,
             height: woodTree.ry * 2,
-            backgroundColor: "rgba(0, 128, 0, 0.3)", // Hijau transparan
+            backgroundColor: "rgba(0, 128, 0, 0.3)", 
             border: "2px dashed green",
             zIndex: 3,
             pointerEvents: "none"
@@ -892,12 +1000,14 @@ export default function Forest() {
             top: dungeonZone.y - dungeonZone.ry,
             width: dungeonZone.rx * 2,
             height: dungeonZone.ry * 2,
-            backgroundColor: "rgba(0, 0, 255, 0.3)", // Biru transparan
+            backgroundColor: "rgba(0, 0, 255, 0.3)", 
             border: "2px dashed blue",
             zIndex: 3,
             pointerEvents: "none"
           }}
         />
+        */}
+
 
         {ropePos && !inventory.includes("Rope") && (
           <img
@@ -998,6 +1108,59 @@ export default function Forest() {
           >
             <img src={EncyclopediaIcon} alt="Encyclopedia" />
           </button>
+
+          {nearForestNPC && !showForestNPCDialog && (
+            <button
+              className="event-button"
+              style={{
+                position: "absolute",
+                left: forestNPCPos.x - offsetX,
+                top: forestNPCPos.y - offsetY + 70,
+                zIndex: 100
+              }}
+              onClick={() => {
+                setShowForestNPCDialog(true);
+                setForestDialogState({ stage: 0, textIdx: 0 });
+              }}
+            >
+              Interact
+            </button>
+          )}
+
+          {showForestNPCDialog && (
+            <div className="coconut-overlay" style={{ background: "rgba(0,0,0,0.87)", zIndex: 350 }}>
+              <ForestNPCDialogPanel
+                state={forestDialogState}
+                setState={setForestDialogState}
+                setShowDialog={setShowForestNPCDialog}
+                characterSprite={character?.sprite}
+                username={username}
+              />
+            </div>
+          )}
+
+          {dungeonTorchNotif && (
+            <div
+              style={{
+                position: "fixed",
+                left: "50%",
+                bottom: 110,
+                transform: "translateX(-50%)",
+                fontSize: 21,
+                color: "#ff4545",
+                fontWeight: "bold",
+                textShadow: "1px 2px 8px #000, 0 0 14px #0008",
+                zIndex: 3000,
+                pointerEvents: "none",
+                opacity: dungeonTorchNotifFade ? 0 : 1,
+                transition: "opacity 0.42s",
+                userSelect: "none",
+                background: "none"
+              }}
+            >
+              You need a torch to enter the dungeon!
+            </div>
+          )}
 
 
 
@@ -1357,8 +1520,30 @@ export default function Forest() {
 
       <div className="event-panel">
         <p className="event-text">{getEventText()}</p>
-        <button className="event-button" onClick={handleInteract}>Interact</button>
+        {!showForestNPCDialog && (
+          <button
+            className="event-button"
+            onClick={handleInteract}
+            disabled={canInteractDungeon && dungeonCooldownLeft > 0}
+            style={{
+              opacity: canInteractDungeon && dungeonCooldownLeft > 0 ? 0.65 : 1,
+              cursor: canInteractDungeon && dungeonCooldownLeft > 0 ? "not-allowed" : "pointer",
+              color: canInteractDungeon && dungeonCooldownLeft > 0 ? "#ff4545" : undefined // Merah saat cooldown
+            }}
+          >
+            {canInteractDungeon && dungeonCooldownLeft > 0
+              ? (() => {
+                  const min = dungeonCooldownLeft % 60;
+                  const hour = Math.floor(dungeonCooldownLeft / 60);
+                  const str = hour > 0 ? `${hour}:${min.toString().padStart(2, "0")}` : `${min}m`;
+                  return `Dungeon sealed: ${str} left`;
+                })()
+              : "Interact"}
+          </button>
+
+        )}
       </div>
+
       </>
       )}
 
@@ -1529,5 +1714,196 @@ export default function Forest() {
       )}
     </div>
     </>
+  );
+}
+
+function ForestNPCDialogPanel({ state, setState, setShowDialog, characterSprite, username }) {
+  // Dialog branch, dialogScript = [ [dialogAwal], [Secrets], [Challenge], [Nevermind] ]
+  const dialogScript = [
+    // Awal interaksi (pilihan)
+    [
+      { npc: "Welcome, child. The forest sees many, but remembers few." },
+      { npc: "Ask your questions, if you seek truth." },
+      { choice: true }
+    ],
+    // Secrets?
+    [
+      { player: "What secrets does the forest hide?" },
+      { npc: "You may find ropes scattered across the forest floor." },
+      { npc: "Ropes can be used for many things—sometimes, they’re the key to crafting something even more valuable." },
+      { player: "So I should collect them?" },
+      { npc: "Indeed. Explore with care; what seems ordinary may prove essential." }
+    ],
+
+    // Challenge?
+    [
+      { player: "I want a challenge." },
+      { npc: "The forest’s true trial lies in its darkness below—a dungeon hidden from the careless." },
+      { player: "How do I enter?" },
+      { npc: "You’ll need a torch. Light will guide you in the shadows. Without it, you’ll be lost." },
+      { npc: "Find or craft a torch, then search for the entrance beneath the ancient willow." }
+    ],
+    // Nevermind
+    [
+      { player: "Nevermind." },
+      { npc: "Then walk freely. Curiosity may yet find you again." }
+    ]
+  ];
+
+  const choices = [
+    "Secrets?",
+    "Challenge?",
+    "Nevermind."
+  ];
+
+  const [shownText, setShownText] = React.useState("");
+  const textDone = React.useRef(true);
+
+  const d = dialogScript[state.stage][state.textIdx];
+
+  // Animasi mengetik
+  React.useEffect(() => {
+    setShownText("");
+    textDone.current = false;
+    if (!d) return;
+    let idx = 0;
+    function type() {
+      setShownText(d.npc?.slice(0, idx) || d.player?.slice(0, idx) || "");
+      if (idx < (d.npc?.length || d.player?.length || 0)) {
+        idx++;
+        setTimeout(type, 16 + Math.random() * 12);
+      } else {
+        textDone.current = true;
+      }
+    }
+    type();
+  }, [state.stage, state.textIdx]);
+
+  function handleDialogClick() {
+    if (!textDone.current) {
+      setShownText(d.npc || d.player || "");
+      textDone.current = true;
+      return;
+    }
+    if (d?.choice) return;
+    if (state.textIdx < dialogScript[state.stage].length - 1) {
+      setState({ ...state, textIdx: state.textIdx + 1 });
+    } else {
+      // Setelah branch selesai, kembali ke menu pilihan
+      if (state.stage === 3) {
+        setShowDialog(false);
+      } else {
+        setState({ stage: 0, textIdx: dialogScript[0].length - 1 });
+      }
+    }
+  }
+
+  // Pilihan menu utama
+  if (state.stage === 0 && d?.choice) {
+    return (
+      <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <img src={forestNPCImg} alt="Forest NPC" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        </div>
+        <div style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+          <div style={{ fontSize: 22, color: "#ffe69c", margin: "12px 0 16px" }}>What do you want to ask?</div>
+          {choices.map((ch, i) => (
+            <button key={i}
+              className="event-button"
+              style={{ fontSize: 17, marginBottom: 7, width: 320 }}
+              onClick={() => setState({ stage: i + 1, textIdx: 0 })}>
+              {ch}
+            </button>
+          ))}
+        </div>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div style={{ width: 165, height: 165, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div className="player-dialog-sprite" style={{
+              width: 32,
+              height: 32,
+              background: `url(${characterSprite})`,
+              backgroundPosition: "0px 0px",
+              backgroundSize: "128px 128px",
+              imageRendering: "pixelated",
+              transform: "scale(5.15)",
+              transformOrigin: "center"
+            }}></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Render dialog (branch)
+  return (
+    <div
+      className="npc-dialog-panel"
+      style={{
+        display: "flex",
+        width: 740,
+        height: 320,
+        background: "rgba(0,0,0,0.89)",
+        borderRadius: 32,
+        alignItems: "center",
+        boxShadow: "0 3px 60px #000a",
+        cursor: "pointer",
+        userSelect: "none"
+      }}
+      onClick={handleDialogClick}
+    >
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <img src={forestNPCImg} alt="Forest NPC" style={{ width: 165, height: 165, objectFit: "contain" }} />
+        <div style={{ color: "#b1ffd6", fontSize: 15, marginTop: 8, opacity: 0.82 }}>Forest Sage</div>
+      </div>
+      <div style={{ flex: 2.1, minHeight: 60, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        {d.npc ? (
+          <div style={{
+            background: "rgba(70,110,70,0.18)",
+            borderRadius: 14,
+            fontSize: 19,
+            color: "#e0ffd4",
+            padding: "23px 26px",
+            margin: "0 6px",
+            fontFamily: "inherit",
+            textAlign: "left"
+          }}>
+            <b style={{ color: "#afe7c2", fontSize: 17 }}>Forest Sage</b>
+            <br />
+            <span style={{ transition: "all 0.12s", display: "block", textAlign: "left" }}>{shownText}</span>
+            {!textDone.current && <span className="writing-cursor" style={{ color: "#a1ffc7", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+          </div>
+        ) : (
+          <div style={{
+            background: "rgba(70,110,70,0.18)",
+            borderRadius: 14,
+            fontSize: 19,
+            color: "#aaf4fd",
+            padding: "23px 26px",
+            margin: "0 6px",
+            fontFamily: "inherit",
+            textAlign: "right"
+          }}>
+            <b style={{ color: "#aaf4fd", fontSize: 17 }}>{username}</b>
+            <br />
+            <span style={{ transition: "all 0.12s", display: "block", textAlign: "right" }}>{shownText}</span>
+            {!textDone.current && <span className="writing-cursor" style={{ color: "#b8ffd0", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+          </div>
+        )}
+        <div style={{ fontSize: 12, color: "#e6d9a7", margin: "10px 0 0 8px" }}>Click to continue…</div>
+      </div>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div className="player-dialog-sprite" style={{
+          width: 32,
+          height: 32,
+          background: `url(${characterSprite})`,
+          backgroundPosition: "0px 0px",
+          backgroundSize: "128px 128px",
+          imageRendering: "pixelated",
+          transform: "scale(5.15)",
+          transformOrigin: "center"
+        }}></div>
+        <div style={{ color: "#a4f1fd", fontSize: 15, marginTop: 8, opacity: 0.81 }}>{username}</div>
+      </div>
+    </div>
   );
 }

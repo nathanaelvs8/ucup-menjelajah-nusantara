@@ -267,3 +267,29 @@
 .chill-close-btn:hover {
   color: red;
 }
+
+.sleep-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  opacity: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999999;
+  animation: fadeInOut 2.5s ease-in-out;
+}
+.sleep-text {
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+}
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  20% { opacity: 0.8; }
+  80% { opacity: 0.8; }
+  100% { opacity: 0; }
+}

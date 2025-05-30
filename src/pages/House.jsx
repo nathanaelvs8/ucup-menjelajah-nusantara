@@ -194,7 +194,7 @@ const isBlocked = (x, y) => {
 
 const interactZones = [
   { x: 350, y: 300, width: 100, height: 120, name: "Kitchen" },
-  { x: 500, y: 300, width: 100, height: 120, name: "Wastafel" },
+  { x: 500, y: 300, width: 100, height: 120, name: "Sink" },
    { x: 900, y: 200, width: 300, height: 120, name: "Bathub" },
    { x: 1000, y: 700, width: 250, height: 120, name: "Picture" },
      { x: 650, y: 850, width: 100, height: 180, name: "Bed" },
@@ -392,7 +392,7 @@ const handleKeyUp = (e) => {
       window.location.href = "/gameplay";
       return;
     }
-    else if (zone.name === "Wastafel") {
+    else if (zone.name === "Sink") {
       setPositionBeforeInteract(position);
 setPositionLock(position);
       setIsInteracting(true);
@@ -1215,10 +1215,10 @@ useEffect(() => {
           setIsInteracting(false); // ✅ karakter bisa gerak lagi setelah popup ditutup
         }}>×</button>
 
-      <p>💧 Wastafel - Mau ngapain?</p>
+      <p>💧 SINK</p>
     <button onClick={() => {
       setStatus(prev => ({ ...prev, meal: Math.min(prev.meal + 10, 100) }));
-    }}>Minum langsung (+10 Meal)</button>
+    }}>Drink directly (+10 Meal)</button>
 
   <button onClick={() => {
     setInventory(prev => {
@@ -1237,7 +1237,7 @@ useEffect(() => {
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);
   }}>
-    Dapatkan Air (tambah inventory)
+    Get Water (add inventory)
   </button>
 
 
@@ -1263,7 +1263,7 @@ useEffect(() => {
 
 {showNotification && (
   <div className="notification">
-    ✅ Air telah ditambahkan ke inventory!
+    ✅ Water has been added to inventory!
   </div>
 )}
 

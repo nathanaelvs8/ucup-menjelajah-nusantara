@@ -56,7 +56,7 @@ export default function SelectCharacter() {
           <source src={selectTheme} type="audio/mp3" />
         </audio>
 
-        <h1 className="select-title">Pilih Karakter</h1>
+        <h1 className="select-title">Select Your Character</h1>
 
         <div className="character-grid">
           {characterData.map((char, i) => (
@@ -82,7 +82,7 @@ export default function SelectCharacter() {
             }}
           ></div>
           <button className="confirm-button" onClick={handleConfirm}>
-            Pilih Karakter Ini
+            Select This Character
           </button>
         </div>
       </div>
