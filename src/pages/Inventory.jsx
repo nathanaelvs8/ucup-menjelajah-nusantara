@@ -103,7 +103,7 @@ export const itemDetails = {
   },
   "Cooked Megalodon": {
   description: "Roasted giant megalodon steak! All stats become 100 for 3 days.",
-  sellGold: 8000,
+  sellGold: 80000000,
   useEffect: (stat) => {
     // Simpan buff ke localStorage, buff aktif sampai hari ke-N berikutnya
     const playerData = JSON.parse(localStorage.getItem("playerData") || "{}");

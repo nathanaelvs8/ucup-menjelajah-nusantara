@@ -148,8 +148,8 @@ const cookingItemList = [
     maxStock: 100,
   },
   {
-    id: "magic_power",
-    name: "Magic Power",
+    id: "magic_powder",
+    name: "Magic Powder",
     icon: MagicPowerIcon,
     price: 500,
     maxStock: 20,

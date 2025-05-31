@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Kitchen.css';
 import kitchenBackgroundImage from '../assets/ui/KitchenMG.png'; // Background dapur
+import RecipeBookIcon from '../assets/inventory-items/Recipe Book.png';
 
 // Impor itemIcons dari Inventory.jsx untuk menampilkan ikon bahan
 // Pastikan path './Inventory' atau './Inventory.jsx' sudah benar relatif terhadap file Kitchen.jsx ini
@@ -64,7 +65,8 @@ function getItemCount(inventoryArray, itemName) {
 export default function Kitchen({
   onClose,    // Fungsi untuk menutup modal Kitchen
   inventory,  // Array string nama item (dari props)
-  setInventory // Fungsi untuk update inventory (dari props)
+  setInventory,
+  craftingRecipes // Fungsi untuk update inventory (dari props)
 }) {
   const [recipes] = useState(initialRecipes);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
@@ -74,6 +76,25 @@ export default function Kitchen({
 
   const [stage1DisplayItems, setStage1DisplayItems] = useState([]);
   const [stage1CorrectlyTapped, setStage1CorrectlyTapped] = useState([]);
+  const [showRecipeBook, setShowRecipeBook] = useState(false);
+
+const recipeBookList = [
+  {
+    name: "Cooked Goldfish",
+    ingredients: ["Goldfish", "Garlic", "Onion", "Shallot", "Oil", "Magic Sauce"],
+    instructions: "Campur semua bahan, masak sampai matang dan bumbu meresap.",
+  },
+  {
+    name: "Cooked Tuna",
+    ingredients: ["Tuna", "Salt", "Garlic", "Magic Powder", "Oil"],
+    instructions: "Tumis garlic dan tuna, masukkan bahan lain, masak hingga matang.",
+  },
+  {
+    name: "Cooked Megalodon",
+    ingredients: ["Megalodon", "Garlic", "Onion", "Shallot", "Magic Powder", "Magic Sauce"],
+    instructions: "Tumis bawang, masukkan Megalodon dan bahan lain, masak sampai harum.",
+  }
+];
 
   useEffect(() => {
     if (gameState === 'minigame_stage1' && selectedRecipe) {
@@ -243,19 +264,55 @@ export default function Kitchen({
         )}
 
         {/* --- KONTEN GAME STATE --- */}
-        {gameState === 'menu' && (
-          <div className="recipe-menu">
-            <h3>Pilih Resep:</h3>
-            <ul>
-              {recipes.map((recipe) => (
-                <li key={recipe.id} onClick={() => handleSelectRecipe(recipe)}>
-                  {recipe.icon && <img src={recipe.icon} alt={recipe.name} className="recipe-list-icon" />}
-                  {recipe.name}
-                </li>
-              ))}
-            </ul>
+  {gameState === 'menu' && (
+  <div className="recipe-menu" style={{ position: 'relative' }}>
+    {/* Recipe Book Button */}
+    <button
+      className="recipe-book-btn"
+      style={{
+        position: "absolute",
+        left: 0, top: -20,
+        background: "none",
+        border: "none",
+        padding: 0,
+        cursor: "pointer",
+        outline: "none"
+      }}
+      title="Lihat Buku Resep"
+     onClick={() => setShowRecipeBook(true)}
+
+    >
+      <img src={RecipeBookIcon} alt="Recipe Book" style={{ width: 56, height: 56, objectFit: "contain" }} />
+    </button>
+    <h3 style={{ paddingLeft: 64 }}>Pilih Resep:</h3>
+    <ul>
+      {recipes.map((recipe) => (
+        <li key={recipe.id} onClick={() => handleSelectRecipe(recipe)}>
+          {recipe.icon && <img src={recipe.icon} alt={recipe.name} className="recipe-list-icon" />}
+          {recipe.name}
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
+ {showRecipeBook && (
+  <div className="recipe-book-modal-overlay" onClick={() => setShowRecipeBook(false)}>
+    <div className="recipe-book-modal" onClick={e => e.stopPropagation()}>
+      <button className="kitchen-close-button" onClick={() => setShowRecipeBook(false)}>×</button>
+      <h2 className="kitchen-title">Buku Resep</h2>
+      <div className="recipe-book-list">
+        {recipeBookList.map((res, i) => (
+          <div className="recipe-book-entry" key={i}>
+            <h3>{res.name}</h3>
+            <p><b>Bahan:</b> {res.ingredients.join(', ')}</p>
+            <p><b>Cara Membuat:</b> {res.instructions}</p>
           </div>
-        )}
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
 
         {gameState === 'view_recipe' && selectedRecipe && (
           <div className="recipe-details">
