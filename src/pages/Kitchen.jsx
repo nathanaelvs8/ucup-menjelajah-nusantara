@@ -1,47 +1,128 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Kitchen.css';
-import kitchenBackgroundImage from '../assets/ui/KitchenMG.png';
+import kitchenBackgroundImage from '../assets/ui/KitchenMG.png'; // Background dapur
 
-// List resep, kamu bisa tambah di sini
+// Impor itemIcons dari Inventory.jsx untuk menampilkan ikon bahan
+// Pastikan path './Inventory' atau './Inventory.jsx' sudah benar relatif terhadap file Kitchen.jsx ini
+import { itemIcons } from './Inventory';
+
+// Impor ikon Panci, pastikan path ini benar
+import PanciIcon from '../assets/inventory-items/Panci.png';
+
+// Definisi Resep (Cooked Goldfish, Cooked Tuna, Cooked Megalodon)
 const initialRecipes = [
   {
-    id: 'omelette',
-    name: 'Telur Dadar Sederhana',
-    ingredients: [{ name: 'Telur', qty: 2 }, { name: 'Garam', qty: 1 }],
-    steps: ['Telur', 'Garam'], // Urutan bahan untuk mini-game tap
-    minigameTargetScore: 500,
+    id: 'cooked_goldfish',
+    name: 'Cooked Goldfish',
+    icon: itemIcons['Cooked Goldfish'],
+    ingredients: [
+      { name: 'Goldfish', qty: 1 }, { name: 'Garlic', qty: 1 }, { name: 'Onion', qty: 1 },
+      { name: 'Shallot', qty: 1 }, { name: 'Oil', qty: 1 }, { name: 'Magic Sauce', qty: 1 },
+    ],
+    steps: ['Goldfish', 'Garlic', 'Onion', 'Shallot', 'Oil', 'Magic Sauce'],
+    stage1TargetScore: 100,
+    resultItem: 'Cooked Goldfish',
   },
   {
-    id: 'fried_rice',
-    name: 'Nasi Goreng Spesial',
-    ingredients: [{ name: 'Nasi', qty: 1 }, { name: 'Bawang', qty: 1 }, { name: 'Kecap', qty: 1 }, { name: 'Telur', qty: 1 }],
-    steps: ['Bawang', 'Telur', 'Nasi', 'Kecap'],
-    minigameTargetScore: 1000,
+    id: 'cooked_tuna',
+    name: 'Cooked Tuna',
+    icon: itemIcons['Cooked Tuna'],
+    ingredients: [
+      { name: 'Tuna', qty: 1 }, { name: 'Salt', qty: 1 }, { name: 'Garlic', qty: 1 },
+      { name: 'Magic Powder', qty: 1 }, { name: 'Oil', qty: 1 },
+    ],
+    steps: ['Tuna', 'Salt', 'Garlic', 'Magic Powder', 'Oil'],
+    stage1TargetScore: 100,
+    resultItem: 'Cooked Tuna',
   },
-  // Tambahkan resep lain di sini
+  {
+    id: 'cooked_megalodon',
+    name: 'Cooked Megalodon',
+    icon: itemIcons['Cooked Megalodon'],
+    ingredients: [
+      { name: 'Megalodon', qty: 1 }, { name: 'Garlic', qty: 1 }, { name: 'Onion', qty: 1 },
+      { name: 'Shallot', qty: 1 }, { name: 'Magic Powder', qty: 1 }, { name: 'Magic Sauce', qty: 1 },
+    ],
+    steps: ['Megalodon', 'Garlic', 'Onion', 'Shallot', 'Magic Powder', 'Magic Sauce'],
+    stage1TargetScore: 100,
+    resultItem: 'Cooked Megalodon',
+  },
 ];
 
+// Daftar semua bahan yang mungkin muncul di mini-game stage 1 (untuk diacak)
+const allPossibleMinigameIngredients = Object.keys(itemIcons).filter(
+  itemName => !itemName.startsWith("Cooked") &&
+  !["Boat", "Pickaxe", "Rod", "Archipelago Talisman", "Torch", "Ancient Glass", "Ancient Glass With Water", "Juice Coconut", "Juice Wild Fruit", "Cleanliness Potion", "Happiness Potion", "Meal Potion", "Morning Dew Potion"].includes(itemName) // Filter item non-bahan mentah
+);
+
 // Helper: jumlah item di inventory array
-function getItemCount(inventory, name) {
-  return inventory.reduce((count, item) => (item === name ? count + 1 : count), 0);
+function getItemCount(inventoryArray, itemName) {
+  return inventoryArray.reduce((count, item) => (item === itemName ? count + 1 : count), 0);
 }
 
+// Komponen Kitchen
 export default function Kitchen({
-  onClose,
-  status,
-  setStatus,
-  money,
-  setMoney,
-  inventory,
-  setInventory
+  onClose,    // Fungsi untuk menutup modal Kitchen
+  inventory,  // Array string nama item (dari props)
+  setInventory // Fungsi untuk update inventory (dari props)
 }) {
   const [recipes] = useState(initialRecipes);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [gameState, setGameState] = useState('menu'); // "menu", "view_recipe", "minigame_tap", "result"
-  const [currentMinigameScore, setCurrentMinigameScore] = useState(0);
+  const [gameState, setGameState] = useState('menu'); // "menu", "view_recipe", "minigame_stage1", "minigame_stage2", "result"
+  const [currentStage1Score, setCurrentStage1Score] = useState(0);
   const [feedbackMessage, setFeedbackMessage] = useState('');
 
-  // Pilih resep
+  const [stage1DisplayItems, setStage1DisplayItems] = useState([]);
+  const [stage1CorrectlyTapped, setStage1CorrectlyTapped] = useState([]);
+
+  useEffect(() => {
+    if (gameState === 'minigame_stage1' && selectedRecipe) {
+      setupStage1Minigame();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gameState, selectedRecipe]); // Jalankan saat gameState atau selectedRecipe berubah untuk stage 1
+
+  const setupStage1Minigame = () => {
+    if (!selectedRecipe) return;
+
+    const correctIngredientsForRecipe = selectedRecipe.steps;
+    const remainingCorrectIngredients = correctIngredientsForRecipe.filter(ing => !stage1CorrectlyTapped.includes(ing));
+    
+    const numCorrectToDisplay = Math.min(remainingCorrectIngredients.length, 2); // Tampilkan maks 2 bahan benar yang tersisa dan BELUM ditekan
+    const numWrongToDisplay = Math.max(0, 5 - numCorrectToDisplay); // Target total 5 item, sisanya pengganggu
+
+    let displayItemsPool = [];
+    
+    const shuffledRemainingCorrect = [...remainingCorrectIngredients].sort(() => 0.5 - Math.random());
+    displayItemsPool.push(...shuffledRemainingCorrect.slice(0, numCorrectToDisplay));
+
+    const wrongItemsPool = allPossibleMinigameIngredients.filter(
+      item => !correctIngredientsForRecipe.includes(item) && !displayItemsPool.includes(item)
+    );
+    const shuffledWrong = [...wrongItemsPool].sort(() => 0.5 - Math.random());
+    displayItemsPool.push(...shuffledWrong.slice(0, numWrongToDisplay));
+    
+    while(displayItemsPool.length < 5 && shuffledWrong.length > (displayItemsPool.length - numCorrectToDisplay) ) {
+        const nextWrongItem = shuffledWrong[displayItemsPool.length - numCorrectToDisplay];
+        if (nextWrongItem && !displayItemsPool.includes(nextWrongItem)) {
+            displayItemsPool.push(nextWrongItem);
+        } else {
+            break; 
+        }
+    }
+    // Pastikan setidaknya ada 1 item benar jika masih ada yang belum ditekan
+    if (numCorrectToDisplay === 0 && remainingCorrectIngredients.length > 0 && displayItemsPool.length < 5) {
+        displayItemsPool.push(remainingCorrectIngredients[0]);
+    }
+    // Jika setelah semua logika, displayItemsPool masih kosong (jarang terjadi), isi dengan beberapa item acak
+     if (displayItemsPool.length === 0) {
+        displayItemsPool.push(...[...allPossibleMinigameIngredients].sort(() => 0.5 - Math.random()).slice(0, 5));
+    }
+
+
+    setStage1DisplayItems(displayItemsPool.sort(() => 0.5 - Math.random()));
+  };
+
   const handleSelectRecipe = (recipe) => {
     let canCook = true;
     for (const ingredient of recipe.ingredients) {
@@ -56,122 +137,119 @@ export default function Kitchen({
       setFeedbackMessage('');
     } else {
       setSelectedRecipe(null);
-      setFeedbackMessage('Bahan tidak cukup untuk memasak ' + recipe.name);
+      setFeedbackMessage(`Bahan tidak cukup untuk memasak ${recipe.name}!`);
       setGameState('menu');
     }
   };
 
-  // Mulai masak, kurangi bahan dari inventory
-  const startCooking = () => {
+  const prepareToCook = () => {
     if (!selectedRecipe) return;
-    let updatedInventory = [...inventory];
-    for (const ingredient of selectedRecipe.ingredients) {
-      let qty = ingredient.qty;
-      updatedInventory = updatedInventory.filter(item => {
-        if (item === ingredient.name && qty > 0) {
-          qty--;
-          return false;
-        }
-        return true;
-      });
-    }
-    setInventory(updatedInventory);
-    setCurrentMinigameScore(0);
-    setGameState('minigame_tap');
-    setFeedbackMessage('');
+    setCurrentStage1Score(0);
+    setStage1CorrectlyTapped([]);
+    setGameState('minigame_stage1'); // useEffect akan memanggil setupStage1Minigame
+    setFeedbackMessage(`Siapkan bahan untuk ${selectedRecipe.name}! Pilih dengan benar.`);
   };
 
-  // Simulasi mini-game tap
-  const handleMinigameTap = (success) => {
-    if (success) {
-      const newScore = currentMinigameScore + 100;
-      setCurrentMinigameScore(newScore);
-      if (newScore >= selectedRecipe.minigameTargetScore) {
-        setFeedbackMessage('Tahap 1 Selesai! Lanjut ke tahap panas.');
-        setGameState('result');
-      }
+  const handleStage1ItemTap = (itemName) => {
+    if (!selectedRecipe || gameState !== 'minigame_stage1') return;
+
+    const isCorrectRequiredIngredient = selectedRecipe.steps.includes(itemName);
+    const alreadyTapped = stage1CorrectlyTapped.includes(itemName);
+    let newScore = currentStage1Score;
+    let newCorrectlyTappedLocal = [...stage1CorrectlyTapped];
+
+    if (isCorrectRequiredIngredient && !alreadyTapped) {
+      newScore += 10;
+      newCorrectlyTappedLocal.push(itemName);
+      setStage1CorrectlyTapped(newCorrectlyTappedLocal);
+      setFeedbackMessage(`Benar! ${itemName} ditambahkan. +10 poin.`);
+    } else if (isCorrectRequiredIngredient && alreadyTapped) {
+      setFeedbackMessage(`${itemName} sudah dipilih sebelumnya. Pilih bahan lain!`);
     } else {
-      setFeedbackMessage('Urutan salah!');
+      newScore -= 15;
+      setFeedbackMessage(`Salah! Itu bukan ${itemName}. -15 poin.`);
+    }
+    newScore = Math.max(0, newScore);
+    setCurrentStage1Score(newScore);
+
+    const allRequiredIngredientsTapped = selectedRecipe.steps.every(step => newCorrectlyTappedLocal.includes(step));
+
+    if (allRequiredIngredientsTapped && newScore >= selectedRecipe.stage1TargetScore) {
+      setFeedbackMessage(`Stage 1 Berhasil! Total Skor: ${newScore}. Lanjut atur panas!`);
+      setGameState('minigame_stage2');
+    } else if (allRequiredIngredientsTapped && newScore < selectedRecipe.stage1TargetScore) {
+      setFeedbackMessage(`Semua bahan benar, tapi skor (${newScore}) tidak mencapai target ${selectedRecipe.stage1TargetScore}. Masakan gagal!`);
+      setGameState('result');
+    } else if (!allRequiredIngredientsTapped) {
+      // Jika belum menang/kalah dan belum semua bahan benar terpilih, siapkan set item berikutnya
+      setTimeout(setupStage1Minigame, 800);
     }
   };
 
-  // Kembali ke menu resep
+  const handleStage2Result = (success) => {
+    if (!selectedRecipe) return;
+    if (success) {
+      setFeedbackMessage(`Luar biasa! Kamu berhasil memasak ${selectedRecipe.resultItem}!`);
+      let tempInventory = [...inventory];
+      for (const ingredient of selectedRecipe.ingredients) {
+        for (let i = 0; i < ingredient.qty; i++) {
+          const indexToRemove = tempInventory.indexOf(ingredient.name);
+          if (indexToRemove > -1) {
+            tempInventory.splice(indexToRemove, 1);
+          }
+        }
+      }
+      tempInventory.push(selectedRecipe.resultItem);
+      setInventory(tempInventory);
+    } else {
+      setFeedbackMessage(`Yah, gagal di tahap akhir saat mengatur panas ${selectedRecipe.name}. Makanan tidak jadi.`);
+    }
+    setGameState('result');
+  };
+
   const backToMenu = () => {
     setSelectedRecipe(null);
     setGameState('menu');
     setFeedbackMessage('');
-    setCurrentMinigameScore(0);
-  }
+    setCurrentStage1Score(0);
+    setStage1CorrectlyTapped([]);
+  };
 
   return (
     <div
       className="kitchen-container"
-      style={{
-        backgroundImage: `url(${kitchenBackgroundImage})`,
-        position: "fixed", // Supaya nutupi House
-        left: 0, top: 0, width: "100vw", height: "100vh",
-        zIndex: 3000 // Pastikan di atas modal lain
-      }}
+      style={{ backgroundImage: `url(${kitchenBackgroundImage})` }}
     >
-      <div className="game-overlay" style={{
-        background: "rgba(255,255,255,0.93)",
-        borderRadius: 18,
-        maxWidth: 540,
-        margin: "40px auto",
-        padding: 30,
-        minHeight: 400,
-        boxShadow: "0 8px 42px #3e2711a1"
-      }}>
-        <button onClick={onClose} className="kitchen-back-btn" style={{
-          position: "absolute",
-          right: 28,
-          top: 22,
-          fontSize: 20,
-          fontWeight: 600,
-          border: "none",
-          background: "#e4c587",
-          color: "#614b16",
-          borderRadius: 9,
-          padding: "4px 14px",
-          boxShadow: "0 1px 9px #987f49b2",
-          cursor: "pointer",
-          zIndex: 10
-        }}>×</button>
+      <div className="game-overlay" onClick={(e) => e.stopPropagation()}>
+        <button
+          onClick={onClose}
+          className="kitchen-close-button" // Gunakan kelas dari Kitchen.css
+        >
+          ×
+        </button>
 
-        <h2 style={{color: "#795b23", marginTop: 4}}>🍳 Dapur</h2>
+        <h2 className="kitchen-title">
+          🍳 Dapur Memasak 🍳
+        </h2>
 
-        {/* Feedback Message */}
-        {feedbackMessage && <div className="feedback-message" style={{
-          margin: "12px 0",
-          color: "#be2424",
-          fontWeight: 600,
-          background: "#fff6d2",
-          borderRadius: 8,
-          padding: "7px 10px"
-        }}>{feedbackMessage}</div>}
+        {feedbackMessage && (
+          <div
+            className={`feedback-message ${
+              feedbackMessage.includes("Berhasil") || feedbackMessage.includes("Selamat") || feedbackMessage.includes("Benar") ? 'success' : ''
+            }`}
+          >
+            {feedbackMessage}
+          </div>
+        )}
 
-        {/* Tampilkan status singkat player */}
-        <div style={{fontSize:15, marginBottom:18, marginTop:8, color: "#7e663b"}}>
-          Status: Meal {status?.meal} | Sleep {status?.sleep} | Happiness {status?.happiness} | Cleanliness {status?.cleanliness} <br />
-          Uang: {money}
-        </div>
-
-        {/* State: Menu Utama */}
+        {/* --- KONTEN GAME STATE --- */}
         {gameState === 'menu' && (
           <div className="recipe-menu">
             <h3>Pilih Resep:</h3>
             <ul>
               {recipes.map((recipe) => (
-                <li
-                  key={recipe.id}
-                  onClick={() => handleSelectRecipe(recipe)}
-                  style={{
-                    padding: "9px 0",
-                    fontWeight: "bold",
-                    color: "#885417",
-                    cursor: "pointer"
-                  }}
-                >
+                <li key={recipe.id} onClick={() => handleSelectRecipe(recipe)}>
+                  {recipe.icon && <img src={recipe.icon} alt={recipe.name} className="recipe-list-icon" />}
                   {recipe.name}
                 </li>
               ))}
@@ -179,69 +257,79 @@ export default function Kitchen({
           </div>
         )}
 
-        {/* State: Lihat Resep */}
         {gameState === 'view_recipe' && selectedRecipe && (
           <div className="recipe-details">
             <h3>{selectedRecipe.name}</h3>
+            {selectedRecipe.icon && <img src={selectedRecipe.icon} alt={selectedRecipe.name} className="recipe-detail-icon" />}
             <p>Bahan yang dibutuhkan:</p>
             <ul>
               {selectedRecipe.ingredients.map((ing, index) => (
-                <li key={index}>{ing.name} ({ing.qty}) - Kamu punya: {getItemCount(inventory, ing.name)}</li>
+                <li key={index}>
+                  {itemIcons[ing.name] && <img src={itemIcons[ing.name]} alt={ing.name} className="ingredient-list-icon" />}
+                  {ing.name} ({ing.qty}) - Kamu punya: {getItemCount(inventory, ing.name)}
+                </li>
               ))}
             </ul>
-            <button onClick={startCooking} style={{
-              marginTop: 8, fontWeight: 600, padding: "6px 18px",
-              borderRadius: 8, background: "#efe8cc", color: "#936e1f", border: "1px solid #e2ca8a"
-            }}>Mulai Masak!</button>
-            <button onClick={backToMenu} style={{
-              marginTop: 8, marginLeft: 14,
-              padding: "6px 18px", borderRadius: 8, background: "#ffe", border: "1px solid #ccb877"
-            }}>Kembali ke Menu</button>
+            <button onClick={prepareToCook}>Mulai Masak!</button>
+            <button onClick={backToMenu}>Kembali ke Menu</button>
           </div>
         )}
 
-        {/* State: Mini-game Tap */}
-        {gameState === 'minigame_tap' && selectedRecipe && (
-          <div className="minigame-container" style={{marginTop: 16}}>
-            <div className="minigame-play-area" style={{
-              border: "3px solid #ad944f", borderRadius: 13, background: "#fcf4d4",
-              padding: "24px 18px", marginBottom: 18
-            }}>
+        {gameState === 'minigame_stage1' && selectedRecipe && (
+          <div className="minigame-container">
+            <div className="minigame-play-area">
               <h3>Memasak: {selectedRecipe.name}</h3>
-              <p>Urutan Bahan: {selectedRecipe.steps.join(' ➡️ ')}</p>
-              <p>Skor Anda: {currentMinigameScore} / {selectedRecipe.minigameTargetScore}</p>
-              <div className="minigame-items-display" style={{marginTop:12}}>
-                <p><em>(Item interaktif akan muncul di sini)</em></p>
-              </div>
-              {/* Tombol simulasi */}
-              <div style={{ marginTop: '15px' }}>
-                <button onClick={() => handleMinigameTap(true)} style={{
-                  marginRight: 8, background: "#81c784", color: "#222", borderRadius: 7, border: "none", fontWeight: 600, padding: "7px 18px"
-                }}>Simulasi: Tap Benar</button>
-                <button onClick={() => handleMinigameTap(false)} style={{
-                  background: "#e57373", color: "#fff", borderRadius: 7, border: "none", fontWeight: 600, padding: "7px 18px"
-                }}>Simulasi: Tap Salah</button>
+              <p>Pilih bahan yang benar sesuai resep!</p>
+              <p>Skor: {currentStage1Score} / {selectedRecipe.stage1TargetScore}</p>
+              <div className="minigame-items-display">
+                {stage1DisplayItems.map((itemName, index) => (
+                  <button
+                    key={`${itemName}-${index}-${Date.now()}`} // Key lebih unik untuk re-render
+                    onClick={() => handleStage1ItemTap(itemName)}
+                    className="minigame-item-button"
+                    title={itemName}
+                  >
+                    {itemIcons[itemName] ? (
+                      <img src={itemIcons[itemName]} alt={itemName} />
+                    ) : (
+                      itemName
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
-            <button onClick={backToMenu} style={{
-              marginTop: 8, background: "#f8ecbe", borderRadius: 8, border: "1px solid #cebe91"
-            }}>Batal & Kembali ke Menu</button>
+            <button onClick={backToMenu} className="minigame-cancel-button">
+              Batal
+            </button>
           </div>
         )}
 
-        {/* State: Hasil */}
+        {gameState === 'minigame_stage2' && selectedRecipe && (
+          <div className="minigame-container">
+            <div className="minigame-play-area">
+              <h3>Tahap 2: Atur Panas!</h3>
+              <p>Resep: {selectedRecipe.name}</p>
+              <div className="minigame-stage2-visual">
+                <img src={PanciIcon} alt="Panci Masak" className="panci-icon"/>
+                <p><em>(Implementasikan mekanisme mini-game "tekan pas" di sini)</em></p>
+              </div>
+              <button onClick={() => handleStage2Result(true)} className="stage2-success-button">Simulasi: Stage 2 Berhasil</button>
+              <button onClick={() => handleStage2Result(false)} className="stage2-fail-button">Simulasi: Stage 2 Gagal</button>
+            </div>
+            <button onClick={backToMenu} className="minigame-cancel-button">
+              Batal
+            </button>
+          </div>
+        )}
+
         {gameState === 'result' && selectedRecipe && (
-          <div className="result-display" style={{marginTop: 20}}>
-            <h3>Hasil: {selectedRecipe.name}</h3>
-            <p>Skor Akhir Tahap 1: {currentMinigameScore}</p>
-            {currentMinigameScore >= selectedRecipe.minigameTargetScore ? (
-              <p style={{color:"#268f1b",fontWeight:600}}>Mantap! Kamu berhasil tahap pertama!</p>
-            ) : (
-              <p style={{color:"#be2424",fontWeight:600}}>Sayang sekali, poin tidak cukup. Coba lagi ya!</p>
-            )}
-            <button onClick={backToMenu} style={{
-              marginTop: 12, padding: "6px 20px", borderRadius: 8, background: "#efe8cc", color: "#936e1f", border: "1px solid #e2ca8a"
-            }}>Kembali ke Menu</button>
+          <div className="result-display">
+            <h3>Hasil Akhir Memasak</h3>
+            {feedbackMessage.includes("Selamat") && selectedRecipe.icon &&
+              <img src={selectedRecipe.icon} alt={selectedRecipe.resultItem} className="result-cooked-item-icon" />
+            }
+            <p className={`result-feedback-text ${feedbackMessage.includes("Selamat") ? 'success' : 'failure'}`}>{feedbackMessage}</p>
+            <button onClick={backToMenu}>Kembali ke Menu Resep</button>
           </div>
         )}
       </div>

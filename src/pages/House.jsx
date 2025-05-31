@@ -1247,19 +1247,15 @@ useEffect(() => {
 )}
 
 {showKitchen && (
-      <Kitchen
-        onClose={() => {
-          setShowKitchen(false);
-          setIsInteracting(false); // biar bisa gerak lagi
-}}
-       status={status}
-  setStatus={setStatus}
-  money={money}
-  setMoney={setMoney}
-  inventory={inventory}
-  setInventory={setInventory}
+  <Kitchen
+    onClose={() => {
+      setShowKitchen(false);
+      setIsInteracting(false); // biar bisa gerak lagi
+    }}
+    inventory={inventory}     // Prop inventory dari House
+    setInventory={setInventory} // Prop setInventory dari House
   />
-    )}
+)}
 
 {showNotification && (
   <div className="notification">
