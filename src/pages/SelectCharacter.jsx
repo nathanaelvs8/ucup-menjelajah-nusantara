@@ -51,6 +51,7 @@ export default function SelectCharacter() {
 
   return (
     <div className="screen-wrapper">
+      <p className="username-greeting">Welcome, {playerName}</p>
       <div className="select-container">
         <audio autoPlay loop>
           <source src={selectTheme} type="audio/mp3" />
@@ -74,7 +75,6 @@ export default function SelectCharacter() {
         </div>
 
         <div className="character-display">
-          <p className="username-greeting">Welcome, {playerName}</p>
           <div
             className="animated-sprite"
             style={{
@@ -82,8 +82,9 @@ export default function SelectCharacter() {
             }}
           ></div>
           <button className="confirm-button" onClick={handleConfirm}>
-            Select This Character
+            <span role="img" aria-label="star">⭐</span> Select This Character
           </button>
+
         </div>
       </div>
     </div>

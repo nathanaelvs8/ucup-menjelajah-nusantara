@@ -26,6 +26,10 @@ import cleanIcon from "../assets/ui/Cleanliness.png";
 import EncyclopediaIcon from "../assets/ui/Encyclopedia.png"; // import icon-nya
 import forestMusic from "../assets/audio/forest.mp3";
 import forestNPCImg from "../assets/NPC/ForestNPC.png";
+import arrowUp from "../assets/ui/ArrowUP.png";
+import arrowDown from "../assets/ui/ArrowDOWN.png";
+import arrowLeft from "../assets/ui/ArrowLEFT.png";
+import arrowRight from "../assets/ui/ArrowRIGHT.png";
 
 
 
@@ -1510,13 +1514,39 @@ export default function Forest() {
     {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
       <>
       <div className="analog-controls">
-        <button className="arrow up" onMouseDown={() => keysPressed.current.arrowup = true} onMouseUp={() => keysPressed.current.arrowup = false}>↑</button>
-        <div className="horizontal">
-          <button className="arrow left" onMouseDown={() => keysPressed.current.arrowleft = true} onMouseUp={() => keysPressed.current.arrowleft = false}>←</button>
-          <button className="arrow right" onMouseDown={() => keysPressed.current.arrowright = true} onMouseUp={() => keysPressed.current.arrowright = false}>→</button>
+        <div className="analog-up-row">
+          <button className="arrow up"
+            onMouseDown={() => keysPressed.current.arrowup = true}
+            onMouseUp={() => keysPressed.current.arrowup = false}
+          >
+            <img src={arrowUp} alt="Up" className="arrow-img" />
+          </button>
         </div>
-        <button className="arrow down" onMouseDown={() => keysPressed.current.arrowdown = true} onMouseUp={() => keysPressed.current.arrowdown = false}>↓</button>
+        <div className="analog-middle-row">
+          <button className="arrow left"
+            onMouseDown={() => keysPressed.current.arrowleft = true}
+            onMouseUp={() => keysPressed.current.arrowleft = false}
+          >
+            <img src={arrowLeft} alt="Left" className="arrow-img" />
+          </button>
+          <div className="arrow-spacer"></div>
+          <button className="arrow right"
+            onMouseDown={() => keysPressed.current.arrowright = true}
+            onMouseUp={() => keysPressed.current.arrowright = false}
+          >
+            <img src={arrowRight} alt="Right" className="arrow-img" />
+          </button>
+        </div>
+        <div className="analog-down-row">
+          <button className="arrow down"
+            onMouseDown={() => keysPressed.current.arrowdown = true}
+            onMouseUp={() => keysPressed.current.arrowdown = false}
+          >
+            <img src={arrowDown} alt="Down" className="arrow-img" />
+          </button>
+        </div>
       </div>
+
 
       <div className="event-panel">
         <p className="event-text">{getEventText()}</p>

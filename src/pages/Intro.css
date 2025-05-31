@@ -11,13 +11,13 @@
   position: absolute;
   top: 0;
   left: 0;
-  width: 80vw;
-  height: auto;
-  max-height: 100vh;
-  object-fit: contain;
-  margin: 0 auto;
-  right: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;   /* <--- PENTING, biar videonya nutup semua layar */
+  z-index: 1;
+  background: black;
 }
+
 
 .intro-video.base {
   z-index: 1;

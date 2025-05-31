@@ -766,7 +766,7 @@ return (
       <img
         src={mountainNPCImg}
         alt="Mountain NPC"
-        className="map-npc"
+        className={`map-npc mountain-floating`}
         style={{
           position: "absolute",
           left: mountainNPCPos.x,
@@ -1258,16 +1258,17 @@ return (
     {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
       <>
         <div className="analog-controls">
-          <button className="arrow up"
-            onMouseDown={() => handleAnalog("arrowup", true)}
-            onMouseUp={() => handleAnalog("arrowup", false)}
-            onTouchStart={() => handleAnalog("arrowup", true)}
-            onTouchEnd={() => handleAnalog("arrowup", false)}
-          >
-            <img src={arrowUp} alt="Up" className="arrow-img" />
-          </button>
-
-          <div className="horizontal">
+          <div className="analog-up-row">
+            <button className="arrow up"
+              onMouseDown={() => handleAnalog("arrowup", true)}
+              onMouseUp={() => handleAnalog("arrowup", false)}
+              onTouchStart={() => handleAnalog("arrowup", true)}
+              onTouchEnd={() => handleAnalog("arrowup", false)}
+            >
+              <img src={arrowUp} alt="Up" className="arrow-img" />
+            </button>
+          </div>
+          <div className="analog-middle-row">
             <button className="arrow left"
               onMouseDown={() => handleAnalog("arrowleft", true)}
               onMouseUp={() => handleAnalog("arrowleft", false)}
@@ -1276,7 +1277,7 @@ return (
             >
               <img src={arrowLeft} alt="Left" className="arrow-img" />
             </button>
-
+            <div className="arrow-spacer"></div>
             <button className="arrow right"
               onMouseDown={() => handleAnalog("arrowright", true)}
               onMouseUp={() => handleAnalog("arrowright", false)}
@@ -1286,16 +1287,18 @@ return (
               <img src={arrowRight} alt="Right" className="arrow-img" />
             </button>
           </div>
-
-          <button className="arrow down"
-            onMouseDown={() => handleAnalog("arrowdown", true)}
-            onMouseUp={() => handleAnalog("arrowdown", false)}
-            onTouchStart={() => handleAnalog("arrowdown", true)}
-            onTouchEnd={() => handleAnalog("arrowdown", false)}
-          >
-            <img src={arrowDown} alt="Down" className="arrow-img" />
-          </button>
+          <div className="analog-down-row">
+            <button className="arrow down"
+              onMouseDown={() => handleAnalog("arrowdown", true)}
+              onMouseUp={() => handleAnalog("arrowdown", false)}
+              onTouchStart={() => handleAnalog("arrowdown", true)}
+              onTouchEnd={() => handleAnalog("arrowdown", false)}
+            >
+              <img src={arrowDown} alt="Down" className="arrow-img" />
+            </button>
+          </div>
         </div>
+
 
         <div className="event-panel">
           <p className="event-text">
