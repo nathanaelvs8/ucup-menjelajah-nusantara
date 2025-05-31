@@ -551,8 +551,9 @@ useEffect(() => {
     return `-${col * SPRITE_SIZE}px -${row * SPRITE_SIZE}px`;
   };
 
-  const offsetX = Math.min(Math.max(-position.x + window.innerWidth / 2, -(MAP_WIDTH - window.innerWidth)), 0);
-  const offsetY = Math.min(Math.max(-position.y + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
+  const offsetX = Math.min(Math.max(-(position.x + SPRITE_SIZE / 2) + window.innerWidth / 2, -(MAP_WIDTH - window.innerWidth)), 0);
+  const offsetY = Math.min(Math.max(-(position.y + SPRITE_SIZE / 2) + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
+
 
   const handleAnalog = (key, value) => {
     if (!isSunbathing) keysPressed.current[key] = value;

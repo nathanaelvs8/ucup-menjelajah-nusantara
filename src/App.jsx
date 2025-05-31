@@ -12,6 +12,7 @@ import Market from "./pages/Market";
 import Forest from "./pages/Forest";
 import Ending from "./pages/Ending";
 import Dungeon from "./pages/Dungeon"; 
+import Secret from "./pages/Secret"; 
 
 function WithNavigateDungeon() {
   const navigate = useNavigate();
@@ -35,6 +36,7 @@ function App() {
       <Route path="/market" element={<Market />} />
       <Route path="/forest" element={<Forest />} />
       <Route path="/dungeon" element={<WithNavigateDungeon />} />
+      <Route path="/secret" element={<Secret />} />
       <Route path="/ending" element={<Ending />} />
     </Routes>
   );

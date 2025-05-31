@@ -537,9 +537,9 @@ else if (zone.name === "Picture") {
 
 
 
+  const offsetX = Math.min(Math.max(-(position.x + SPRITE_SIZE / 2) + window.innerWidth / 2, -(MAP_WIDTH - window.innerWidth)), 0);
+  const offsetY = Math.min(Math.max(-(position.y + SPRITE_SIZE / 2) + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
 
-  const offsetX = Math.min(Math.max(-position.x + window.innerWidth / 2, -(MAP_WIDTH - window.innerWidth)), 0);
-  const offsetY = Math.min(Math.max(-position.y + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
 
 useEffect(() => {
   if (interactionRequested) {
@@ -1149,48 +1149,38 @@ useEffect(() => {
     {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
           <>
           <div className="analog-controls">
-          <button
-            className="arrow up"
-            onMouseDown={() => {
-              if (!isSleeping) keysPressed.current.arrowup = true;
-            }}
-            onMouseUp={() => keysPressed.current.arrowup = false}
-          >
-            <img src={arrowUp} alt="Up" className="arrow-img" />
-          </button>
-
-          <div className="horizontal">
-            <button
-              className="arrow left"
-              onMouseDown={() => {
-                if (!isSleeping) keysPressed.current.arrowleft = true;
-              }}
-              onMouseUp={() => keysPressed.current.arrowleft = false}
-            >
-              <img src={arrowLeft} alt="Left" className="arrow-img" />
-            </button>
-
-            <button
-              className="arrow right"
-              onMouseDown={() => {
-                if (!isSleeping) keysPressed.current.arrowright = true;
-              }}
-              onMouseUp={() => keysPressed.current.arrowright = false}
-            >
-              <img src={arrowRight} alt="Right" className="arrow-img" />
-            </button>
+            <div className="analog-up-row">
+              <button className="arrow up"
+                onMouseDown={() => keysPressed.current.arrowup = true}
+                onMouseUp={() => keysPressed.current.arrowup = false}
+              >
+                <img src={arrowUp} alt="Up" className="arrow-img" />
+              </button>
+            </div>
+            <div className="analog-middle-row">
+              <button className="arrow left"
+                onMouseDown={() => keysPressed.current.arrowleft = true}
+                onMouseUp={() => keysPressed.current.arrowleft = false}
+              >
+                <img src={arrowLeft} alt="Left" className="arrow-img" />
+              </button>
+              <div className="arrow-spacer"></div>
+              <button className="arrow right"
+                onMouseDown={() => keysPressed.current.arrowright = true}
+                onMouseUp={() => keysPressed.current.arrowright = false}
+              >
+                <img src={arrowRight} alt="Right" className="arrow-img" />
+              </button>
+            </div>
+            <div className="analog-down-row">
+              <button className="arrow down"
+                onMouseDown={() => keysPressed.current.arrowdown = true}
+                onMouseUp={() => keysPressed.current.arrowdown = false}
+              >
+                <img src={arrowDown} alt="Down" className="arrow-img" />
+              </button>
+            </div>
           </div>
-
-          <button
-            className="arrow down"
-            onMouseDown={() => {
-              if (!isSleeping) keysPressed.current.arrowdown = true;
-            }}
-            onMouseUp={() => keysPressed.current.arrowdown = false}
-          >
-            <img src={arrowDown} alt="Down" className="arrow-img" />
-          </button>
-        </div>
 
 
 

@@ -48,6 +48,8 @@ function addDiscoveredItem(item) {
 }
 
 
+
+
 export default function Gameplay() {
 
 
@@ -136,6 +138,22 @@ export default function Gameplay() {
     setNearMountainNPC(Math.sqrt(dx * dx + dy * dy) < 64);
   }, [position]);
 
+  // Tambah di state Gameplay.jsx
+  const [atMysticShore, setAtMysticShore] = useState(false);
+
+  // Tambah di useEffect([position]) di bawah setNearForestZone:
+  useEffect(() => {
+    // ... logic lain
+    const atMystic = (
+      position.x >= 3500 && position.x <= 3700 && // X range
+      position.y >= 3300 && position.y <= 3440   // Y range
+    );
+    setAtMysticShore(atMystic);
+  }, [position]);
+
+
+  const [mysticNotif, setMysticNotif] = useState(false);
+  const [mysticNotifFade, setMysticNotifFade] = useState(false);
 
 
 
@@ -192,6 +210,8 @@ export default function Gameplay() {
     } while (isInBlockedZone(x, y));
     return { x, y };
   });
+
+  
 
 
   const audioRef = useRef(null);
@@ -617,6 +637,14 @@ export default function Gameplay() {
     }
   }, [inventory, clothPos]);
 
+  useEffect(() => {
+    const atMystic =
+      position.x + SPRITE_SIZE / 2 >= 3000 &&
+      position.x + SPRITE_SIZE / 2 <= 3100 &&
+      position.y + SPRITE_SIZE / 2 >= 1300 &&
+      position.y + SPRITE_SIZE / 2 <= 1380;
+    setAtMysticShore(atMystic);
+  }, [position]);
 
   const getSpriteOffset = () => {
     const directionMap = { down: 0, left: 1, right: 2, up: 3 };
@@ -625,8 +653,8 @@ export default function Gameplay() {
     return `-${col * SPRITE_SIZE}px -${row * SPRITE_SIZE}px`;
   };
 
-  const offsetX = Math.min(Math.max(-position.x + window.innerWidth / 2, -(MAP_WIDTH - window.innerWidth)), 0);
-  const offsetY = Math.min(Math.max(-position.y + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
+  const offsetX = Math.min(Math.max(-(position.x + SPRITE_SIZE / 2) + window.innerWidth / 2, -(MAP_WIDTH - window.innerWidth)), 0);
+  const offsetY = Math.min(Math.max(-(position.y + SPRITE_SIZE / 2) + window.innerHeight / 2, -(MAP_HEIGHT - window.innerHeight)), 0);
 
   const handleAnalog = (key, value) => {
     keysPressed.current[key] = value;
@@ -701,7 +729,18 @@ export default function Gameplay() {
       // Simpan posisi terakhir sebelum masuk forest
       localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
       window.location.href = "/forest";
-    } 
+    } else if (atMysticShore) {
+      if (inventory.includes("Boat")) {
+        // Simpan data jika mau
+        window.location.href = "/secret"; // atau "/Secret" sesuai routing-mu
+      } else {
+        setMysticNotif(true);
+        setMysticNotifFade(false);
+        setTimeout(() => setMysticNotifFade(true), 2000);
+        setTimeout(() => setMysticNotif(false), 2500);
+      }
+      return;
+    }
   };
 
 return (
@@ -816,6 +855,8 @@ return (
       <div className="rect-block-zone ocean-block-2"></div>
       <div className="rect-block-zone ocean-block-3"></div>
       <div className="tri-block-zone ocean-tri-1"></div>
+      <div className="mystic-shore-zone"></div>
+
 
       {clothPos && (
         <img
@@ -906,6 +947,30 @@ return (
         </div>
       </div>
     )}
+
+    {mysticNotif && (
+      <div
+        style={{
+          position: "fixed",
+          left: "50%",
+          bottom: 110,
+          transform: "translateX(-50%)",
+          fontSize: 21,
+          color: "#ff4545",
+          fontWeight: "bold",
+          textShadow: "1px 2px 8px #000, 0 0 14px #0008",
+          zIndex: 3000,
+          pointerEvents: "none",
+          opacity: mysticNotifFade ? 0 : 1,
+          transition: "opacity 0.42s",
+          userSelect: "none",
+          background: "none"
+        }}
+      >
+        You need a boat to cross the sea!
+      </div>
+    )}
+
 
     {/* Inventory Modal DAN Overlay - TAMPIL kalau inventoryVisible */}
     {inventoryVisible && (
@@ -1320,6 +1385,8 @@ return (
               ? "🛒 Press Interact to enter the market"
               : nearForestZone
               ? "🌲 Press Interact to enter the forest"
+              : atMysticShore
+              ? "🚤 Press Interact to cross to the Isle of The Sacred Oath"
               : "📍 Event info will appear here..."}
           </p>
           <button className="event-button" onClick={handleInteract}>Interact</button>

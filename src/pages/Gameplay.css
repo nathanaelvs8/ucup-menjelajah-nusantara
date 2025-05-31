@@ -561,7 +561,7 @@ html, body {
 .event-panel {
   position: fixed;
   bottom: 32px;
-  right: 32px;
+  right: 25px;
   z-index: 30;
   background: linear-gradient(120deg, #fffbead0 55%, #ffecccaa 100%);
   color: #4b3621;
@@ -579,17 +579,25 @@ html, body {
 
 @media (max-width: 700px) {
   .event-panel {
-    bottom: 5px;
-    right: 6px;
+    bottom: 18px;  /* space dari bawah */
+    right: 15px;   /* space dari kanan */
     left: unset;
     margin: 0;
-    padding: 4px 7px;
+    padding: 7px 12px 8px 12px;
     border-radius: 13px;
     min-width: 60px;
-    width: 200px;
-    max-width: 95vw;
+    width: auto;
+    max-width: 55vw;
     font-size: 13px;
     box-sizing: border-box;
+  }
+  .event-button {
+    font-size: 13px;
+    padding: 8px 0 6px 0;
+    border-radius: 6px;
+    width: 99%;
+    min-width: 60px;
+    margin-bottom: 0;
   }
 }
 
@@ -694,8 +702,8 @@ html, body {
 
 .map-toggle-button {
   position: fixed;
-  bottom: 150px;
-  right: 13px;
+  bottom: 120px;
+  right: 20px;
   z-index: 40;
   background: rgba(0, 0, 0, 0.6);
   border: 2px solid white;
@@ -736,8 +744,6 @@ html, body {
 
 
 
-
-
 /* Area tengah kanan gunung */
 
 
@@ -765,14 +771,49 @@ html, body {
   font-weight: bold;
 }
 
+/* Styling untuk greeting dan status di desktop */
 .greeting-ui {
   font-size: 16px;
   font-weight: bold;
-  color: #fff8c6; /* warna kuning lembut */
-  font-family: 'IM Fell English SC', serif; /* nuansa klasik */
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6); /* bayangan lembut */
+  color: #fff8c6;
+  font-family: 'IM Fell English SC', serif;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
   letter-spacing: 0.5px;
 }
+
+/* Status bar default di desktop */
+.status-bars {
+  padding: 10px 12px 10px 10px;
+  min-width: 170px;
+  max-width: 270px;
+  margin-bottom: 5px;
+}
+
+/* Media query untuk layar kecil (HP) */
+@media (max-width: 700px) {
+  .greeting-ui {
+    font-size: 12px; /* perkecil ukuran tulisan greeting */
+    letter-spacing: 0.3px;
+    font-weight: 600;
+  }
+
+  .status-bars {
+    padding: 6px 8px 6px 8px; /* perkecil padding agar lebih ringkas */
+    min-width: 120px; /* sesuaikan lebar agar tidak terlalu besar */
+    max-width: 160px;
+    margin-bottom: 3px;
+  }
+
+  .status-icon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .bar {
+    height: 5px;
+  }
+}
+
 
 
 
@@ -1011,9 +1052,88 @@ html, body {
   100% { transform: translateY(-8px);}
 }
 
+/* NPC Dialog Panel Responsive */
 .npc-dialog-panel {
+  display: flex;
+  flex-direction: row;
+  width: 740px;
+  height: 320px;
+  background: rgba(0,0,0,0.89);
+  border-radius: 32px;
+  align-items: center;
+  box-shadow: 0 3px 60px #000a;
   animation: fadeinNPCPanel 0.28s;
+  position: relative;
+  overflow: hidden;
+  max-width: 98vw;
+  margin: 0 auto;
 }
+
+@media (max-width: 700px) {
+  .npc-dialog-panel {
+    flex-direction: column !important;
+    width: 98vw !important;
+    height: auto !important;
+    min-height: 340px;
+    padding: 12px 0 16px 0;
+    box-sizing: border-box;
+    border-radius: 20px;
+    max-width: 99vw;
+  }
+  .npc-dialog-panel > div {
+    width: 100% !important;
+    min-width: 0 !important;
+    flex: none !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  .npc-dialog-panel img,
+  .npc-dialog-panel .player-dialog-sprite {
+    width: 80px !important;
+    height: 80px !important;
+    min-width: 80px !important;
+    min-height: 80px !important;
+    max-width: 90vw !important;
+    max-height: 100px !important;
+    margin: 0 auto !important;
+    display: block;
+  }
+  .npc-dialog-panel .player-dialog-sprite {
+    transform: scale(2.4) !important;
+  }
+  .npc-dialog-panel [style*="font-size: 15"] {
+    font-size: 12px !important;
+  }
+  .npc-dialog-panel [style*="padding: 23px"] {
+    padding: 13px 7vw !important;
+    font-size: 15px !important;
+  }
+  .npc-dialog-panel [style*="font-size: 22"] {
+    font-size: 16px !important;
+    margin: 11px 0 7px 0 !important;
+  }
+  .npc-dialog-panel button.event-button,
+  .npc-dialog-panel button.story-choice-btn {
+    font-size: 15px !important;
+    padding: 9px 0 !important;
+    min-width: 80px !important;
+    width: 85vw !important;
+    margin-bottom: 7px !important;
+    margin-top: 6px !important;
+  }
+}
+
+.npc-dialog-panel .player-dialog-sprite {
+  width: 32px;
+  height: 32px;
+  background-repeat: no-repeat;
+  border-radius: 18px;
+  box-shadow: 0 3px 16px #0028;
+  margin: 0 auto;
+  display: block;
+}
+
+
 @keyframes fadeinNPCPanel { from { opacity:0; transform: translateY(30px);} to {opacity:1; transform: translateY(0);} }
 
 .player-dialog-sprite {
@@ -1031,3 +1151,69 @@ html, body {
   user-select: none;
 }
 
+.npc-dialog-panel .player-dialog-sprite {
+  width: 32px !important;
+  height: 32px !important;
+  min-width: 32px !important;
+  min-height: 32px !important;
+  max-width: 32px !important;
+  max-height: 32px !important;
+  background-repeat: no-repeat;
+  border-radius: 18px;
+  box-shadow: 0 3px 16px #0028;
+  margin: 0 auto;
+  display: block;
+}
+
+.greeting-ui,
+.time-display,
+.money {
+  background-color: rgba(75, 60, 33, 0.85); /* coklat gelap transparan */
+  padding: 4px 12px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  display: inline-block;
+  color: #fff8c6;
+  font-family: 'IM Fell English SC', serif;
+  font-weight: 600;
+  font-size: 15px;
+  user-select: none;
+  margin-right: 8px; /* agar tidak mepet satu sama lain */
+}
+
+/* Ukuran lebih kecil untuk HP */
+@media (max-width: 700px) {
+  .greeting-ui,
+  .time-display,
+  .status-money {
+    font-size: 12px;
+    padding: 3px 8px;
+    border-radius: 9px;
+    margin-right: 5px;
+  }
+}
+
+
+@media (max-width: 700px) {
+  .status-money {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    z-index: 30;
+  }
+  .status-money button {
+    margin-left: 8px;
+  }
+}
+
+.mystic-shore-zone {
+  position: absolute;
+  left: 3000px;
+  top: 1300px;
+  width: 100px;
+  height: 80px;
+  background: rgba(180, 60, 255, 0.18);  /* ungu tipis */
+  z-index: 22;
+  border: 2px dashed #a959ff;
+  pointer-events: none;
+}
