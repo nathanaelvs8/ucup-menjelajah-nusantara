@@ -482,8 +482,29 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 0;
 }
+
+.analog-up-row,
+.analog-down-row {
+  display: flex;
+  justify-content: center;
+}
+
+.analog-middle-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0px; /* Jarak antara kiri dan kanan */
+  margin: 3px 0;
+}
+
+.arrow-spacer {
+  width: 38px;
+  height: 38px;
+  /* kosong hanya buat tengah, biar seimbang */
+}
+
 
 
 .analog-controls .horizontal {
@@ -511,47 +532,101 @@ html, body {
 }
 
 .arrow-img {
-  width: 400px;     
-  height: 400px;
+  width: 36px;
+  height: 36px;
   object-fit: contain;
   pointer-events: none;
 }
 
-.event-panel {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 30;
-  background-color: rgba(0, 0, 0, 0.85);
-  color: white;
-  padding: 16px 24px;
-  border-radius: 12px;
-  font-size: 16px;
-  min-width: 220px;
-  max-width: 90vw;
-  text-align: center;
-  box-shadow: 0 0 10px #000;
+@media (max-width:700px) {
+  .analog-controls {
+    bottom: 8px;
+    left: 6px;
+  }
+  .analog-middle-row {
+    gap: 10px; /* kalau mau lebih rapat */
+  }
+  .arrow-img {
+    width: 16px;
+    height: 16px;
+  }
+  .arrow-spacer {
+    width: 10px;
+    height: 10px;
+}
 }
 
+
+
+.event-panel {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 30;
+  background: linear-gradient(120deg, #fffbead0 55%, #ffecccaa 100%);
+  color: #4b3621;
+  padding: 8px 13px 10px 13px;
+  border-radius: 17px 11px 17px 11px;
+  font-size: 15px;
+  min-width: 145px;
+  max-width: 86vw;
+  text-align: center;
+  box-shadow: 0 2px 18px #e7b95d40, 0 1px 0 #fff7 inset, 0 1.5px 6px #99854130;
+  border: 2.2px solid #ffe066;
+  transition: bottom 0.2s, right 0.2s, padding 0.16s;
+  backdrop-filter: blur(2.7px);
+}
+
+@media (max-width: 700px) {
+  .event-panel {
+    bottom: 5px;
+    right: 6px;
+    left: unset;
+    margin: 0;
+    padding: 4px 7px;
+    border-radius: 13px;
+    min-width: 60px;
+    width: 200px;
+    max-width: 95vw;
+    font-size: 13px;
+    box-sizing: border-box;
+  }
+}
+
+
+
 .event-text {
-  margin: 0 0 10px;
-  color: #fff8c6;
+  margin: 0 0 9px 0;
+  color: #84511c;
+  font-size: 14px;
+  line-height: 1.36;
+  letter-spacing: 0.2px;
+  font-weight: 500;
 }
 
 .event-button {
-  padding: 8px 16px;
-  background-color: #444;
-  color: white;
-  border: none;
-  border-radius: 6px;
+  padding: 7px 0;
+  background: linear-gradient(92deg, #ffe066 80%, #fff6b8 120%);
+  color: #654312;
+  border: 2px solid #e8c249;
+  border-radius: 7px;
   cursor: pointer;
-  font-size: 14px;
-  width: 100%;
+  font-size: 15.2px;
+  font-weight: 700;
+  width: 92%;
+  margin: 0 auto;
+  box-shadow: 0 1.5px 8px #ffe06638, 0 1px 2px #fff7;
+  transition: background 0.13s, color 0.13s, box-shadow 0.14s;
+  outline: none;
+  letter-spacing: 0.2px;
+  margin-top: 4px;
+}
+.event-button:hover, .event-button:focus {
+  background: linear-gradient(90deg, #fffad0 70%, #ffe066 100%);
+  color: #9d6f19;
+  box-shadow: 0 2.5px 12px #ffe06677, 0 1.5px 8px #fff9;
 }
 
-.event-button:hover {
-  background-color: #666;
-}
 
 
 .main-map-overlay {

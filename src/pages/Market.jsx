@@ -512,13 +512,40 @@ useEffect(() => {
         <button className="event-button" onClick={handleInteract}>Interact</button>
       </div>
       <div className="analog-controls">
-        <button className="arrow up" onMouseDown={() => handleAnalog("arrowup", true)} onMouseUp={() => handleAnalog("arrowup", false)} onTouchStart={() => handleAnalog("arrowup", true)} onTouchEnd={() => handleAnalog("arrowup", false)}><img src={arrowUp} alt="Up" className="arrow-img" /></button>
-        <div className="horizontal">
-          <button className="arrow left" onMouseDown={() => handleAnalog("arrowleft", true)} onMouseUp={() => handleAnalog("arrowleft", false)} onTouchStart={() => handleAnalog("arrowleft", true)} onTouchEnd={() => handleAnalog("arrowleft", false)}><img src={arrowLeft} alt="Left" className="arrow-img" /></button>
-          <button className="arrow right" onMouseDown={() => handleAnalog("arrowright", true)} onMouseUp={() => handleAnalog("arrowright", false)} onTouchStart={() => handleAnalog("arrowright", true)} onTouchEnd={() => handleAnalog("arrowright", false)}><img src={arrowRight} alt="Right" className="arrow-img" /></button>
+        <div className="analog-up-row">
+          <button className="arrow up"
+            onMouseDown={() => keysPressed.current.arrowup = true}
+            onMouseUp={() => keysPressed.current.arrowup = false}
+          >
+            <img src={arrowUp} alt="Up" className="arrow-img" />
+          </button>
         </div>
-        <button className="arrow down" onMouseDown={() => handleAnalog("arrowdown", true)} onMouseUp={() => handleAnalog("arrowdown", false)} onTouchStart={() => handleAnalog("arrowdown", true)} onTouchEnd={() => handleAnalog("arrowdown", false)}><img src={arrowDown} alt="Down" className="arrow-img" /></button>
+        <div className="analog-middle-row">
+          <button className="arrow left"
+            onMouseDown={() => keysPressed.current.arrowleft = true}
+            onMouseUp={() => keysPressed.current.arrowleft = false}
+          >
+            <img src={arrowLeft} alt="Left" className="arrow-img" />
+          </button>
+          <div className="arrow-spacer"></div>
+          <button className="arrow right"
+            onMouseDown={() => keysPressed.current.arrowright = true}
+            onMouseUp={() => keysPressed.current.arrowright = false}
+          >
+            <img src={arrowRight} alt="Right" className="arrow-img" />
+          </button>
+        </div>
+        <div className="analog-down-row">
+          <button className="arrow down"
+            onMouseDown={() => keysPressed.current.arrowdown = true}
+            onMouseUp={() => keysPressed.current.arrowdown = false}
+          >
+            <img src={arrowDown} alt="Down" className="arrow-img" />
+          </button>
+        </div>
       </div>
+
+
       </>
     )}
 
