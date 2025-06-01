@@ -12,6 +12,7 @@ import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
 import woodIcon from "../assets/inventory-items/Log.png";
 import fishSkinIcon from "../assets/inventory-items/FishSkin.png";
 import dungeonMusic from "../assets/audio/dungeon.mp3";
+import MealPotionIcon from "../assets/inventory-items/MealPotion.png";
 
 
 const MAZE_ROWS = 5;
@@ -136,7 +137,7 @@ export default function Dungeon({ onExit }) {
     { icon: <img src={woodIcon} alt="Wood" style={{ width: 64, height: 64 }} />, name: "Wood" },
     { icon: <img src={woodIcon} alt="Wood" style={{ width: 64, height: 64 }} />, name: "Wood" },
     { icon: <img src={fishSkinIcon} alt="Special Fish Skin" style={{ width: 64, height: 64 }} />, name: "Special Fish Skin" },
-    { icon: "🍖", name: "Hunger Potion" },
+    { icon: <img src={MealPotionIcon} alt="Meal Potion" style={{ width: 64, height: 64 }}/>, name : "Meal Potion" },
   ];
   const audioRef = React.useRef();
 
@@ -323,7 +324,7 @@ export default function Dungeon({ onExit }) {
       playerData.inventory.push("Wood");
       playerData.inventory.push("Wood");
       playerData.inventory.push("Special Fish Skin");
-      playerData.inventory.push("Hunger Potion");
+      playerData.inventory.push("Meal Potion");
 
       localStorage.setItem("playerData", JSON.stringify(playerData));
     }
