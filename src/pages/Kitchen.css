@@ -75,8 +75,13 @@
 .feedback-message.success {
   background-color: #27ae60; /* Hijau emerald solid */
 }
-.feedback-message { /* Default untuk error */
+.feedback-message.failure { /* Default untuk error, diubah agar lebih spesifik */
   background-color: #c0392b; /* Merah pomegranate solid */
+}
+.feedback-message.small-margin { /* Tambahan untuk feedback di stage 2 */
+  margin: 8px auto 8px auto; /* Dikecilkan dari 10px */
+  padding: 6px 10px; /* Dikecilkan dari 8px 12px */
+  font-size: 0.85em; /* Dikecilkan dari 0.9em */
 }
 
 
@@ -216,23 +221,23 @@ button:disabled {
   border: 2px solid #a5d6a7; /* Border hijau soft */
   color: #388e3c; /* Warna teks utama hijau tua */
   border-radius: 25px; /* Disesuaikan */
-  padding: 20px 30px; /* Disesuaikan */
+  padding: 15px 20px; /* Padding Atas & Bawah dikurangi lagi sedikit */
   width: 90%;
   max-width: 500px; /* Disesuaikan agar tidak terlalu lebar dari overlay utama */
-  min-height: 300px; /* Disesuaikan */
+  min-height: 280px; /* Disesuaikan, sedikit dikurangi karena stage 2 akan lebih pendek */
   text-align: center;
   box-shadow: inset 0 0 10px rgba(0,0,0,0.05), 0 3px 8px rgba(0,0,0,0.1);
   margin-bottom: 15px; /* Disesuaikan */
 }
 .minigame-play-area h3 {
   color: #1b5e20; /* Hijau sangat tua untuk judul */
-  font-size: 1.4em;
+  font-size: 1.2em; /* Dikecilkan dari 1.4em/1.3em */
   margin-top: 0;
-  margin-bottom: 10px;
+  margin-bottom: 6px; /* Kurangi dari 8px */
 }
-.minigame-play-area p {
-  font-size: 1.05em; /* Disesuaikan */
-  margin: 6px 0;
+.minigame-play-area p { /* Ini akan mempengaruhi teks "Resep: Cooked Tuna" */
+  font-size: 0.9em; /* Kurangi dari 1.0em */
+  margin: 3px 0; /* Kurangi dari 4px */
 }
 .minigame-items-display {
   background-color: #dcedc8; /* Hijau lebih muda dari play-area */
@@ -286,32 +291,111 @@ button:disabled {
   background-color: #9E9E9E;
 }
 
-/* Mini-game Stage 2 */
-.minigame-stage2-visual {
-  margin: 20px 0;
-  text-align: center;
-}
+/* Mini-game Stage 2 Visual Panci (Sudah ada di file Anda) */
 .panci-icon {
-  width: 100px; /* Disesuaikan */
-  height: 100px;
-  margin: auto;
-  display: block;
-  margin-bottom: 15px;
+  width: 355px;  /* Lebar SATU FRAME dari Panci.png */
+  height: 351px; /* Tinggi SATU FRAME dari Panci.png */
+  background-image: url('../assets/inventory-items/Panci.png');
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  margin: auto; /* Tetap auto untuk horizontal centering jika parent bukan flex */
+  display: block; /* Untuk margin auto bekerja jika parent bukan flex */
+  margin-bottom: 15px; /* Akan di-override oleh .minigame-stage2-visual .panci-icon jika perlu */
+  animation: animatePanci 0.8s steps(2) infinite;
 }
-.stage2-success-button {
-  background-color: #66bb6a; /* Hijau sukses */
+
+
+/* PENYESUAIAN SPESIFIK UNTUK STAGE 2 AGAR LEBIH KECIL LAGI */
+.minigame-stage2-visual {
+  margin: -5px 0 -5px 0; /* Kurangi margin atas dan bawah visual panci lebih lanjut */
+  text-align: center;
+  display: flex; 
+  justify-content: center;
+  align-items: center;
+  height: 145px; /* Disesuaikan: Original Panci 351px. Scale 0.40 * 351 = ~140px. Beri sedikit ruang. */
+}
+
+/* Target .panci-icon khusus di dalam .minigame-stage2-visual */
+.minigame-stage2-visual .panci-icon {
+  transform: scale(0.40); /* Kecilkan panci menjadi 40% dari ukuran asli */
+  transform-origin: center center; 
+  margin: 0; 
+}
+
+.temperature-minigame {
+  margin-top: -5px; /* Kurangi lagi jarak dari visual panci ke bar suhu, bisa negatif jika terlalu jauh */
+  padding: 8px 10px 10px 10px; /* Kurangi padding atas, jaga padding bawah untuk tombol Stop */
+  background-color: rgba(0,0,0,0.03);
+  border-radius: 8px; /* Sedikit lebih kecil */
+}
+
+.temperature-minigame p { /* Teks "Tekan Stop..." */
+  font-size: 0.75em; /* Kecilkan lagi font instruksi */
+  color: #4E342E;
+  margin-bottom: 6px; /* Kurangi lagi jarak ke bar suhu */
+}
+
+.indicator-bar-container {
+  width: 85%; /* Bisa disesuaikan lagi */
+  max-width: 260px; /* Kecilkan lebar maksimal bar */
+  margin: 0 auto 6px auto; /* Kurangi margin bawah */
+  padding: 4px; /* Sedikit kurangi padding */
+  background-color: #D7CCC8;
+  border-radius: 8px; /* Sesuaikan */
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.2); /* Sedikit kurangi shadow */
+}
+
+.indicator-track {
+  width: 100%;
+  height: 18px; /* Sedikit lebih pendek lagi */
+  background-color: #A1887F;
+  border-radius: 5px; /* Sesuaikan */
+  position: relative;
+  overflow: hidden;
+}
+
+.target-zone {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  background-color: #FFD54F;
+  border-radius: 2px; /* Sesuaikan */
+  opacity: 0.8;
+  box-shadow: 0 0 6px #FFD54F; /* Sedikit kurangi shadow */
+}
+
+.indicator-handle {
+  position: absolute;
+  top: -1px; /* Disesuaikan agar pas dengan track height baru */
+  bottom: -1px; /* Disesuaikan agar pas dengan track height baru */
+  width: 6px; /* Lebih ramping */
+  background-color: #EFEBE9;
+  border: 1px solid #795548;
+  border-radius: 3px; /* Sesuaikan */
+  transform: translateX(-50%);
+  box-shadow: 0 0 4px rgba(0,0,0,0.3); /* Sedikit kurangi shadow */
+  z-index: 1;
+}
+
+.stage2-stop-button {
+  background-color: #EF5350;
   color: white;
+  padding: 7px 14px; /* Lebih kecil lagi */
+  font-size: 0.85em;    /* Lebih kecil lagi */
+  margin-top: 5px; /* Jarak dari bar tetap, bisa dikurangi jika perlu jadi 5px */
+  border-radius: 6px; /* Sesuaikan */
 }
-.stage2-success-button:hover {
-  background-color: #4caf50;
+
+.stage2-stop-button:hover {
+  background-color: #D32F2F;
 }
-.stage2-fail-button {
-  background-color: #ef5350; /* Merah gagal */
-  color: white;
-}
-.stage2-fail-button:hover {
-  background-color: #e53935;
-}
+
+/* Pastikan tombol Batal di minigame stage 2 juga terlihat jelas */
+/* Ini sudah diatur oleh .minigame-cancel-button di JSX dengan style inline, jadi tidak perlu diubah di sini kecuali ada konflik */
+/* .minigame-container .minigame-cancel-button {
+    margin-top: 15px; 
+} */
+
 
 /* Result Display */
 .result-display {
@@ -345,6 +429,19 @@ button:disabled {
   color: #c0392b; /* Warna pesan gagal di hasil */
 }
 
+/* PENYESUAIAN WARNA TEKS TOMBOL DI RESULT DISPLAY */
+.result-display button {
+  color: #5D4037; /* Warna cokelat tua, agar tidak putih dan konsisten */
+}
+
+@keyframes animatePanci {
+  0% {
+    background-position-x: 0px;
+  }
+  100% {
+    background-position-x: -710px;
+  }
+}
 /* Kelas tambahan untuk ikon di berbagai tempat agar konsisten */
 .recipe-list-icon, .ingredient-list-icon, .result-cooked-item-icon, .panci-icon {
     object-fit: contain; /* Pastikan gambar tidak gepeng/stretch */
