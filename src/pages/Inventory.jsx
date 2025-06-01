@@ -200,8 +200,9 @@ export const itemDetails = {
     useEffect: (stat) => ({ ...stat, meal: Math.min(stat.meal + 2, 100) }), // Contoh efek jika bisa dimakan langsung
     source: "Purchased from the shop or found in kitchens." // Contoh sumber
  },
- "Archipelago Talisman": { 
+  "Archipelago Talisman": { 
     description: "Strange talisman from the jungle. It feels powerful.",
+    useEffect: (stat) => stat, // dummy, biar tombol Use muncul, event sebenarnya handle di Secret.jsx!
     source: "Fashioned through intricate crafting rituals, incorporating mystical elements gathered from dense tropical vegetation."
   },
   "Pearl": { 
@@ -304,7 +305,7 @@ export const itemDetails = {
 
 };
 
-export default function Inventory({ inventory, onUseItem, onSellItem }) {
+export default function Inventory({ inventory, onUseItem, onSellItem, canUseTalisman }) {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const containerRef = useRef(null);
   const [tooltipPos, setTooltipPos] = useState({ top: 0, left: 0 });
@@ -376,16 +377,21 @@ export default function Inventory({ inventory, onUseItem, onSellItem }) {
             setSelectedIndex(null);
           }}
           onClose={() => setSelectedIndex(null)}
+          // ⬇⬇⬇ Tambahkan baris ini! ⬇⬇⬇
+          canUseTalisman={canUseTalisman}
         />
       )}
+
     </div>
   );
 }
 
 // === Tooltip Komponen Dengan Portal ===
-function Tooltip({ item, position, onUse, onSell, onClose }) {
+function Tooltip({ item, position, onUse, onSell, onClose, canUseTalisman }) {
   const details = itemDetails[item] || {};
-  const canUse = typeof details.useEffect === "function";
+  const isTalisman = item === "Archipelago Talisman";
+  const canUse = (typeof details.useEffect === "function" && !isTalisman) || (isTalisman && canUseTalisman);
+
   const canSell = details.sellGold > 0;
 
   // Tooltip keluar di body (portal), tidak pernah kepotong modal
@@ -433,23 +439,32 @@ function Tooltip({ item, position, onUse, onSell, onClose }) {
         justifyContent: "flex-end",
         flexWrap: "wrap"
       }}>
-        {canUse && (
-          <button
-            onClick={onUse}
-            style={{
-              padding: "6px 13px",
-              fontSize: "13px",
-              backgroundColor: "#3b82f6",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
-          >
-            Use
-          </button>
-        )}
+      {canUse && (
+        <button
+          onClick={onUse}
+          style={{
+            padding: "6px 13px",
+            fontSize: "13px",
+            backgroundColor: canUse ? "#3b82f6" : "#888",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: canUse ? "pointer" : "not-allowed",
+            fontWeight: "bold",
+          }}
+          disabled={!canUse}
+          title={
+            isTalisman && !canUseTalisman && (
+            <div style={{ color: "#f87171", fontSize: 13, fontWeight: "bold", marginTop: 8 }}>
+              You can only use this in the ritual circle!
+            </div>
+          )}
+
+        >
+          Use
+        </button>
+      )}
+
         {canSell && (
           <button
             onClick={onSell}

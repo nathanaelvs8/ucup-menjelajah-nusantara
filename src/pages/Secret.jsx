@@ -87,6 +87,25 @@ function RitualCircleAnim({ centerX, centerY, onFinish }) {
   );
 }
 
+function CharDialogSprite({ character }) {
+  if (!character || !character.sprite) return null;
+  return (
+    <div
+      className="player-dialog-sprite"
+      style={{
+        width: 32,
+        height: 32,
+        background: `url(${character.sprite})`,
+        backgroundPosition: "0px 0px",
+        backgroundSize: "128px 128px",  // ganti sesuai ukuran sheet
+        imageRendering: "pixelated",
+        transform: "scale(5.15)",      // bikin frame 32x32 tampil ~165x165px
+        transformOrigin: "center"
+      }}
+    ></div>
+  );
+}
+
 
 export default function Secret() {
   // === Semua state yang sama seperti Gameplay ===
@@ -135,6 +154,16 @@ export default function Secret() {
   const [ritualCirclePermanent, setRitualCirclePermanent] = useState(false);
 
   const hasTalisman = inventory.includes("Archipelago Talisman");
+
+  const [angelDone, setAngelDone] = useState(false);
+
+  const [, forceUpdate] = useState(0);
+
+  const openInventory = () => {
+    forceUpdate(v => v + 1);   // trigger re-render
+    setInventoryVisible(true);
+  };
+
 
   // Nilai sesuai posisi dan oval ritual kamu (tengah angel)
   const ritualCircleRadius = 520; // set ke setengah diameter lingkaran permanenmu (misal 1040 / 2)
@@ -191,6 +220,7 @@ export default function Secret() {
   const handleUseItem = (itemName) => {
     const itemIndex = inventory.findIndex(item => item === itemName);
     if (itemIndex === -1) return;
+    
 
     const effectFn = itemDetails[itemName]?.useEffect;
     if (effectFn) {
@@ -208,6 +238,7 @@ export default function Secret() {
   };
 
   const handleSellItem = (itemName) => {
+
     const itemIndex = inventory.findIndex(item => item === itemName);
     if (itemIndex === -1) return;
 
@@ -320,6 +351,7 @@ export default function Secret() {
     });
     setMoney(savedData.money || 5000);
     setInventory(savedData.inventory || ["Pickaxe"]);
+    
   }, []);
 
   // === Kamera offset, selalu center ke karakter ===
@@ -695,11 +727,13 @@ export default function Secret() {
             flexDirection: 'column',
           }}>
             <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto' }}>
-              <Inventory
-                inventory={inventory}
-                onUseItem={handleUseItem}
-                onSellItem={handleSellItem}
-              />
+          <Inventory
+            inventory={inventory}
+            onUseItem={handleUseItem}
+            onSellItem={handleSellItem}
+            // DI SINI!
+            canUseTalisman={inRitualCircle && ritualCirclePermanent}
+          />
             </div>
             <button
               className="close-inventory-btn"
@@ -995,16 +1029,20 @@ export default function Secret() {
       {/* Panel event & tombol Interact */}
       <div className="event-panel">
       <p className="event-text">
-        {hasTalisman && nearAngel
+        {angelDone && hasTalisman && inRitualCircle
+          ? "✨ Stand in the ritual circle and use the Archipelago Talisman from your inventory to perform the final ritual!"
+          : hasTalisman && nearAngel && !angelDone
           ? "👼 Press Interact to talk to the Seraphille"
           : nearSecretBox
           ? "⛵ Press Interact to return to the first island"
           : "📍 Explore the Isle of the Sacred Oath."}
       </p>
+
       <button
         className="event-button"
         onClick={() => {
-          if (hasTalisman && nearAngel) {
+          if (angelDone) return;
+          if (hasTalisman && nearAngel && !angelDone) {
             // Jika ritualCirclePermanent sudah true, dialog ke-2!
             if (ritualCirclePermanent) {
               setShowAngelDialog(true);
@@ -1017,7 +1055,7 @@ export default function Secret() {
             handleInteract();
           }
         }}
-
+        disabled={angelDone}
       >
         Interact
       </button>
@@ -1026,13 +1064,17 @@ export default function Secret() {
 
       {showAngelDialog && (
         <div className="coconut-overlay" style={{ background: "rgba(0,0,0,0.87)", zIndex: 350 }}>
-          <AngelNPCDialogPanel
-            state={angelDialogState}
-            setState={setAngelDialogState}
-            setShowDialog={setShowAngelDialog}
-            username={username}
-            onRitual={() => setShowRitualAnim(true)}
-          />
+        <AngelNPCDialogPanel
+          state={angelDialogState}
+          setState={setAngelDialogState}
+          setShowDialog={setShowAngelDialog}
+          username={username}
+          character={character}
+          onRitual={() => {
+            setShowRitualAnim(true);
+            setAngelDone(true); // <--- Kunci interaksi BEGITU ritual dimulai!
+          }}
+        />
 
         </div>
       )}
@@ -1043,7 +1085,7 @@ export default function Secret() {
           centerY={angelNPCPos.y + 32}
           onFinish={() => {
             setShowRitualAnim(false);
-            setRitualCirclePermanent(true);   // <- Ini bikin lingkaran tetap ada!
+            setRitualCirclePermanent(true);
             // Lanjutkan ke logic event ritual atau ending di sini kalau perlu
           }}
         />
@@ -1097,7 +1139,7 @@ export default function Secret() {
   );
 }
 // AngelNPCDialogPanel.jsx (bisa juga inline di Secret.jsx)
-function AngelNPCDialogPanel({ state, setState, setShowDialog, username, onRitual }) {
+function AngelNPCDialogPanel({ state, setState, setShowDialog, username, onRitual, character }) {
   // Dialog script struktur tree, bisa modif sesuai keperluan
   const dialogScript = [
     // 0. Introduction
@@ -1189,37 +1231,42 @@ function AngelNPCDialogPanel({ state, setState, setShowDialog, username, onRitua
   if (d?.choice) {
     return (
       <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
-        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center" }}>
           <div className="angel-npc-dialog-img" />
+          <div style={{ color: "#ffeecb0", fontSize: 15, marginTop: 8, opacity: 0.82 }}>Seraphelle</div>
         </div>
         <div style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
           <div style={{ fontSize: 22, color: "#ffe69c", margin: "12px 0 16px" }}>
             What do you want to do?
           </div>
-            {choices.map((ch, i) => (
-              <button
-                key={i}
-                className="event-button"
-                style={{ fontSize: 17, marginBottom: 7, width: 320 }}
-                onClick={() => {
-                  if (state.stage === 0) {
-                    // stage 0: 0="What do I do now?" → stage 1, 1="Nevermind" → stage 3
-                    setState({ stage: i === 0 ? 1 : 3, textIdx: 0 });
-                  } else if (state.stage === 1) {
-                    // stage 1: 0="Begin the ritual." → stage 2, 1="Nevermind" → stage 3
-                    setState({ stage: i === 0 ? 2 : 3, textIdx: 0 });
-                  }
-                }}
-              >
-                {ch}
-              </button>
-            ))}
-
+          {choices.map((ch, i) => (
+            <button
+              key={i}
+              className="event-button"
+              style={{ fontSize: 17, marginBottom: 7, width: 320 }}
+              onClick={() => {
+                if (state.stage === 0) {
+                  setState({ stage: i === 0 ? 1 : 3, textIdx: 0 });
+                } else if (state.stage === 1) {
+                  setState({ stage: i === 0 ? 2 : 3, textIdx: 0 });
+                }
+              }}
+            >
+              {ch}
+            </button>
+          ))}
         </div>
-        <div style={{ flex: 1 }} />
+        {/* Tambah username di bawah char kanan */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ height: 128, width: 160, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <CharDialogSprite character={character} />
+          </div>
+          <div style={{ color: "#ffeecb0", fontSize: 15, marginTop: 8, opacity: 0.82 }}>{username}</div>
+        </div>
       </div>
     );
   }
+
 
   // Render dialog bubble
   return (
@@ -1259,7 +1306,13 @@ function AngelNPCDialogPanel({ state, setState, setShowDialog, username, onRitua
         </div>
         <div style={{ fontSize: 12, color: "#e6d9a7", margin: "10px 0 0 8px" }}>Click to continue…</div>
       </div>
-      <div style={{ flex: 1 }} />
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div style={{ height: 128, width: 160, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <CharDialogSprite character={character} />
+        </div>
+        <div style={{ color: "#ffeecb0", fontSize: 15, marginTop: 8, opacity: 0.82 }}>{username}</div>
+      </div>
+
     </div>
   );
 }
