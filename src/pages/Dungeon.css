@@ -17,6 +17,7 @@ body {
 }
 
 .dungeon-container {
+  position: relative;
   min-height: 100vh;
   padding: 20px;
   box-sizing: border-box;
@@ -25,13 +26,36 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   color: white;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.dungeon-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: inherit;
+  background-size: inherit;
+  background-position: inherit;
+  background-repeat: inherit;
+  filter: blur(12px) brightness(0.8);
+  z-index: 0;
+}
+
+.dungeon-container > * {
+  position: relative;
+  z-index: 1;
 }
 
 h2 {
   font-size: 3rem;  
   text-align: center;
   margin-bottom: 10px;
+  color: #FFD700; /* kuning emas */
+  text-shadow: 2px 2px 4px #333, 0 0 12px #ffda00a8;
+  margin-top: 18px; /* ini buat naikin teks ke atas */
 }
+
 
 p {
     font-size: 1.5rem;
@@ -62,4 +86,164 @@ p {
   background-size: 256px auto; /* jika sprite sheet 4 frame hor */
   background-color: transparent;
   transition: top 0.15s ease, left 0.15s ease;
+}
+
+
+@media (max-width: 900px) {
+  .maze-image-container {
+    width: 94vw !important;      /* atau 98vw, bebas yg penting muat layar HP */
+    height: calc(94vw * 5 / 7) !important; /* 5 row / 7 col */
+    min-width: 140px;
+    min-height: 100px;
+    max-width: 100vw;
+    max-height: 70vw;
+  }
+  .player {
+    width: calc(94vw / 7);
+    height: calc(94vw / 7);
+    min-width: 16px;
+    min-height: 16px;
+    max-width: 64px;
+    max-height: 64px;
+    transition: top 0.15s, left 0.15s;
+  }
+}
+
+/* ANALOG KIRI BAWAH DI DESKTOP */
+.dungeon-container .analog-controls {
+  position: absolute;
+  left: 30px;
+  bottom: 30px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  margin: 0;
+  width: auto;
+}
+
+.dungeon-container .analog-up-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 50px; /* geser ke kanan, adjust sesuai selera */
+}
+
+.dungeon-container .analog-down-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-left: 50px; /* geser ke kanan, adjust sesuai selera */
+}
+
+/* Tengah tetap rata tengah, tidak perlu diubah */
+.dungeon-container .analog-middle-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
+/* Responsive: ANALOG DI BAWAH & TENGAH DI HP */
+@media (max-width: 900px) {
+  .dungeon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .dungeon-container .analog-controls {
+    position: static !important;
+    left: 0 !important;
+    bottom: 0 ;
+    margin: 0 auto;
+    margin-top: 18px;
+    width: 100vw;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+    .dungeon-container .analog-up-row,
+  .dungeon-container .analog-down-row {
+    margin-left: 0 !important;
+  }
+
+  @media (max-width: 900px) {
+  h2 {
+    font-size: 1.6rem;
+    margin-top: 10px;
+    margin-bottom: 6px;
+  }
+  p {
+    font-size: 1rem;
+    margin-bottom: 14px;
+    margin-top: 0;
+  }
+}
+}
+
+.gems-choice-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .gems-choice-wrapper {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 kolom */
+    grid-template-rows: repeat(2, 1fr);    /* 2 baris */
+    gap: 14px;
+    justify-items: center;
+    align-items: center;
+    width: 90vw;
+    margin: 0 auto 10px auto;
+    max-width: 340px;
+  }
+}
+
+
+.obtained-text {
+  font-size: 2.2rem;
+  color: #ffed70;
+  font-family: inherit;
+  text-shadow: 1px 1px 8px #222;
+  margin-bottom: 14px;
+}
+
+.obtained-banner .obtained-items-list {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 18px;
+  margin: 10px auto 14px auto;
+}
+
+.obtained-banner .item-name {
+  font-size: 1.1rem;
+  color: #fff;
+  margin-top: 4px;
+  text-align: center;
+  max-width: 82px;
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 600px) {
+  .obtained-text {
+    font-size: 1.15rem;
+    margin-bottom: 7px;
+  }
+  .obtained-banner .obtained-items-list {
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .obtained-banner .item-name {
+    font-size: 0.95rem;
+    max-width: 58px;
+  }
 }

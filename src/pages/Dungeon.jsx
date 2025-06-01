@@ -12,8 +12,16 @@ import scrollBanner from "../assets/ui/ScrollObtainedItem.png";
 import woodIcon from "../assets/inventory-items/Log.png";
 import fishSkinIcon from "../assets/inventory-items/FishSkin.png";
 import dungeonMusic from "../assets/audio/dungeon.mp3";
-import MealPotionIcon from "../assets/inventory-items/MealPotion.png";
 
+import arrowUp from "../assets/ui/ArrowUP.png";
+import arrowDown from "../assets/ui/ArrowDOWN.png";
+import arrowLeft from "../assets/ui/ArrowLEFT.png";
+import arrowRight from "../assets/ui/ArrowRIGHT.png";
+
+import gemGreen from "../assets/ui/Gems(green).png";
+import gemOrange from "../assets/ui/Gems(orange).png";
+import gemRed from "../assets/ui/Gems(red).png";
+import gemYellow from "../assets/ui/Gems(yellow).png";
 
 const MAZE_ROWS = 5;
 const MAZE_COLS = 7;
@@ -72,7 +80,13 @@ const mazeLayouts = [
   ],
 ];
 
-const permataEmojis = ["💎", "🔮", "⚡️", "🔥"];
+const permataGems = [
+  { img: gemGreen, alt: "Green Gem" },
+  { img: gemOrange, alt: "Orange Gem" },
+  { img: gemRed, alt: "Red Gem" },
+  { img: gemYellow, alt: "Yellow Gem" }
+];
+
 
 function RewardBanner({ items, onClose }) {
   return (
@@ -82,24 +96,25 @@ function RewardBanner({ items, onClose }) {
         style={{ backgroundImage: `url(${scrollBanner})` }}
       >
         <div className="obtained-text">You have obtained</div>
-        <div style={{ display: "flex", justifyContent: "center", gap: 24 }}>
-          {items.map(({ icon, name }, i) => (
-            <div key={i} style={{ textAlign: "center" }}>
-              {typeof icon === "string" && icon.startsWith("http") ? (
-                <img
-                  src={icon}
-                  alt={name}
-                  style={{ width: 64, height: 64, objectFit: "contain" }}
-                />
-              ) : (
-                <span style={{ fontSize: 48, display: "inline-block", lineHeight: 1 }}>
-                  {icon}
-                </span>
-              )}
-              <div className="item-name">{name}</div>
-            </div>
-          ))}
-        </div>
+          <div className="obtained-items-list">
+            {items.map(({ icon, name }, i) => (
+              <div key={i} style={{ textAlign: "center" }}>
+                {typeof icon === "string" && icon.startsWith("http") ? (
+                  <img
+                    src={icon}
+                    alt={name}
+                    style={{ width: 58, height: 58, objectFit: "contain" }}
+                  />
+                ) : (
+                  <span style={{ fontSize: 44, display: "inline-block", lineHeight: 1 }}>
+                    {icon}
+                  </span>
+                )}
+                <div className="item-name">{name}</div>
+              </div>
+            ))}
+          </div>
+
         <button className="ok-button" onClick={onClose}>OK</button>
       </div>
     </div>
@@ -131,15 +146,59 @@ export default function Dungeon({ onExit }) {
   const [countdown, setCountdown] = React.useState(3);
   const [zone2SuccessBanner, setZone2SuccessBanner] = React.useState(false);
 
+  const isMobile = window.innerWidth <= 900;
+  const TILE_SIZE_ACTUAL = isMobile
+    ? (window.innerWidth * 0.94) / MAZE_COLS // 0.94 = 94vw
+    : TILE_SIZE;
+
+
   const rewardItems = [
     { icon: "💰", name: "2000 Gold" },
     { icon: <img src={woodIcon} alt="Wood" style={{ width: 64, height: 64 }} />, name: "Wood" },
     { icon: <img src={woodIcon} alt="Wood" style={{ width: 64, height: 64 }} />, name: "Wood" },
     { icon: <img src={woodIcon} alt="Wood" style={{ width: 64, height: 64 }} />, name: "Wood" },
     { icon: <img src={fishSkinIcon} alt="Special Fish Skin" style={{ width: 64, height: 64 }} />, name: "Special Fish Skin" },
-    { icon: <img src={MealPotionIcon} alt="Meal Potion" style={{ width: 64, height: 64 }}/>, name : "Meal Potion" },
+    { icon: "🍖", name: "Hunger Potion" },
   ];
   const audioRef = React.useRef();
+
+  const keysPressed = React.useRef({});
+
+  function handleAnalog(key, value) {
+    keysPressed.current[key] = value;
+  }
+
+  useEffect(() => {
+    if (zone !== 1 || memorizePhase || showSuccessDelay) return;
+    let rafId;
+    function move() {
+      let newRow = playerPos.row;
+      let newCol = playerPos.col;
+      let moved = false;
+
+      if (keysPressed.current.w || keysPressed.current.arrowup) { newRow--; moved = true; }
+      if (keysPressed.current.s || keysPressed.current.arrowdown) { newRow++; moved = true; }
+      if (keysPressed.current.a || keysPressed.current.arrowleft) { newCol--; moved = true; }
+      if (keysPressed.current.d || keysPressed.current.arrowright) { newCol++; moved = true; }
+
+      if (moved && isValidTile(newRow, newCol)) {
+        setPlayerPos({ row: newRow, col: newCol });
+        setErrorMessage("");
+        if (newRow === 2 && newCol === 6) {
+          setSuccessMessage("Zone 1 completed! Proceeding to Zone 2...");
+          setShowSuccessDelay(true);
+          setTimeout(() => {
+            setSuccessMessage("");
+            setShowSuccessDelay(false);
+            setZone(2);
+          }, 5000);
+        }
+      }
+      rafId = requestAnimationFrame(move);
+    }
+    rafId = requestAnimationFrame(move);
+    return () => cancelAnimationFrame(rafId);
+  }, [zone, memorizePhase, showSuccessDelay, playerPos, maze]);
 
 
   React.useEffect(() => {
@@ -176,6 +235,57 @@ export default function Dungeon({ onExit }) {
       maze[row][col] === 0
     );
   }
+  
+  function movePlayer(key) {
+    // Prevent moving if masih memorizePhase atau zone lagi success delay
+    if (memorizePhase || showSuccessDelay) return;
+
+    let newRow = playerPos.row;
+    let newCol = playerPos.col;
+
+    switch (key) {
+      case "w":
+        newRow--;
+        break;
+      case "s":
+        newRow++;
+        break;
+      case "a":
+        newCol--;
+        break;
+      case "d":
+        newCol++;
+        break;
+      default:
+        return;
+    }
+
+    if (isValidTile(newRow, newCol)) {
+      setPlayerPos({ row: newRow, col: newCol });
+      setErrorMessage("");
+      if (newRow === 2 && newCol === 6) {
+        setSuccessMessage("Zone 1 completed! Proceeding to Zone 2...");
+        setShowSuccessDelay(true);
+        setTimeout(() => {
+          setSuccessMessage("");
+          setShowSuccessDelay(false);
+          setZone(2);
+        }, 5000);
+      }
+    } else {
+      setLives(l => {
+        if (l <= 1) {
+          if (onExit) onExit();
+          return 0;
+        }
+        setErrorMessage("Wrong move! Try memorizing again. Lives left: " + (l - 1));
+        setTimeout(() => setErrorMessage(""), 2500);
+        resetMemorizePhase();
+        return l - 1;
+      });
+    }
+  }
+
 
   React.useEffect(() => {
     if (zone !== 1 || memorizePhase || showSuccessDelay) return;
@@ -263,11 +373,16 @@ export default function Dungeon({ onExit }) {
     if (zone !== 2 || phase !== "countdown") return;
     if (countdown <= 0) {
       setPhase("memorize");
-      const seq = [];
-      for (let i = 0; i < 4; i++) {
-        const randIndex = Math.floor(Math.random() * permataEmojis.length);
-        seq.push(permataEmojis[randIndex]);
+      let seq = [];
+      // Buat array 0-3 lalu shuffle
+      const arr = [0, 1, 2, 3];
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
       }
+      seq = [...arr]; // Seq 4 gems unik
+      // Jika sequence lebih panjang dari 4, tambahin random lagi:
+      // for (let i = 4; i < N; i++) seq.push(Math.floor(Math.random() * permataGems.length));
       setSequence(seq);
       setShowIndex(0);
       return;
@@ -275,6 +390,7 @@ export default function Dungeon({ onExit }) {
     const timerId = setTimeout(() => setCountdown(countdown - 1), 1000);
     return () => clearTimeout(timerId);
   }, [countdown, phase, zone]);
+
 
   React.useEffect(() => {
     if (zone !== 2 || phase !== "memorize" || showIndex === -1) return;
@@ -287,9 +403,9 @@ export default function Dungeon({ onExit }) {
     return () => clearTimeout(timer);
   }, [showIndex, phase, sequence.length, zone]);
 
-  function handlePermataClick(emoji) {
+  function handlePermataClick(idx) {
     if (zone !== 2 || phase !== "choose") return;
-    const newChoice = [...playerChoice, emoji];
+    const newChoice = [...playerChoice, idx];
     setPlayerChoice(newChoice);
 
     for (let i = 0; i < newChoice.length; i++) {
@@ -314,7 +430,6 @@ export default function Dungeon({ onExit }) {
     if (newChoice.length === sequence.length) {
       setSuccessMessage("Correct sequence! You completed Zone 2.");
       setZone2SuccessBanner(true);
-
       const playerDataRaw = localStorage.getItem("playerData");
       let playerData = playerDataRaw ? JSON.parse(playerDataRaw) : { money: 0, inventory: [] };
 
@@ -324,7 +439,7 @@ export default function Dungeon({ onExit }) {
       playerData.inventory.push("Wood");
       playerData.inventory.push("Wood");
       playerData.inventory.push("Special Fish Skin");
-      playerData.inventory.push("Meal Potion");
+      playerData.inventory.push("Hunger Potion");
 
       localStorage.setItem("playerData", JSON.stringify(playerData));
     }
@@ -348,12 +463,13 @@ export default function Dungeon({ onExit }) {
 
     return (
        <>
-    <audio
+           <audio
       ref={audioRef}
       src={dungeonMusic}
       autoPlay
       loop
     />
+
       <div className="dungeon-container">
         {errorMessage && (
           <p
@@ -415,8 +531,8 @@ export default function Dungeon({ onExit }) {
         <div
           className="maze-image-container"
           style={{
-            width: TILE_SIZE * MAZE_COLS,
-            height: TILE_SIZE * MAZE_ROWS,
+            width: TILE_SIZE_ACTUAL * MAZE_COLS,
+            height: TILE_SIZE_ACTUAL * MAZE_ROWS,
             position: "relative",
             backgroundImage: `url(${currentMazeImage})`,
             backgroundSize: "cover",
@@ -426,14 +542,14 @@ export default function Dungeon({ onExit }) {
             boxShadow: "0 0 15px rgba(0,0,0,0.7)",
           }}
         >
+
           <div
             className="player"
             style={{
-              width: TILE_SIZE,
-              height: TILE_SIZE,
-              position: "absolute",
-              top: playerPos.row * TILE_SIZE,
-              left: playerPos.col * TILE_SIZE,
+            width: TILE_SIZE_ACTUAL,
+            height: TILE_SIZE_ACTUAL,
+            top: playerPos.row * TILE_SIZE_ACTUAL,
+            left: playerPos.col * TILE_SIZE_ACTUAL,
               backgroundImage: charSprite ? `url(${charSprite})` : "none",
               backgroundSize: `${TILE_SIZE * 4}px auto`,
               backgroundRepeat: "no-repeat",
@@ -445,6 +561,41 @@ export default function Dungeon({ onExit }) {
             }}
           />
         </div>
+
+               <div className="analog-controls">
+          <div className="analog-up-row">
+            <button
+              className="arrow up"
+              onClick={() => movePlayer("w")}
+            >
+              <img src={arrowUp} alt="Up" className="arrow-img" />
+            </button>
+          </div>
+          <div className="analog-middle-row">
+            <button
+              className="arrow left"
+              onClick={() => movePlayer("a")}
+            >
+              <img src={arrowLeft} alt="Left" className="arrow-img" />
+            </button>
+            <div className="arrow-spacer"></div>
+            <button
+              className="arrow right"
+              onClick={() => movePlayer("d")}
+            >
+              <img src={arrowRight} alt="Right" className="arrow-img" />
+            </button>
+          </div>
+          <div className="analog-down-row">
+            <button
+              className="arrow down"
+              onClick={() => movePlayer("s")}
+            >
+              <img src={arrowDown} alt="Down" className="arrow-img" />
+            </button>
+          </div>
+        </div>
+
       </div>
       </>
     );
@@ -485,10 +636,15 @@ export default function Dungeon({ onExit }) {
           <h2>Zone 2 - Memorize the Gem Sequence</h2>
           <p>Lives: {lives}</p>
           {showIndex >= 0 && showIndex < sequence.length && (
-            <div style={{ fontSize: "6rem", textAlign: "center" }}>
-              {sequence[showIndex]}
+            <div style={{ textAlign: "center" }}>
+              <img
+                src={permataGems[sequence[showIndex]].img}
+                alt={permataGems[sequence[showIndex]].alt}
+                style={{ width: "200px", height: "200px", objectFit: "contain" }}
+              />
             </div>
           )}
+
         </div>
       );
     }
@@ -499,32 +655,50 @@ export default function Dungeon({ onExit }) {
           <h2>Zone 2 - Memorize the Gem Sequence</h2>
           <p>Lives: {lives}</p>
           <p>Click the gems in the correct order!</p>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: "20px",
-              fontSize: "3rem",
-            }}
-          >
-            {permataEmojis.map((emoji, i) => (
-              <button
-                key={i}
-                onClick={() => handlePermataClick(emoji)}
-                style={{
-                  cursor: "pointer",
-                  padding: "10px",
-                  borderRadius: "8px",
-                  border: "2px solid white",
-                  backgroundColor: "#222",
-                  color: "white",
-                }}
-              >
-                {emoji}
-              </button>
-            ))}
+
+          <div className="gems-choice-wrapper">
+          {permataGems.map((gem, i) => (
+            <button
+              key={i}
+              onClick={() => handlePermataClick(i)}
+              style={{
+                cursor: "pointer",
+                padding: "10px",
+                borderRadius: "8px",
+                border: "2px solid white",
+                backgroundColor: "#222",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              <img
+                src={gem.img}
+                alt={gem.alt}
+                style={{ width: "48px", height: "48px", objectFit: "contain" }}
+              />
+            </button>
+          ))}
+
           </div>
-          <p>Your choice: {playerChoice.join(" ")}</p>
+          <p>
+            Your choice:{" "}
+            {playerChoice.map((idx, i) => (
+              <img
+                key={i}
+                src={permataGems[idx].img}
+                alt={permataGems[idx].alt}
+                style={{
+                  width: "32px",
+                  height: "32px",
+                  verticalAlign: "middle",
+                  marginRight: 2,
+                  filter: "drop-shadow(0 0 4px #000a)" // biar kelihatan, opsional
+                }}
+              />
+            ))}
+          </p>
           {errorMessage && (
             <p
               style={{
@@ -537,6 +711,7 @@ export default function Dungeon({ onExit }) {
               {errorMessage}
             </p>
           )}
+
           {successMessage && (
             <p
               style={{

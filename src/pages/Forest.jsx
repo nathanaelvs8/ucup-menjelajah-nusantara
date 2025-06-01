@@ -572,7 +572,7 @@ export default function Forest() {
           .map(item => ({ ...item, y: item.y + 8 }))
           .filter(item => {
             const itemWidth = item.isFruit ? 160 : 100;
-            const itemHeight = item.isFruit ? 160 : 100;
+            const itemHeight = item.isFruit ? 100 : 100;
             const itemLeft = item.x;
             const itemRight = item.x + itemWidth;
             const itemTop = item.y;
@@ -635,10 +635,14 @@ export default function Forest() {
     let animationId;
     const move = () => {
       setBasketX(prev => {
+        const basketWidth = basketRef.current?.offsetWidth || 90; // fallback ke 90px
+        const basketHeight = basketRef.current?.offsetHeight || 90;
+
         if (leftPressed) return Math.max(prev - 12, 0);
-        if (rightPressed) return Math.min(prev + 12, window.innerWidth - 160);
+        if (rightPressed) return Math.min(prev + 12, window.innerWidth - basketWidth);
         return prev;
       });
+
       animationId = requestAnimationFrame(move);
     };
     animationId = requestAnimationFrame(move);
@@ -676,26 +680,32 @@ export default function Forest() {
   }, [showChopMinigame, chopResult]);
 
   useEffect(() => {
-    const handleKeyDown = e => {
+    // Handler untuk mouse click (atau tap di hp)
+    const handleClick = (e) => {
       if (!showChopMinigame || chopResult) return;
-      if (e.code === "Space") {
-        setIsSawing(true);
-        setChopDurability(prev => {
-          const next = prev - 10;
-          if (next <= 0) {
-            setShowChopFinishImage(true);
-            setTimeout(() => {
-              setChopResult("win");
-            }, 2000);
-            return 0;
-          }
-          return next;
-        });
-        setTimeout(() => setIsSawing(false), 100);
-      }
+      setIsSawing(true);
+      setChopDurability(prev => {
+        const next = prev - 10;
+        if (next <= 0) {
+          setShowChopFinishImage(true);
+          setTimeout(() => {
+            setChopResult("win");
+          }, 2000);
+          return 0;
+        }
+        return next;
+      });
+      setTimeout(() => setIsSawing(false), 100);
     };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+
+    // Pakai event global supaya di mana pun klik di layar bisa terdeteksi
+    window.addEventListener("mousedown", handleClick);
+    window.addEventListener("touchstart", handleClick);
+
+    return () => {
+      window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("touchstart", handleClick);
+    };
   }, [showChopMinigame, chopResult]);
 
   useEffect(() => {
@@ -1606,6 +1616,49 @@ export default function Forest() {
             </div>
           )}
 
+          <div
+            className="minigame-arrows"
+            style={{
+              position: "absolute",
+              left: "50%",
+              bottom: 60,
+              transform: "translateX(-50%)",
+              display: "flex",
+              gap: 40,
+              zIndex: 1200,
+              pointerEvents: "auto",
+            }}
+          >
+            <button
+              className="minigame-arrow-btn"
+              style={{
+                width: 60, height: 60, borderRadius: "50%",
+                background: "#e2c070", border: "2px solid #aa9841",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+              onTouchStart={() => setLeftPressed(true)}
+              onTouchEnd={() => setLeftPressed(false)}
+              onMouseDown={() => setLeftPressed(true)}
+              onMouseUp={() => setLeftPressed(false)}
+            >
+              <img src={arrowLeft} alt="Left" style={{ width: 38, height: 38 }} />
+            </button>
+            <button
+              className="minigame-arrow-btn"
+              style={{
+                width: 60, height: 60, borderRadius: "50%",
+                background: "#e2c070", border: "2px solid #aa9841",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+              onTouchStart={() => setRightPressed(true)}
+              onTouchEnd={() => setRightPressed(false)}
+              onMouseDown={() => setRightPressed(true)}
+              onMouseUp={() => setRightPressed(false)}
+            >
+              <img src={arrowRight} alt="Right" style={{ width: 38, height: 38 }} />
+            </button>
+          </div>
+
           {minigameStarted && !minigameResult && (
             <div className="minigame-hint">
               🍎 Collect 15 wild fruits and avoid the parasite!
@@ -1625,6 +1678,7 @@ export default function Forest() {
               }}
             />
           ))}
+
 
           <img
             ref={basketRef}
@@ -1689,7 +1743,7 @@ export default function Forest() {
 
           {!chopResult && (
             <>
-              <div className="minigame-hint">Press SPACE quickly to chop the tree!</div>
+              <div className="minigame-hint">Click on the screen quickly to chop the tree!</div>
               <div className="countdown-text">
                 ⏱️ Time Left: {chopTimeLeft}s
               </div>

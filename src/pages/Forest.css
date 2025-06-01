@@ -103,6 +103,81 @@
   z-index: 999;
 }
 
+.minigame-arrow-btn:active {
+  background: #dcc163;
+  transform: scale(0.93);
+}
+
+@media (max-width: 900px) {
+  .countdown-text {
+    font-size: 42px;
+  }
+  .minigame-hint {
+    font-size: 19px;
+  }
+  .durability-text {
+    font-size: 19px;
+  }
+  .basket {
+    width: 90px;
+  }
+  .falling-item {
+    width: 70px;
+    height: 70px;
+  }
+  .fruit-counter {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .countdown-text {
+    font-size: 30px;
+  }
+  .minigame-hint {
+    font-size: 14px;
+  }
+  .durability-text {
+    font-size: 14px;
+  }
+  .basket {
+    width: 50vw !important;
+    min-width: 45px;
+    max-width: 110px;
+  }
+  .falling-item, .falling-item.parasite {
+    width: 15vw !important;
+    max-width: 60px;
+    min-width: 28px;
+    height: auto !important;
+  }
+  .fruit-counter {
+    font-size: 12px;
+    left: 7vw;
+    top: 6vw;
+  }
+  .obtained-banner {
+    max-width: 90vw;
+    padding: 8vw 2vw 2vw 2vw;
+    font-size: 3vw;
+  }
+  .obtained-text {
+    font-size: 5vw;
+    text-align: center;
+  }
+  .item-name {
+    font-size: 3.4vw;
+    text-align: center;
+  }
+  .ok-button {
+    font-size: 3vw;
+    padding: 2vw 8vw;
+  }
+}
+
+
+
+
 /* Zona pohon buah (fruit) - ellipse atau persegi */
 
 /* Zona pohon kayu (wood) - ellipse atau persegi */

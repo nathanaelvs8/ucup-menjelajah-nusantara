@@ -79,7 +79,7 @@ export const itemIcons = {
   "Water": WaterIcon,
   "Wild Fruit": WildFruitIcon,
   "Wood": LogIcon,
-    "Cleanliness Potion": CleanlinessPotionIcon,
+  "Cleanliness Potion": CleanlinessPotionIcon,
   "Happiness Potion": HappinesPotionIcon,
   "Meal Potion": MealPotionIcon,
   "Morning Dew Potion": MorningDewPotionIcon,
