@@ -16,6 +16,7 @@ import hungryIcon from "../assets/ui/Hunger.png";
 import sleepIcon from "../assets/ui/Sleep.png";
 import happyIcon from "../assets/ui/Happiness.png";
 import cleanIcon from "../assets/ui/Cleanliness.png";
+import AngelNPCImg from "../assets/NPC/AngelNPC.jpg";
 
 const MAP_WIDTH = 4616;
 const MAP_HEIGHT = 3464;
@@ -44,6 +45,48 @@ function addDiscoveredItem(item) {
     localStorage.setItem("discoveredItems", JSON.stringify(updated));
   }
 }
+
+function RitualCircleAnim({ centerX, centerY, onFinish }) {
+  const [radius, setRadius] = React.useState(0);
+
+  useEffect(() => {
+    const maxRadius = 400;    // JAUH LEBIH BESAR! (boleh ubah sampai 600 kalau ingin super gede)
+    const animDuration = 5000; // 5 detik = 5000ms
+    const start = Date.now();
+
+    function animate() {
+      const elapsed = Date.now() - start;
+      const progress = Math.min(1, elapsed / animDuration);
+      setRadius(progress * maxRadius);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        setTimeout(onFinish, 800); // tunggu sebentar, lalu trigger finish
+      }
+    }
+    animate();
+  }, [onFinish]);
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        left: centerX - radius,
+        top: centerY - radius,
+        width: radius * 2,
+        height: radius * 2,
+        borderRadius: "50%",
+        border: "8px solid orange",
+        boxShadow: `0 0 120px 60px #ff670055, 0 0 280px 20px #ffae1f33`,
+        background: "radial-gradient(circle, #f7ad43cc 55%, #b0270a99 97%, transparent 100%)",
+        zIndex: 999,
+        pointerEvents: "none"
+      }}
+    />
+  );
+}
+
 
 export default function Secret() {
   // === Semua state yang sama seperti Gameplay ===
@@ -75,7 +118,74 @@ export default function Secret() {
 
   const [discoveredItems, setDiscoveredItems] = useState(getDiscoveredItems());
   const [encyclopediaSelected, setEncyclopediaSelected] = useState(Object.keys(itemIcons)[0]);
-  const [craftingItem, setCraftingItem] = useState(null);
+
+  const secretBoxArea = { x: 450, y: 1600, w: 100, h: 180 }; // Ganti sesuai kebutuhan
+  const [nearSecretBox, setNearSecretBox] = useState(false);
+
+  const angelNPCPos = { x: 2330, y: 1640 }; // Ganti sesuai kebutuhan
+
+  // Setelah deklarasi angelNPCPos
+  const [angelFloatY, setAngelFloatY] = useState(0);
+  const [angelFrame, setAngelFrame] = useState(0);
+
+  const [showAngelDialog, setShowAngelDialog] = useState(false);
+  const [angelDialogState, setAngelDialogState] = useState({ stage: 0, textIdx: 0 });
+
+  const [showRitualAnim, setShowRitualAnim] = useState(false);
+  const [ritualCirclePermanent, setRitualCirclePermanent] = useState(false);
+
+  const hasTalisman = inventory.includes("Archipelago Talisman");
+
+  // Nilai sesuai posisi dan oval ritual kamu (tengah angel)
+  const ritualCircleRadius = 520; // set ke setengah diameter lingkaran permanenmu (misal 1040 / 2)
+  const ritualCircleCenterX = angelNPCPos.x + 40;
+  const ritualCircleCenterY = angelNPCPos.y + 32;
+
+  // Apakah player di dalam lingkaran ritual?
+  const charCenterX = position.x + SPRITE_SIZE / 2;
+  const charCenterY = position.y + SPRITE_SIZE / 2;
+  const inRitualCircle = (
+    Math.sqrt(
+      Math.pow(charCenterX - ritualCircleCenterX, 2) +
+      Math.pow(charCenterY - ritualCircleCenterY, 2)
+    ) <= ritualCircleRadius
+  );
+
+  useEffect(() => {
+    let frame = 0;
+    let up = true;
+    let floatY = 0;
+    const animate = () => {
+      // Animasi frame setiap 500ms
+      setAngelFrame((f) => (f + 1) % 4);
+      // Animasi naik turun (wave sinus)
+      floatY = Math.round(Math.sin(Date.now() / 500) * 10); // naik-turun max 10px
+      setAngelFloatY(floatY);
+      setTimeout(animate, 160); // 160ms untuk animasi frame, cukup smooth
+    };
+    animate();
+    return () => {}; // Tidak perlu clearTimeout karena state update
+  }, []);
+
+  const angelInteractArea = {
+    x: angelNPCPos.x - 40,
+    y: angelNPCPos.y - 32,
+    w: 140,
+    h: 120
+  };
+  const [nearAngel, setNearAngel] = useState(false);
+
+  useEffect(() => {
+    const charCenterX = position.x + SPRITE_SIZE / 2;
+    const charCenterY = position.y + SPRITE_SIZE / 2;
+    const near =
+      charCenterX >= angelInteractArea.x &&
+      charCenterX <= angelInteractArea.x + angelInteractArea.w &&
+      charCenterY >= angelInteractArea.y &&
+      charCenterY <= angelInteractArea.y + angelInteractArea.h;
+    setNearAngel(near);
+  }, [position]);
+
 
 
   const handleUseItem = (itemName) => {
@@ -94,6 +204,7 @@ export default function Secret() {
     const newInventory = [...inventory];
     newInventory.splice(itemIndex, 1);
     setInventory(newInventory);
+    
   };
 
   const handleSellItem = (itemName) => {
@@ -309,6 +420,19 @@ export default function Secret() {
     }
   }, [inventory]);
 
+  useEffect(() => {
+    // Deteksi karakter dekat area kotak
+    const charCenterX = position.x + SPRITE_SIZE / 2;
+    const charCenterY = position.y + SPRITE_SIZE / 2;
+    const near =
+      charCenterX >= secretBoxArea.x &&
+      charCenterX <= secretBoxArea.x + secretBoxArea.w &&
+      charCenterY >= secretBoxArea.y &&
+      charCenterY <= secretBoxArea.y + secretBoxArea.h;
+    setNearSecretBox(near);
+  }, [position]);
+
+
 
   // === Sprite frame animation ===
   function getSpriteOffset() {
@@ -341,24 +465,26 @@ export default function Secret() {
 
     // Ambil posisi terakhir sebelum masuk Secret
     const lastPos = JSON.parse(localStorage.getItem("lastGameplayPosition"));
+    const savedData = JSON.parse(localStorage.getItem("playerData")) || {};
 
-    // Restore posisi terakhir ke playerData (di gameplay)
     if (lastPos) {
-      // Update hanya posisi saja yang dipakai di gameplay
-      // Atau bisa update status, uang, dsb kalau mau full restore
-      lastPos.status = status;
-      lastPos.money = money;
-      lastPos.inventory = inventory;
-      lastPos.character = character;
-      lastPos.currentMinute = currentMinute;
-      lastPos.currentHour = currentHour;
-      lastPos.currentDayIndex = currentDayIndex;
-      localStorage.setItem("playerData", JSON.stringify(lastPos));
+      // Buat object baru, copy semua data player lama tapi posisi diganti!
+      const newData = {
+        ...savedData,
+        position: lastPos,
+        status,
+        money,
+        inventory,
+        character,
+        currentMinute,
+        currentHour,
+        currentDayIndex
+      };
+      localStorage.setItem("playerData", JSON.stringify(newData));
     }
 
-    // Redirect ke gameplay
-    window.location.href = "/gameplay";
-  };
+      window.location.href = "/gameplay";
+    }
 
 
   // Format waktu
@@ -366,6 +492,42 @@ export default function Secret() {
 
   return (
     <div className="viewport">
+
+    {!hasTalisman && (
+        <div
+          style={{
+            position: "fixed",
+            left: 0,
+            top: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(20,13,30,0.78)",
+            zIndex: 2000,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div
+            style={{
+              color: "#ffe26b",
+              background: "rgba(0,0,0,0.86)",
+              borderRadius: 22,
+              fontSize: 32,
+              padding: "48px 56px",
+              boxShadow: "0 8px 44px #000a",
+              fontWeight: 700,
+              border: "3.5px solid #fbe9b4",
+              textAlign: "center",
+              maxWidth: 480,
+              lineHeight: 1.3,
+            }}
+          >
+            You can’t do anything here without the <span style={{color:"#e4b531"}}>Archipelago Talisman</span>.
+          </div>
+        </div>
+      )}
+
       <div className="time-display">
         <div className="clock-text">{days[currentDayIndex]}, {formatTime(currentHour, currentMinute)}</div>
       </div>
@@ -377,6 +539,46 @@ export default function Secret() {
           backgroundImage: `url(${SecretMapImg})`,
         }}
       >
+
+      {hasTalisman && (
+        <div
+          className="angel-npc"
+          style={{
+            position: "absolute",
+            left: angelNPCPos.x,
+            top: angelNPCPos.y + angelFloatY,
+            width: 80,
+            height: 64,
+            backgroundImage: `url(${AngelNPCImg})`,
+            backgroundPosition: `-${angelFrame * 80}px 0px`,
+            imageRendering: "pixelated",
+            zIndex: 40,
+            pointerEvents: "none"
+          }}
+        />
+      )}
+
+            {/* Lingkaran ritual (animasi & permanen) — DILETAKKAN DI ATAS, SEBELUM PLAYER DAN ANGEL */}
+      {(showRitualAnim || ritualCirclePermanent) && (
+        <div
+          style={{
+            position: "absolute",
+            left: angelNPCPos.x + 40 - 520,
+            top: angelNPCPos.y + 32 - 520,
+            width: 1040,
+            height: 1040,
+            borderRadius: "50%",
+            border: "12px solid orange",
+            boxShadow: `0 0 220px 120px #ff670055, 0 0 580px 120px #ffae1f33`,
+            background: "radial-gradient(circle, #f7ad43cc 58%, #b0270a99 99%, transparent 100%)",
+            zIndex: 10, // lebih kecil dari zIndex player/angel-npc (zIndex 40)
+            pointerEvents: "none"
+          }}
+        />
+      )}
+
+
+
         {character && (
           <div
             className="character"
@@ -402,7 +604,24 @@ export default function Secret() {
           pointerEvents: "none"
         }}
       />
+
+      <div
+        style={{
+          position: "absolute",
+          left: secretBoxArea.x,
+          top: secretBoxArea.y,
+          width: secretBoxArea.w,
+          height: secretBoxArea.h,
+          background: "rgba(180, 60, 255, 0.16)",
+          border: "2px dashed #e250ff",
+          zIndex: 55,
+          pointerEvents: "none"
+        }}
+      />
+
       </div>
+
+      
 
       
 
@@ -775,9 +994,60 @@ export default function Secret() {
 
       {/* Panel event & tombol Interact */}
       <div className="event-panel">
-        <p className="event-text">📍 Explore the Isle of the Sacred Oath.<br />Press Interact to return.</p>
-        <button className="event-button" onClick={handleInteract}>Interact</button>
+      <p className="event-text">
+        {hasTalisman && nearAngel
+          ? "👼 Press Interact to talk to the Seraphille"
+          : nearSecretBox
+          ? "⛵ Press Interact to return to the first island"
+          : "📍 Explore the Isle of the Sacred Oath."}
+      </p>
+      <button
+        className="event-button"
+        onClick={() => {
+          if (hasTalisman && nearAngel) {
+            // Jika ritualCirclePermanent sudah true, dialog ke-2!
+            if (ritualCirclePermanent) {
+              setShowAngelDialog(true);
+              setAngelDialogState({ stage: 99, textIdx: 0 }); // stage 99 khusus suruh pakai talisman
+            } else {
+              setShowAngelDialog(true);
+              setAngelDialogState({ stage: 0, textIdx: 0 }); // dialog tree utama
+            }
+          } else if (nearSecretBox) {
+            handleInteract();
+          }
+        }}
+
+      >
+        Interact
+      </button>
+
       </div>
+
+      {showAngelDialog && (
+        <div className="coconut-overlay" style={{ background: "rgba(0,0,0,0.87)", zIndex: 350 }}>
+          <AngelNPCDialogPanel
+            state={angelDialogState}
+            setState={setAngelDialogState}
+            setShowDialog={setShowAngelDialog}
+            username={username}
+            onRitual={() => setShowRitualAnim(true)}
+          />
+
+        </div>
+      )}
+
+      {showRitualAnim && (
+        <RitualCircleAnim
+          centerX={angelNPCPos.x + 40}
+          centerY={angelNPCPos.y + 32}
+          onFinish={() => {
+            setShowRitualAnim(false);
+            setRitualCirclePermanent(true);   // <- Ini bikin lingkaran tetap ada!
+            // Lanjutkan ke logic event ritual atau ending di sini kalau perlu
+          }}
+        />
+      )}
 
       {/* Analog controls */}
       {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
@@ -823,6 +1093,173 @@ export default function Secret() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+// AngelNPCDialogPanel.jsx (bisa juga inline di Secret.jsx)
+function AngelNPCDialogPanel({ state, setState, setShowDialog, username, onRitual }) {
+  // Dialog script struktur tree, bisa modif sesuai keperluan
+  const dialogScript = [
+    // 0. Introduction
+    [
+      { npc: "Ah, you’ve made it to the end of your journey. This island is unlike any other, isn’t it?" },
+      { choice: true }
+    ],
+    // 1. "What do I do now?" branch
+    [
+      { player: "What do I do now?" },
+      { npc: "You hold the Archipelago Talisman, the key to returning home. But to activate its power, you must perform the final ritual." },
+      { npc: "I have prepared a sacred circle here. When you are ready, stand within the circle and use the talisman." },
+      { choice: true }
+    ],
+    // 2. Begin the ritual
+    [
+      { player: "Begin the ritual." },
+      { npc: "Very well. Focus your heart on where you truly wish to go. The talisman will respond to your resolve." },
+      { npc: "Once the ritual is complete, your journey here will end. Are you ready?" },
+      { ritual: true }
+    ],
+    // 3. Nevermind from any menu
+    [
+      { player: "Nevermind." },
+      { npc: "Of course. Take your time. I will be here if you change your mind." },
+      { end: true }
+    ],
+    
+  ];
+
+  const choicesArr = [
+    ["What do I do now?", "Nevermind."], // after intro
+    ["Begin the ritual.", "Nevermind."], // after info
+  ];
+
+  // Penanda branching
+  let choices = [];
+  if (state.stage === 0) choices = choicesArr[0];
+  if (state.stage === 1) choices = choicesArr[1];
+
+  const d = dialogScript[state.stage][state.textIdx];
+  const [shownText, setShownText] = React.useState("");
+  const textDone = React.useRef(true);
+
+  // TYPING EFFECT
+  React.useEffect(() => {
+    setShownText("");
+    textDone.current = false;
+    if (!d) return;
+    let idx = 0;
+    function type() {
+      setShownText(d.npc?.slice(0, idx) || d.player?.slice(0, idx) || "");
+      if (idx < (d.npc?.length || d.player?.length || 0)) {
+        idx++;
+        setTimeout(type, 16 + Math.random() * 15);
+      } else {
+        textDone.current = true;
+      }
+    }
+    type();
+  }, [state.stage, state.textIdx]);
+
+  function handleDialogClick() {
+    if (!textDone.current) {
+      setShownText(d.npc || d.player || "");
+      textDone.current = true;
+      return;
+    }
+    // Dialog End
+    if (d?.end) {
+      setShowDialog(false);
+      return;
+    }
+    // Ritual trigger (implement di parent component)
+    if (d?.ritual) {
+      setShowDialog(false);
+      if (typeof onRitual === "function") onRitual();
+      return;
+    }
+    // Kalau ada pilihan (choice)
+    if (d?.choice) return;
+
+    if (state.textIdx < dialogScript[state.stage].length - 1) {
+      setState({ ...state, textIdx: state.textIdx + 1 });
+    }
+  }
+
+  // Render panel pilihan
+  if (d?.choice) {
+    return (
+      <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
+        <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
+          <div className="angel-npc-dialog-img" />
+        </div>
+        <div style={{ flex: 2, display: "flex", flexDirection: "column", alignItems: "center", gap: 18 }}>
+          <div style={{ fontSize: 22, color: "#ffe69c", margin: "12px 0 16px" }}>
+            What do you want to do?
+          </div>
+            {choices.map((ch, i) => (
+              <button
+                key={i}
+                className="event-button"
+                style={{ fontSize: 17, marginBottom: 7, width: 320 }}
+                onClick={() => {
+                  if (state.stage === 0) {
+                    // stage 0: 0="What do I do now?" → stage 1, 1="Nevermind" → stage 3
+                    setState({ stage: i === 0 ? 1 : 3, textIdx: 0 });
+                  } else if (state.stage === 1) {
+                    // stage 1: 0="Begin the ritual." → stage 2, 1="Nevermind" → stage 3
+                    setState({ stage: i === 0 ? 2 : 3, textIdx: 0 });
+                  }
+                }}
+              >
+                {ch}
+              </button>
+            ))}
+
+        </div>
+        <div style={{ flex: 1 }} />
+      </div>
+    );
+  }
+
+  // Render dialog bubble
+  return (
+    <div
+      className="npc-dialog-panel"
+      style={{
+        display: "flex",
+        width: 740,
+        height: 320,
+        background: "rgba(0,0,0,0.89)",
+        borderRadius: 32,
+        alignItems: "center",
+        boxShadow: "0 3px 60px #000a",
+        cursor: "pointer"
+      }}
+      onClick={handleDialogClick}
+    >
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+        <div className="angel-npc-dialog-img" />
+        <div style={{ color: "#ffeecb0", fontSize: 15, marginTop: 8, opacity: 0.82 }}>Seraphelle</div>
+      </div>
+      <div style={{ flex: 2.1, minHeight: 60, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+        <div style={{
+          background: "rgba(70,50,10,0.18)",
+          borderRadius: 14,
+          fontSize: 19,
+          color: d.npc ? "#ffeec9" : "#aaf4fd",
+          padding: "23px 26px",
+          margin: "0 6px",
+          fontFamily: "inherit",
+          textAlign: d.npc ? "left" : "right"
+        }}>
+          <b style={{ color: "#ffe69c", fontSize: 17 }}>{d.npc ? "Seraphelle" : username}</b>
+          <br />
+          <span style={{ transition: "all 0.12s", display: "block" }}>{shownText}</span>
+          {!textDone.current && <span className="writing-cursor" style={{ color: "#ffd868", fontWeight: "bold", marginLeft: 1 }}>|</span>}
+        </div>
+        <div style={{ fontSize: 12, color: "#e6d9a7", margin: "10px 0 0 8px" }}>Click to continue…</div>
+      </div>
+      <div style={{ flex: 1 }} />
     </div>
   );
 }

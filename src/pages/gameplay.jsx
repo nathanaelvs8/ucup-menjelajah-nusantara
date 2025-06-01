@@ -731,15 +731,12 @@ export default function Gameplay() {
       window.location.href = "/forest";
     } else if (atMysticShore) {
       if (inventory.includes("Boat")) {
-        // Simpan data jika mau
+        // --- Tambahan: simpan posisi terakhir sebelum ke Secret
+        localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
+        // --- (opsional) simpan juga status, uang, dsb. kalau mau benar2 restore
+
         window.location.href = "/secret"; // atau "/Secret" sesuai routing-mu
-      } else {
-        setMysticNotif(true);
-        setMysticNotifFade(false);
-        setTimeout(() => setMysticNotifFade(true), 2000);
-        setTimeout(() => setMysticNotif(false), 2500);
       }
-      return;
     }
   };
 
