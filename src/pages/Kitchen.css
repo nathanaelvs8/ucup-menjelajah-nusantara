@@ -168,6 +168,10 @@
   margin-right: 10px;
 }
 
+/* Kitchen.css - Tambahan untuk warna teks tombol di detail resep */
+.recipe-details button {
+  color: #5D4037; /* Warna cokelat tua, sama seperti warna teks utama game-overlay */
+}
 
 /* --- Tombol Umum --- */
 button {
@@ -391,4 +395,30 @@ button:disabled {
   margin: 2px 0 6px 0;
   font-size: 1em;
   text-align: left;
+}
+
+.item-scroller {
+  position: relative;
+  width: 500px; /* atau sesuai lebar area */
+  height: 80px;
+  overflow: hidden;
+  margin: 0 auto 18px auto;
+  background: rgba(250,245,225,0.95);
+  border-radius: 14px;
+  border: 1.5px solid #e0d0b1;
+}
+
+.moving-item {
+  position: absolute;
+  top: 10px;
+  transition: left 0.04s linear;
+  width: 60px;
+  height: 60px;
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.moving-item img {
+  width: 48px;
+  height: 48px;
 }

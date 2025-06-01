@@ -33,8 +33,8 @@ const defaultItemList = [
     maxStock: 5,
   },
   {
-    id: "log",
-    name: "Log",
+    id: "Wood",
+    name: "Wood",
     icon: LogIcon,
     price: 400,
     maxStock: 20,

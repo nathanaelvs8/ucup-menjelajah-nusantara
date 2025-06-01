@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './Kitchen.css';
 import kitchenBackgroundImage from '../assets/ui/KitchenMG.png'; // Background dapur
 import RecipeBookIcon from '../assets/inventory-items/Recipe Book.png';
@@ -10,52 +10,6 @@ import { itemIcons } from './Inventory';
 // Impor ikon Panci, pastikan path ini benar
 import PanciIcon from '../assets/inventory-items/Panci.png';
 
-// Definisi Resep (Cooked Goldfish, Cooked Tuna, Cooked Megalodon)
-const initialRecipes = [
-  {
-    id: 'cooked_goldfish',
-    name: 'Cooked Goldfish',
-    icon: itemIcons['Cooked Goldfish'],
-    ingredients: [
-      { name: 'Goldfish', qty: 1 }, { name: 'Garlic', qty: 1 }, { name: 'Onion', qty: 1 },
-      { name: 'Shallot', qty: 1 }, { name: 'Oil', qty: 1 }, { name: 'Magic Sauce', qty: 1 },
-    ],
-    steps: ['Goldfish', 'Garlic', 'Onion', 'Shallot', 'Oil', 'Magic Sauce'],
-    stage1TargetScore: 100,
-    resultItem: 'Cooked Goldfish',
-  },
-  {
-    id: 'cooked_tuna',
-    name: 'Cooked Tuna',
-    icon: itemIcons['Cooked Tuna'],
-    ingredients: [
-      { name: 'Tuna', qty: 1 }, { name: 'Salt', qty: 1 }, { name: 'Garlic', qty: 1 },
-      { name: 'Magic Powder', qty: 1 }, { name: 'Oil', qty: 1 },
-    ],
-    steps: ['Tuna', 'Salt', 'Garlic', 'Magic Powder', 'Oil'],
-    stage1TargetScore: 100,
-    resultItem: 'Cooked Tuna',
-  },
-  {
-    id: 'cooked_megalodon',
-    name: 'Cooked Megalodon',
-    icon: itemIcons['Cooked Megalodon'],
-    ingredients: [
-      { name: 'Megalodon', qty: 1 }, { name: 'Garlic', qty: 1 }, { name: 'Onion', qty: 1 },
-      { name: 'Shallot', qty: 1 }, { name: 'Magic Powder', qty: 1 }, { name: 'Magic Sauce', qty: 1 },
-    ],
-    steps: ['Megalodon', 'Garlic', 'Onion', 'Shallot', 'Magic Powder', 'Magic Sauce'],
-    stage1TargetScore: 100,
-    resultItem: 'Cooked Megalodon',
-  },
-];
-
-// Daftar semua bahan yang mungkin muncul di mini-game stage 1 (untuk diacak)
-const allPossibleMinigameIngredients = Object.keys(itemIcons).filter(
-  itemName => !itemName.startsWith("Cooked") &&
-  !["Boat", "Pickaxe", "Rod", "Archipelago Talisman", "Torch", "Ancient Glass", "Ancient Glass With Water", "Juice Coconut", "Juice Wild Fruit", "Cleanliness Potion", "Happiness Potion", "Meal Potion", "Morning Dew Potion"].includes(itemName) // Filter item non-bahan mentah
-);
-
 // Helper: jumlah item di inventory array
 function getItemCount(inventoryArray, itemName) {
   return inventoryArray.reduce((count, item) => (item === itemName ? count + 1 : count), 0);
@@ -66,82 +20,159 @@ export default function Kitchen({
   onClose,    // Fungsi untuk menutup modal Kitchen
   inventory,  // Array string nama item (dari props)
   setInventory,
-  craftingRecipes // Fungsi untuk update inventory (dari props)
+  craftingRecipes // Prop ini diterima tapi tidak digunakan dalam kode yang Anda berikan
 }) {
-  const [recipes] = useState(initialRecipes);
+
+  // Pindahkan definisi initialRecipes ke dalam komponen dan gunakan useMemo
+  const initialRecipes = useMemo(() => {
+    // Pastikan itemIcons ada sebelum mencoba mengakses propertinya
+    if (!itemIcons) {
+        console.error("itemIcons is not available. Check import from Inventory.jsx");
+        return []; // Kembalikan array kosong atau handle error sesuai kebutuhan
+    }
+    return [
+      {
+        id: 'cooked_goldfish',
+        name: 'Cooked Goldfish',
+        icon: itemIcons['Cooked Goldfish'],
+        ingredients: [
+          { name: 'Goldfish', qty: 1 }, { name: 'Garlic', qty: 1 }, { name: 'Onion', qty: 1 },
+          { name: 'Shallot', qty: 1 }, { name: 'Oil', qty: 1 }, { name: 'Magic Sauce', qty: 1 },
+        ],
+        steps: ['Goldfish', 'Garlic', 'Onion', 'Shallot', 'Oil', 'Magic Sauce'],
+        // stage1TargetScore: 100, // Sebaiknya dihitung dinamis: steps.length * 100
+        resultItem: 'Cooked Goldfish',
+      },
+      {
+        id: 'cooked_tuna',
+        name: 'Cooked Tuna',
+        icon: itemIcons['Cooked Tuna'],
+        ingredients: [
+          { name: 'Tuna', qty: 1 }, { name: 'Salt', qty: 1 }, { name: 'Garlic', qty: 1 },
+          { name: 'Magic Powder', qty: 1 }, { name: 'Oil', qty: 1 },
+        ],
+        steps: ['Tuna', 'Salt', 'Garlic', 'Magic Powder', 'Oil'],
+        // stage1TargetScore: 100, // Sebaiknya dihitung dinamis: steps.length * 100
+        resultItem: 'Cooked Tuna',
+      },
+      {
+        id: 'cooked_megalodon',
+        name: 'Cooked Megalodon',
+        icon: itemIcons['Cooked Megalodon'],
+        ingredients: [
+          { name: 'Megalodon', qty: 1 }, { name: 'Garlic', qty: 1 }, { name: 'Onion', qty: 1 },
+          { name: 'Shallot', qty: 1 }, { name: 'Magic Powder', qty: 1 }, { name: 'Magic Sauce', qty: 1 },
+        ],
+        steps: ['Megalodon', 'Garlic', 'Onion', 'Shallot', 'Magic Powder', 'Magic Sauce'],
+        // stage1TargetScore: 100, // Sebaiknya dihitung dinamis: steps.length * 100
+        resultItem: 'Cooked Megalodon',
+      },
+    ];
+  }, []); // Dependensi kosong karena itemIcons diasumsikan tidak berubah setelah import
+
+  // Pindahkan definisi allPossibleMinigameIngredients ke dalam komponen dan gunakan useMemo
+  const allPossibleMinigameIngredients = useMemo(() => {
+    if (!itemIcons) {
+        console.error("itemIcons is not available for allPossibleMinigameIngredients. Check import from Inventory.jsx");
+        return [];
+    }
+    return Object.keys(itemIcons).filter(
+      itemName => !itemName.startsWith("Cooked") &&
+      !["Boat", "Pickaxe", "Rod", "Archipelago Talisman", "Torch", "Ancient Glass", "Ancient Glass With Water", "Juice Coconut", "Juice Wild Fruit", "Cleanliness Potion", "Happiness Potion", "Meal Potion", "Morning Dew Potion"].includes(itemName)
+    );
+  }, []); // Dependensi kosong karena itemIcons diasumsikan tidak berubah setelah import
+
+  const [recipes] = useState(initialRecipes); // initialRecipes sekarang sudah benar
   const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [gameState, setGameState] = useState('menu'); // "menu", "view_recipe", "minigame_stage1", "minigame_stage2", "result"
-  const [currentStage1Score, setCurrentStage1Score] = useState(0);
+  const [gameState, setGameState] = useState('menu');
   const [feedbackMessage, setFeedbackMessage] = useState('');
-
-  const [stage1DisplayItems, setStage1DisplayItems] = useState([]);
-  const [stage1CorrectlyTapped, setStage1CorrectlyTapped] = useState([]);
   const [showRecipeBook, setShowRecipeBook] = useState(false);
+  const [activeItems, setActiveItems] = useState([]);
+  const [stage1Score, setStage1Score] = useState(0);
+  const nextItemId = useRef(0);
 
-const recipeBookList = [
-  {
-    name: "Cooked Goldfish",
-    ingredients: ["Goldfish", "Garlic", "Onion", "Shallot", "Oil", "Magic Sauce"],
-    instructions: "Campur semua bahan, masak sampai matang dan bumbu meresap.",
-  },
-  {
-    name: "Cooked Tuna",
-    ingredients: ["Tuna", "Salt", "Garlic", "Magic Powder", "Oil"],
-    instructions: "Tumis garlic dan tuna, masukkan bahan lain, masak hingga matang.",
-  },
-  {
-    name: "Cooked Megalodon",
-    ingredients: ["Megalodon", "Garlic", "Onion", "Shallot", "Magic Powder", "Magic Sauce"],
-    instructions: "Tumis bawang, masukkan Megalodon dan bahan lain, masak sampai harum.",
-  }
-];
+  const recipeBookList = [
+    {
+      name: "Cooked Goldfish",
+      ingredients: ["Goldfish", "Garlic", "Onion", "Shallot", "Oil", "Magic Sauce"],
+      instructions: "Campur semua bahan, masak sampai matang dan bumbu meresap.",
+    },
+    {
+      name: "Cooked Tuna",
+      ingredients: ["Tuna", "Salt", "Garlic", "Magic Powder", "Oil"],
+      instructions: "Tumis garlic dan tuna, masukkan bahan lain, masak hingga matang.",
+    },
+    {
+      name: "Cooked Megalodon",
+      ingredients: ["Megalodon", "Garlic", "Onion", "Shallot", "Magic Powder", "Magic Sauce"],
+      instructions: "Tumis bawang, masukkan Megalodon dan bahan lain, masak sampai harum.",
+    }
+  ];
 
   useEffect(() => {
-    if (gameState === 'minigame_stage1' && selectedRecipe) {
-      setupStage1Minigame();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameState, selectedRecipe]); // Jalankan saat gameState atau selectedRecipe berubah untuk stage 1
+    if (gameState !== 'minigame_stage1' || !selectedRecipe) return;
 
-  const setupStage1Minigame = () => {
-    if (!selectedRecipe) return;
+    setActiveItems([]);
+    setStage1Score(0);
 
-    const correctIngredientsForRecipe = selectedRecipe.steps;
-    const remainingCorrectIngredients = correctIngredientsForRecipe.filter(ing => !stage1CorrectlyTapped.includes(ing));
-    
-    const numCorrectToDisplay = Math.min(remainingCorrectIngredients.length, 2); // Tampilkan maks 2 bahan benar yang tersisa dan BELUM ditekan
-    const numWrongToDisplay = Math.max(0, 5 - numCorrectToDisplay); // Target total 5 item, sisanya pengganggu
-
-    let displayItemsPool = [];
-    
-    const shuffledRemainingCorrect = [...remainingCorrectIngredients].sort(() => 0.5 - Math.random());
-    displayItemsPool.push(...shuffledRemainingCorrect.slice(0, numCorrectToDisplay));
-
-    const wrongItemsPool = allPossibleMinigameIngredients.filter(
-      item => !correctIngredientsForRecipe.includes(item) && !displayItemsPool.includes(item)
-    );
-    const shuffledWrong = [...wrongItemsPool].sort(() => 0.5 - Math.random());
-    displayItemsPool.push(...shuffledWrong.slice(0, numWrongToDisplay));
-    
-    while(displayItemsPool.length < 5 && shuffledWrong.length > (displayItemsPool.length - numCorrectToDisplay) ) {
-        const nextWrongItem = shuffledWrong[displayItemsPool.length - numCorrectToDisplay];
-        if (nextWrongItem && !displayItemsPool.includes(nextWrongItem)) {
-            displayItemsPool.push(nextWrongItem);
+    const spawnInterval = setInterval(() => {
+      const isCorrect = Math.random() < 0.6;
+      let name = '';
+      if (isCorrect) {
+        const recipeStepIngredients = selectedRecipe.steps;
+        name = recipeStepIngredients[Math.floor(Math.random() * recipeStepIngredients.length)];
+      } else {
+        const wrongIngredients = allPossibleMinigameIngredients.filter(n => !selectedRecipe.steps.includes(n));
+        if (wrongIngredients.length > 0) {
+          name = wrongIngredients[Math.floor(Math.random() * wrongIngredients.length)];
+        } else if (allPossibleMinigameIngredients.length > 0) {
+          // Jika semua possible ingredients ada di resep, pilih dari possible sebagai wrong (meski akan dianggap benar)
+          // Atau, jika tidak ada wrongIngredients sama sekali, ini bisa jadi kasus khusus
+          name = allPossibleMinigameIngredients[Math.floor(Math.random() * allPossibleMinigameIngredients.length)];
         } else {
-            break; 
+          // Fallback jika tidak ada bahan sama sekali (sangat jarang, tapi untuk menghindari error)
+          console.warn("No ingredients available to spawn for minigame_stage1.");
+          return; // Jangan spawn apa-apa jika tidak ada nama
         }
-    }
-    // Pastikan setidaknya ada 1 item benar jika masih ada yang belum ditekan
-    if (numCorrectToDisplay === 0 && remainingCorrectIngredients.length > 0 && displayItemsPool.length < 5) {
-        displayItemsPool.push(remainingCorrectIngredients[0]);
-    }
-    // Jika setelah semua logika, displayItemsPool masih kosong (jarang terjadi), isi dengan beberapa item acak
-     if (displayItemsPool.length === 0) {
-        displayItemsPool.push(...[...allPossibleMinigameIngredients].sort(() => 0.5 - Math.random()).slice(0, 5));
-    }
+      }
+      
+      if (name) { // Pastikan nama ada sebelum menambahkan item
+        setActiveItems(items => [
+          ...items,
+          { id: nextItemId.current++, name, left: 520 }
+        ]);
+      }
+    }, 400);
 
+    return () => clearInterval(spawnInterval);
+  }, [gameState, selectedRecipe, allPossibleMinigameIngredients]); // tambahkan allPossibleMinigameIngredients
 
-    setStage1DisplayItems(displayItemsPool.sort(() => 0.5 - Math.random()));
+  useEffect(() => {
+    if (gameState !== 'minigame_stage1') return;
+    const moveInterval = setInterval(() => {
+      setActiveItems(items =>
+        items
+          .map(item => ({ ...item, left: item.left - 7 }))
+          .filter(item => item.left > -80)
+      );
+    }, 40);
+
+    return () => clearInterval(moveInterval);
+  }, [gameState]);
+
+  const handleClickItem = (item) => {
+    if (!selectedRecipe) return; // Guard clause
+
+    if (selectedRecipe.steps.includes(item.name)) {
+      setActiveItems(items => items.filter(i => i.id !== item.id));
+      setStage1Score(s => s + 100);
+      setFeedbackMessage(`Benar! ${item.name} +100 poin`);
+    } else {
+      setStage1Score(s => Math.max(0, s - 50)); // Skor tidak boleh negatif
+      setFeedbackMessage(`Salah! ${item.name} -50 poin`);
+      // Pertimbangkan untuk menghilangkan item yang salah juga agar tidak menumpuk, atau beri penalti lain
+      // setActiveItems(items => items.filter(i => i.id !== item.id)); 
+    }
   };
 
   const handleSelectRecipe = (recipe) => {
@@ -159,52 +190,15 @@ const recipeBookList = [
     } else {
       setSelectedRecipe(null);
       setFeedbackMessage(`Bahan tidak cukup untuk memasak ${recipe.name}!`);
-      setGameState('menu');
+      setGameState('menu'); // Tetap di menu jika bahan tidak cukup
     }
   };
 
   const prepareToCook = () => {
     if (!selectedRecipe) return;
-    setCurrentStage1Score(0);
-    setStage1CorrectlyTapped([]);
-    setGameState('minigame_stage1'); // useEffect akan memanggil setupStage1Minigame
+    setGameState('minigame_stage1');
+    setStage1Score(0); // Reset skor saat mulai masak
     setFeedbackMessage(`Siapkan bahan untuk ${selectedRecipe.name}! Pilih dengan benar.`);
-  };
-
-  const handleStage1ItemTap = (itemName) => {
-    if (!selectedRecipe || gameState !== 'minigame_stage1') return;
-
-    const isCorrectRequiredIngredient = selectedRecipe.steps.includes(itemName);
-    const alreadyTapped = stage1CorrectlyTapped.includes(itemName);
-    let newScore = currentStage1Score;
-    let newCorrectlyTappedLocal = [...stage1CorrectlyTapped];
-
-    if (isCorrectRequiredIngredient && !alreadyTapped) {
-      newScore += 10;
-      newCorrectlyTappedLocal.push(itemName);
-      setStage1CorrectlyTapped(newCorrectlyTappedLocal);
-      setFeedbackMessage(`Benar! ${itemName} ditambahkan. +10 poin.`);
-    } else if (isCorrectRequiredIngredient && alreadyTapped) {
-      setFeedbackMessage(`${itemName} sudah dipilih sebelumnya. Pilih bahan lain!`);
-    } else {
-      newScore -= 15;
-      setFeedbackMessage(`Salah! Itu bukan ${itemName}. -15 poin.`);
-    }
-    newScore = Math.max(0, newScore);
-    setCurrentStage1Score(newScore);
-
-    const allRequiredIngredientsTapped = selectedRecipe.steps.every(step => newCorrectlyTappedLocal.includes(step));
-
-    if (allRequiredIngredientsTapped && newScore >= selectedRecipe.stage1TargetScore) {
-      setFeedbackMessage(`Stage 1 Berhasil! Total Skor: ${newScore}. Lanjut atur panas!`);
-      setGameState('minigame_stage2');
-    } else if (allRequiredIngredientsTapped && newScore < selectedRecipe.stage1TargetScore) {
-      setFeedbackMessage(`Semua bahan benar, tapi skor (${newScore}) tidak mencapai target ${selectedRecipe.stage1TargetScore}. Masakan gagal!`);
-      setGameState('result');
-    } else if (!allRequiredIngredientsTapped) {
-      // Jika belum menang/kalah dan belum semua bahan benar terpilih, siapkan set item berikutnya
-      setTimeout(setupStage1Minigame, 800);
-    }
   };
 
   const handleStage2Result = (success) => {
@@ -232,9 +226,40 @@ const recipeBookList = [
     setSelectedRecipe(null);
     setGameState('menu');
     setFeedbackMessage('');
-    setCurrentStage1Score(0);
-    setStage1CorrectlyTapped([]);
+    setActiveItems([]); // Kosongkan active items
+    setStage1Score(0);  // Reset skor
   };
+
+  useEffect(() => {
+    if (gameState === 'minigame_stage1' && selectedRecipe) {
+      const targetScore = selectedRecipe.steps.length * 100;
+      // Pastikan targetScore > 0 untuk resep yang memang punya step
+      if (targetScore > 0 && stage1Score >= targetScore) { 
+        setFeedbackMessage("Stage 1 selesai! Lanjut ke tahap berikutnya!");
+        setTimeout(() => setGameState('minigame_stage2'), 700);
+      }
+    }
+  }, [stage1Score, gameState, selectedRecipe]);
+
+  // Periksa apakah recipes sudah terinisialisasi sebelum di-map
+  if (!recipes || recipes.length === 0) {
+    // Ini bisa terjadi jika itemIcons gagal dimuat dan initialRecipes jadi array kosong
+    // Tampilkan pesan loading atau error, atau kembalikan null
+    // Ini juga bisa membantu mendeteksi jika initialRecipes tidak terisi karena itemIcons bermasalah
+    if (!itemIcons) {
+        return (
+            <div className="kitchen-container" style={{ backgroundImage: `url(${kitchenBackgroundImage})` }}>
+                <div className="game-overlay">
+                    <p>Error: Gagal memuat data resep. Periksa konsol untuk detail.</p>
+                    <button onClick={onClose} className="kitchen-close-button">×</button>
+                </div>
+            </div>
+        );
+    }
+    // Jika recipes kosong tapi itemIcons ada, mungkin tidak ada resep yang valid
+    // Atau, jika Anda mau, tampilkan pesan "Tidak ada resep"
+  }
+
 
   return (
     <div
@@ -244,7 +269,7 @@ const recipeBookList = [
       <div className="game-overlay" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={onClose}
-          className="kitchen-close-button" // Gunakan kelas dari Kitchen.css
+          className="kitchen-close-button"
         >
           ×
         </button>
@@ -256,63 +281,61 @@ const recipeBookList = [
         {feedbackMessage && (
           <div
             className={`feedback-message ${
-              feedbackMessage.includes("Berhasil") || feedbackMessage.includes("Selamat") || feedbackMessage.includes("Benar") ? 'success' : ''
+              feedbackMessage.includes("Luar biasa") || feedbackMessage.includes("Berhasil") ||  feedbackMessage.includes("Selamat") || feedbackMessage.includes("Benar") ? 'success' : 
+              (feedbackMessage.includes("Yah, gagal") || feedbackMessage.includes("Salah") || feedbackMessage.includes("tidak cukup") || feedbackMessage.includes("Error")) ? 'failure' : ''
             }`}
           >
             {feedbackMessage}
           </div>
         )}
 
-        {/* --- KONTEN GAME STATE --- */}
-  {gameState === 'menu' && (
-  <div className="recipe-menu" style={{ position: 'relative' }}>
-    {/* Recipe Book Button */}
-    <button
-      className="recipe-book-btn"
-      style={{
-        position: "absolute",
-        left: 0, top: -20,
-        background: "none",
-        border: "none",
-        padding: 0,
-        cursor: "pointer",
-        outline: "none"
-      }}
-      title="Lihat Buku Resep"
-     onClick={() => setShowRecipeBook(true)}
-
-    >
-      <img src={RecipeBookIcon} alt="Recipe Book" style={{ width: 56, height: 56, objectFit: "contain" }} />
-    </button>
-    <h3 style={{ paddingLeft: 64 }}>Pilih Resep:</h3>
-    <ul>
-      {recipes.map((recipe) => (
-        <li key={recipe.id} onClick={() => handleSelectRecipe(recipe)}>
-          {recipe.icon && <img src={recipe.icon} alt={recipe.name} className="recipe-list-icon" />}
-          {recipe.name}
-        </li>
-      ))}
-    </ul>
-  </div>
-)}
- {showRecipeBook && (
-  <div className="recipe-book-modal-overlay" onClick={() => setShowRecipeBook(false)}>
-    <div className="recipe-book-modal" onClick={e => e.stopPropagation()}>
-      <button className="kitchen-close-button" onClick={() => setShowRecipeBook(false)}>×</button>
-      <h2 className="kitchen-title">Buku Resep</h2>
-      <div className="recipe-book-list">
-        {recipeBookList.map((res, i) => (
-          <div className="recipe-book-entry" key={i}>
-            <h3>{res.name}</h3>
-            <p><b>Bahan:</b> {res.ingredients.join(', ')}</p>
-            <p><b>Cara Membuat:</b> {res.instructions}</p>
+        {gameState === 'menu' && (
+          <div className="recipe-menu" style={{ position: 'relative' }}>
+            <button
+              className="recipe-book-btn"
+              style={{
+                position: "absolute",
+                left: 0, top: -20,
+                background: "none",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                outline: "none"
+              }}
+              title="Lihat Buku Resep"
+              onClick={() => setShowRecipeBook(true)}
+            >
+              <img src={RecipeBookIcon} alt="Recipe Book" style={{ width: 56, height: 56, objectFit: "contain" }} />
+            </button>
+            <h3 style={{ paddingLeft: 64 }}>Pilih Resep:</h3>
+            <ul>
+              {recipes.map((recipe) => (
+                <li key={recipe.id} onClick={() => handleSelectRecipe(recipe)}>
+                  {recipe.icon && <img src={recipe.icon} alt={recipe.name} className="recipe-list-icon" />}
+                  {recipe.name}
+                </li>
+              ))}
+            </ul>
           </div>
-        ))}
-      </div>
-    </div>
-  </div>
-)}
+        )}
 
+        {showRecipeBook && (
+          <div className="recipe-book-modal-overlay" onClick={() => setShowRecipeBook(false)}>
+            <div className="recipe-book-modal" onClick={e => e.stopPropagation()}>
+              <button className="kitchen-close-button" onClick={() => setShowRecipeBook(false)}>×</button>
+              <h2 className="kitchen-title">Buku Resep</h2>
+              <div className="recipe-book-list">
+                {recipeBookList.map((res, i) => (
+                  <div className="recipe-book-entry" key={i}>
+                    <h3>{res.name}</h3>
+                    <p><b>Bahan:</b> {res.ingredients.join(', ')}</p>
+                    <p><b>Cara Membuat:</b> {res.instructions}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {gameState === 'view_recipe' && selectedRecipe && (
           <div className="recipe-details">
@@ -322,8 +345,8 @@ const recipeBookList = [
             <ul>
               {selectedRecipe.ingredients.map((ing, index) => (
                 <li key={index}>
-                  {itemIcons[ing.name] && <img src={itemIcons[ing.name]} alt={ing.name} className="ingredient-list-icon" />}
-                  {ing.name} ({ing.qty}) - Kamu punya: {getItemCount(inventory, ing.name)}
+                  {itemIcons && itemIcons[ing.name] ? <img src={itemIcons[ing.name]} alt={ing.name} className="ingredient-list-icon" /> : ing.name}
+                  {' '}{ing.name} ({ing.qty}) - Kamu punya: {getItemCount(inventory, ing.name)}
                 </li>
               ))}
             </ul>
@@ -337,23 +360,27 @@ const recipeBookList = [
             <div className="minigame-play-area">
               <h3>Memasak: {selectedRecipe.name}</h3>
               <p>Pilih bahan yang benar sesuai resep!</p>
-              <p>Skor: {currentStage1Score} / {selectedRecipe.stage1TargetScore}</p>
-              <div className="minigame-items-display">
-                {stage1DisplayItems.map((itemName, index) => (
+              <p>Skor: {stage1Score} / {selectedRecipe.steps.length * 100}</p>
+
+              <div className="item-scroller">
+                {activeItems.map(item => (
                   <button
-                    key={`${itemName}-${index}-${Date.now()}`} // Key lebih unik untuk re-render
-                    onClick={() => handleStage1ItemTap(itemName)}
-                    className="minigame-item-button"
-                    title={itemName}
+                    key={item.id}
+                    className="moving-item"
+                    style={{ left: `${item.left}px` }} // Pastikan left adalah string dengan unit px
+                    onClick={() => handleClickItem(item)}
                   >
-                    {itemIcons[itemName] ? (
-                      <img src={itemIcons[itemName]} alt={itemName} />
-                    ) : (
-                      itemName
-                    )}
+                    {itemIcons && itemIcons[item.name] ? (
+                      <img src={itemIcons[item.name]} alt={item.name} />
+                    ) : item.name}
                   </button>
                 ))}
               </div>
+              {/* Skor sudah ditampilkan di atas, jadi baris di bawah ini bisa jadi duplikat
+              <div style={{ marginTop: 8 }}>
+                Skor: {stage1Score}
+              </div> 
+              */}
             </div>
             <button onClick={backToMenu} className="minigame-cancel-button">
               Batal
@@ -382,10 +409,13 @@ const recipeBookList = [
         {gameState === 'result' && selectedRecipe && (
           <div className="result-display">
             <h3>Hasil Akhir Memasak</h3>
-            {feedbackMessage.includes("Selamat") && selectedRecipe.icon &&
+            {(feedbackMessage.includes("Luar biasa") || feedbackMessage.includes("Berhasil")) && selectedRecipe.icon &&
               <img src={selectedRecipe.icon} alt={selectedRecipe.resultItem} className="result-cooked-item-icon" />
             }
-            <p className={`result-feedback-text ${feedbackMessage.includes("Selamat") ? 'success' : 'failure'}`}>{feedbackMessage}</p>
+            <p className={`result-feedback-text ${
+                (feedbackMessage.includes("Luar biasa") || feedbackMessage.includes("Berhasil")) ? 'success' : 
+                (feedbackMessage.includes("Yah, gagal") || feedbackMessage.includes("Error")) ? 'failure' : ''
+            }`}>{feedbackMessage}</p>
             <button onClick={backToMenu}>Kembali ke Menu Resep</button>
           </div>
         )}
