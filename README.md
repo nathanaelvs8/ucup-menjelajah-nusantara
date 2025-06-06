@@ -52,7 +52,7 @@ Players begin the game by logging in with Google or as a guest, entering a chara
 
 ## Screenshots / Preview
 
-![Login Page](./assets/screenshots/LoginPage.png)
+![Login Page](../assets/screenshots/LoginPage.png)
 ![Gameplay Preview](./assets/screenshot1.png)
 ![Archipelago Map](./assets/screenshot2.png)
 ![Fishing Minigame](./assets/screenshot3.png)
