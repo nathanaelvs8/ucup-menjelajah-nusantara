@@ -680,6 +680,8 @@ export default function Gameplay() {
     setNearCloth(near);
   }, [position, clothPos]);
 
+  
+
   useEffect(() => {
     // Jika inventory tidak punya ripped cloth dan clothPos belum ada, spawn lagi!
     if (!inventory.includes("Ripped Cloth") && !clothPos) {
