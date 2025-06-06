@@ -1,4 +1,4 @@
-# Ucup Explores the Archipelago
+# Archipelago Saga
 
 **Play here:** [Click here to play](https://your-game-link.com)
 
