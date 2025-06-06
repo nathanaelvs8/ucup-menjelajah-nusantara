@@ -1,26 +1,172 @@
-.ending-screen {
+.ending-bg {
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: radial-gradient(circle at 60% 42%, #ffefc7 0%, #fae6bb 30%, #3e3533 100%);
+  overflow: hidden;
+}
+
+.ending-fancy {
+  width: 86vw;
+  max-width: 620px;
+  height: 100vh;
+  max-height: 100vh;
+  margin: 0 auto;
+  background: rgba(34,28,23,0.95);
+  border-radius: 19px;
+  box-shadow: 0 8px 60px #c2b9ac88, 0 0 0 8px #ffe09e10;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  padding: 7px 12px 7px 12px;
+  overflow: hidden;
+}
+
+.star-row-anim {
+  margin-bottom: 0.15em;
+  min-height: 32px;
+}
+
+.ending-title-glow {
+  font-size: 1.08em;
+  margin: 0.13em 0 0.38em 0;
+  font-weight: 600;
+  color: #ffe79f;
+  text-shadow: 0 2px 12px #fff1b0cc, 0 0 0 #fff, 0 1px 1px #fc6;
+  letter-spacing: 0.01em;
+  animation: titleGlow 0.9s cubic-bezier(.25,1.4,.25,1.1);
+}
+@keyframes titleGlow { from { opacity:0; scale:0.7;} to { opacity:1; scale:1;} }
+
+.score-panel {
+  margin: 0 0 0.13em 0;
+  padding: 5px 0.5vw;
+  flex-grow: 1;
+  min-height: 70px;
+  width: 100%;
+  background: none;
+  box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+  transition: opacity 0.44s, transform 0.44s;
+  font-size: 0.97em;
+  margin: 4px 0;
+  width: 100%;
+  max-width: 370px;
+}
+.score-row.visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.score-label {
+  color: #ffeabc;
+  font-weight: 500;
+  text-shadow: 0 0 3px #cfba7c77;
+  font-size: 1em;
+}
+.score-value {
+  font-weight: 600;
+  font-size: 1.02em;
+  color: #fff7d4;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 2px #fff9db;
+}
+
+.final-score.super-glow {
+  color: #ffe666;
+  text-shadow: 0 0 18px #fffbbd88, 0 2px 10px #fffed655;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  font-size: 1.12em !important;
+  margin: 8px 0 2px 0 !important;
+}
+
+.ending-desc {
+  margin-top: 4px;
+  font-size: 0.96em;
+  min-height: 18px;
+  color: #fff5be;
+  font-weight: 600;
+  text-shadow: 0 0 8px #fff3ad66;
+  animation: fadeinDesc 0.9s;
+  box-sizing: border-box;
+  width: 99%;
+  max-width: 99%;
+  line-height: 1.31em;
+  display: flex;
+  align-items: center;
   justify-content: center;
-  height: 100vh;
-  background: black;
-  color: white;
-  font-family: 'IM Fell English SC', serif;
-  text-align: center;
+  transition: none;
 }
+@keyframes fadeinDesc { from {opacity:0;} to {opacity:1;} }
+.ending-perfect { color: #ffe666; font-weight: bold; text-shadow: 0 0 14px #ffefb6bb; }
+.ending-good { color: #ffdd8b; }
+.ending-ok { color: #ffeabb; }
+.ending-fail { color: #eaa898; }
 
-.ending-screen button {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  cursor: pointer;
-  background: #444;
-  color: white;
+.ending-btn {
+  margin: 0 0 0.06em 0;
+  font-size: 0.99em;
+  padding: 6px 17px;
+  background: linear-gradient(90deg,#ffe690 70%, #ffd36c 100%);
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
+  color: #422f0a;
+  font-family: inherit;
+  font-weight: 600;
+  box-shadow: 0 2px 18px #cfb36644;
+  cursor: pointer;
+  transition: background 0.23s;
+}
+.ending-btn:hover { background: #ffd366; color: #6c4704; }
+
+@media (max-width: 700px) {
+  .ending-fancy {
+    padding: 3px 2vw 3px 2vw;
+    min-width: 0;
+    width: 99vw;
+    max-width: 99vw;
+    height: 100vh;
+    max-height: 100vh;
+  }
+  .score-panel {
+    padding: 0vw 0vw;
+    min-width: 0;
+    width: 100%;
+  }
+  .ending-desc { font-size: 0.92em;}
+  .ending-title-glow { font-size: 1em; }
+  .ending-btn { font-size: 0.93em; padding: 5px 9px;}
 }
 
-.ending-screen button:hover {
-  background: #666;
+.ending-desc-final {
+  font-size: 1.32em;
+  text-align: center;
+  font-weight: 700;
+  margin-top: auto !important;
+  margin-bottom: 12px;
+  color: #ffe886;
+  line-height: 1.22em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.ending-btn {
+  margin-top: 0;
+  margin-bottom: 7px;
 }

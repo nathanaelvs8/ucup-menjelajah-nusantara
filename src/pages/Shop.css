@@ -150,3 +150,124 @@
   background: #f2cf61;
   border-radius: 7px;
 }
+
+.shop-modal {
+  /* Hapus/override posisi defaultnya */
+  position: fixed !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999;
+  margin: 0 !important;
+  /* width, height, dsb. tetap seperti di patch sebelumnya */
+}
+
+/* SHOP RESPONSIVE */
+@media (max-width: 1200px) {
+  .shop-modal {
+    width: 90vw !important;
+    min-width: 0 !important;
+    max-width: 98vw !important;
+    min-height: 420px !important;
+    font-size: 96%;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .shop-category-container {
+    padding: 0 16px !important;
+  }
+}
+@media (max-width: 700px) {
+  .shop-modal {
+    width: 99vw !important;
+    min-width: 0 !important;
+    max-width: 99vw !important;
+    min-height: 200px !important;
+    border-radius: 14px !important;
+    padding-bottom: 13px !important;
+    font-size: 91%;
+  }
+  .shop-header {
+    padding: 12px 10vw 4px 6vw !important;
+    min-height: 0;
+  }
+  .shop-title {
+    font-size: 25px !important;
+    letter-spacing: 1px;
+  }
+  .shop-close {
+    font-size: 26px !important;
+    padding: 0 11px !important;
+    height: 33px !important;
+    min-width: 0;
+    border-radius: 6px !important;
+  }
+  .shop-tabs {
+    gap: 5px !important;
+    margin-bottom: 10px !important;
+  }
+  .shop-tabs button {
+    font-size: 14px !important;
+    padding: 7px 13px !important;
+    border-radius: 7px 7px 0 0 !important;
+  }
+  .shop-category-container {
+    padding: 0 6px !important;
+  }
+  .shop-item-grid {
+    gap: 9px !important;
+    min-height: 120px !important;
+  }
+  .shop-item-card {
+    width: 120px !important;
+    min-width: 120px !important;
+    padding: 12px 5px 12px 5px !important;
+    margin: 7px 0 !important;
+    border-radius: 11px !important;
+  }
+  .shop-item-card img {
+    width: 41px !important;
+    height: 41px !important;
+    border-radius: 5px !important;
+    margin-bottom: 6px !important;
+  }
+  .shop-item-name {
+    font-size: 14px !important;
+    margin: 6px 0 1px 0 !important;
+  }
+  .shop-item-price {
+    font-size: 13px !important;
+    margin-bottom: 1px !important;
+  }
+  .shop-item-stock {
+    font-size: 11px !important;
+    margin-bottom: 2px !important;
+  }
+  .shop-buy-btn {
+    font-size: 12px !important;
+    border-radius: 6px !important;
+    padding: 5px 12px !important;
+    margin-top: 2px !important;
+  }
+  .shop-footer {
+    font-size: 13px !important;
+    margin-top: 6px !important;
+  }
+}
+
+/* Responsive tetap berjalan */
+@media (max-width: 700px) {
+  .shop-modal {
+    width: 99vw !important;
+    min-width: 0 !important;
+    max-width: 99vw !important;
+    min-height: 200px !important;
+    border-radius: 14px !important;
+    padding-bottom: 13px !important;
+    font-size: 91%;
+    /* Posisi tetap tengah di HP */
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+}

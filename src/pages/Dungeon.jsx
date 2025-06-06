@@ -463,13 +463,12 @@ export default function Dungeon({ onExit }) {
 
     return (
        <>
-           <audio
-      ref={audioRef}
-      src={dungeonMusic}
-      autoPlay
-      loop
-    />
-
+      <audio
+        ref={audioRef}
+        src={dungeonMusic}
+        autoPlay
+        loop
+      />
       <div className="dungeon-container">
         {errorMessage && (
           <p

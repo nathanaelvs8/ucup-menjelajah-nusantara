@@ -2,7 +2,8 @@ import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import "./Gameplay.css";
 import "./Forest.css";
-import { getGreeting } from "./utils";
+import { getGreeting, addActivity, addNPCInteract, addVisitedArea } from "./utils";
+
 import { itemDetails } from "./Inventory.jsx";
 import craftingRecipes from "./CraftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
@@ -759,6 +760,7 @@ export default function Forest() {
 
 
     if (nearForestNPC && !showForestNPCDialog) {
+      addNPCInteract("ForestNPC");
       setShowForestNPCDialog(true);
       setForestDialogState({ stage: 0, textIdx: 0 });
       return;
@@ -850,6 +852,8 @@ export default function Forest() {
       }
 
       if (inventory.includes("Torch")) {
+        addActivity("Dungeon Minigame");   // <-- ACTIVITY
+        addVisitedArea("Dungeon");         // <-- AREA
         // Simpan waktu sekarang ke localStorage
         localStorage.setItem("lastDungeonEntry", JSON.stringify({
           hour: currentHour,
@@ -916,6 +920,7 @@ export default function Forest() {
       setShowMinigame(false);
       if (minigameResult === "win") {
         setInventory(prev => [...prev, "Wild Fruit"]);
+        addActivity("Wild Fruit Minigame");
         setStatus(prev => ({ ...prev, happiness: Math.min(prev.happiness + 20, 100) }));
       } else {
         setStatus(prev => ({ ...prev, happiness: Math.max(prev.happiness - 20, 0) }));
@@ -1787,6 +1792,7 @@ export default function Forest() {
                           }));
                           return newInv;
                         });
+                        addActivity("Chop Wood");
                       }
 
                   }, 800);

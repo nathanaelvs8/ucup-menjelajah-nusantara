@@ -388,6 +388,7 @@ useEffect(() => {
     setPlayerInventory(prev => {
         return [...prev, item.name];
     });
+    addActivity("Buy Item");
 
     setItemStock(prev => {
       const updatedStock = { ...prev };

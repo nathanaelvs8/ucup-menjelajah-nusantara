@@ -4,6 +4,7 @@ import kailPancing from "../assets/images/kail.png";
 import "./Fishing.css";
 import { getGreeting } from "./utils";
 import { itemDetails } from "./Inventory.jsx";
+import { addActivity } from "./utils";
 import inventoryIcon from "../assets/ui/Inventory.png";
 import Inventory from './Inventory.jsx'; 
 import { useNavigate } from "react-router-dom";
@@ -204,6 +205,7 @@ setKailTop(`${depth}px`);
           );
           return newInv;
         });
+        addActivity("Fishing");
 
         setStage(1);
         setPower(0);

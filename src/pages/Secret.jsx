@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import "./Secret.css";
 import craftingRecipes from "./CraftingRecipes.js";
 import { getGreeting } from "./utils";
+import { addNPCInteract } from "./utils"; // Import di paling atas (jika belum)
 import Inventory from './Inventory.jsx';
 import { itemIcons, itemDetails } from "./Inventory.jsx";
 import inventoryIcon from "../assets/ui/Inventory.png";
@@ -17,6 +18,9 @@ import sleepIcon from "../assets/ui/Sleep.png";
 import happyIcon from "../assets/ui/Happiness.png";
 import cleanIcon from "../assets/ui/Cleanliness.png";
 import AngelNPCImg from "../assets/NPC/AngelNPC.jpg";
+import secret1 from "../assets/audio/secret1.mp3";
+import secret2 from "../assets/audio/secret2.mp3";
+
 
 const MAP_WIDTH = 4616;
 const MAP_HEIGHT = 3464;
@@ -159,6 +163,12 @@ export default function Secret() {
 
   const [, forceUpdate] = useState(0);
 
+  const [finalRitualAnim, setFinalRitualAnim] = useState(false);
+  const [finalAnimPhase, setFinalAnimPhase] = useState(0); // 0: idle, 1: angel jalan ke char, 2: naik bareng
+  const [angelFinalPos, setAngelFinalPos] = useState({ ...angelNPCPos });
+  const [charFinalPos, setCharFinalPos] = useState({ ...position });
+
+
   const openInventory = () => {
     forceUpdate(v => v + 1);   // trigger re-render
     setInventoryVisible(true);
@@ -179,6 +189,30 @@ export default function Secret() {
       Math.pow(charCenterY - ritualCircleCenterY, 2)
     ) <= ritualCircleRadius
   );
+
+  const audioRef = useRef(null);
+
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (ritualCirclePermanent) {
+      audioRef.current.pause();
+      audioRef.current.src = secret2;
+      audioRef.current.currentTime = 0;
+      audioRef.current.load();
+      setTimeout(() => {
+        audioRef.current.play().catch(() => {});
+      }, 1);
+    } else {
+      audioRef.current.pause();
+      audioRef.current.src = secret1;
+      audioRef.current.currentTime = 0;
+      audioRef.current.load();
+      setTimeout(() => {
+        audioRef.current.play().catch(() => {});
+      }, 1);
+    }
+  }, [ritualCirclePermanent]);
+
 
   useEffect(() => {
     let frame = 0;
@@ -221,14 +255,22 @@ export default function Secret() {
     const itemIndex = inventory.findIndex(item => item === itemName);
     if (itemIndex === -1) return;
     
+    if (itemName === "Archipelago Talisman") {
+      setInventoryVisible(false); // Tutup inventory/modal dulu
+      setShowCraftModal(false);
+      setShowEncyclopedia(false);
 
-    const effectFn = itemDetails[itemName]?.useEffect;
-    if (effectFn) {
-      setStatus(prev => effectFn(prev));
-      alert(`${itemName} used!`);
-    } else {
-      alert(`Used ${itemName}`);
+      // Setelah modal tertutup, tunggu 2 detik, baru mulai animasi final
+      setTimeout(() => {
+        setFinalRitualAnim(true);
+        setFinalAnimPhase(1); // mulai animasi angel jalan ke char
+        setAngelFinalPos({ ...angelNPCPos });
+        setCharFinalPos({ ...position });
+      }, 2000);
+
+      return;
     }
+
 
     // Remove item dari inventory
     const newInventory = [...inventory];
@@ -464,6 +506,47 @@ export default function Secret() {
     setNearSecretBox(near);
   }, [position]);
 
+  useEffect(() => {
+    if (!finalRitualAnim) return;
+    if (finalAnimPhase === 1) {
+      // Angel bergerak ke posisi karakter
+      const speed = 7.5;
+      const interval = setInterval(() => {
+        setAngelFinalPos(angel => {
+          const dx = charFinalPos.x - angel.x;
+          const dy = charFinalPos.y - angel.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < speed) {
+            setFinalAnimPhase(2); // next: naik bareng
+            return { ...angel, x: charFinalPos.x, y: charFinalPos.y };
+          }
+          return {
+            x: angel.x + (dx / dist) * speed,
+            y: angel.y + (dy / dist) * speed
+          };
+        });
+      }, 16);
+      return () => clearInterval(interval);
+    }
+    if (finalAnimPhase === 2) {
+      // Angel dan char naik ke langit
+      let step = 0;
+      function goUp() {
+        setAngelFinalPos(angel => ({ ...angel, y: angel.y - 7 }));
+        setCharFinalPos(char => ({ ...char, y: char.y - 7 }));
+        step += 1;
+        if (step > 100) {
+          setTimeout(() => {
+            localStorage.setItem("gameFinished", "true");
+            window.location.href = "/ending";
+          }, 1100);
+        } else {
+          requestAnimationFrame(goUp);
+        }
+      }
+      goUp();
+    }
+  }, [finalRitualAnim, finalAnimPhase]);
 
 
   // === Sprite frame animation ===
@@ -524,41 +607,16 @@ export default function Secret() {
 
   return (
     <div className="viewport">
+      <div className="ritual-overlay-animate" />
 
-    {!hasTalisman && (
-        <div
-          style={{
-            position: "fixed",
-            left: 0,
-            top: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(20,13,30,0.78)",
-            zIndex: 2000,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              color: "#ffe26b",
-              background: "rgba(0,0,0,0.86)",
-              borderRadius: 22,
-              fontSize: 32,
-              padding: "48px 56px",
-              boxShadow: "0 8px 44px #000a",
-              fontWeight: 700,
-              border: "3.5px solid #fbe9b4",
-              textAlign: "center",
-              maxWidth: 480,
-              lineHeight: 1.3,
-            }}
-          >
-            You can’t do anything here without the <span style={{color:"#e4b531"}}>Archipelago Talisman</span>.
-          </div>
-        </div>
-      )}
+    <audio ref={audioRef} autoPlay loop />
+
+    {!hasTalisman && !inventoryVisible && !showCraftModal && !showEncyclopedia && (
+      <div className="talisman-warning">
+        You can’t do anything here without the <span className="talisman-highlight">Archipelago Talisman</span>.
+      </div>
+    )}
+
 
       <div className="time-display">
         <div className="clock-text">{days[currentDayIndex]}, {formatTime(currentHour, currentMinute)}</div>
@@ -572,13 +630,13 @@ export default function Secret() {
         }}
       >
 
-      {hasTalisman && (
+      {(hasTalisman || finalRitualAnim) && (
         <div
           className="angel-npc"
           style={{
             position: "absolute",
-            left: angelNPCPos.x,
-            top: angelNPCPos.y + angelFloatY,
+            left: finalRitualAnim ? angelFinalPos.x : angelNPCPos.x,
+            top: finalRitualAnim ? angelFinalPos.y : (angelNPCPos.y + angelFloatY),
             width: 80,
             height: 64,
             backgroundImage: `url(${AngelNPCImg})`,
@@ -590,41 +648,39 @@ export default function Secret() {
         />
       )}
 
+
             {/* Lingkaran ritual (animasi & permanen) — DILETAKKAN DI ATAS, SEBELUM PLAYER DAN ANGEL */}
-      {(showRitualAnim || ritualCirclePermanent) && (
+        {(showRitualAnim || ritualCirclePermanent) && (
+          <div
+            className="ritual-fire-circle"
+            style={{
+              left: angelNPCPos.x + 40 - 520,
+              top: angelNPCPos.y + 32 - 520,
+            }}
+          >
+          <div className="ritual-fire-border"></div> 
+            <div className="ritual-fire-outer"></div>
+            <div className="ritual-fire-inner"></div>
+          </div>
+        )}
+
+
+
+      {character && (
         <div
+          className="character"
           style={{
-            position: "absolute",
-            left: angelNPCPos.x + 40 - 520,
-            top: angelNPCPos.y + 32 - 520,
-            width: 1040,
-            height: 1040,
-            borderRadius: "50%",
-            border: "12px solid orange",
-            boxShadow: `0 0 220px 120px #ff670055, 0 0 580px 120px #ffae1f33`,
-            background: "radial-gradient(circle, #f7ad43cc 58%, #b0270a99 99%, transparent 100%)",
-            zIndex: 10, // lebih kecil dari zIndex player/angel-npc (zIndex 40)
-            pointerEvents: "none"
+            left: finalRitualAnim ? charFinalPos.x : position.x,
+            top: finalRitualAnim ? charFinalPos.y : position.y,
+            backgroundImage: `url(${character.sprite})`,
+            backgroundPosition: getSpriteOffset(),
+            width: SPRITE_SIZE,
+            height: SPRITE_SIZE,
+            position: "absolute"
           }}
-        />
+        ></div>
       )}
 
-
-
-        {character && (
-          <div
-            className="character"
-            style={{
-              left: position.x,
-              top: position.y,
-              backgroundImage: `url(${character.sprite})`,
-              backgroundPosition: getSpriteOffset(),
-              width: SPRITE_SIZE,
-              height: SPRITE_SIZE,
-              position: "absolute"
-            }}
-          ></div>
-        )}
 
       <div
         className="island-circle-debug"
@@ -636,21 +692,6 @@ export default function Secret() {
           pointerEvents: "none"
         }}
       />
-
-      <div
-        style={{
-          position: "absolute",
-          left: secretBoxArea.x,
-          top: secretBoxArea.y,
-          width: secretBoxArea.w,
-          height: secretBoxArea.h,
-          background: "rgba(180, 60, 255, 0.16)",
-          border: "2px dashed #e250ff",
-          zIndex: 55,
-          pointerEvents: "none"
-        }}
-      />
-
       </div>
 
       
@@ -658,6 +699,8 @@ export default function Secret() {
       
 
       {/* UI status bar, gold, inventory, craft, encyclopedia */}
+  {!finalRitualAnim && (
+  <>
       <div className="status-ui">
         <div className="status-left">
           <div className="greeting-ui">{getGreeting(currentHour, username)}</div>
@@ -701,6 +744,8 @@ export default function Secret() {
           </button>
         </div>
       </div>
+    </>
+  )}
 
 
     {inventoryVisible && (
@@ -1045,6 +1090,7 @@ export default function Secret() {
           if (hasTalisman && nearAngel && !angelDone) {
             // Jika ritualCirclePermanent sudah true, dialog ke-2!
             if (ritualCirclePermanent) {
+              addNPCInteract("SecretNPC");
               setShowAngelDialog(true);
               setAngelDialogState({ stage: 99, textIdx: 0 }); // stage 99 khusus suruh pakai talisman
             } else {
@@ -1086,9 +1132,9 @@ export default function Secret() {
           onFinish={() => {
             setShowRitualAnim(false);
             setRitualCirclePermanent(true);
-            // Lanjutkan ke logic event ritual atau ending di sini kalau perlu
           }}
         />
+
       )}
 
       {/* Analog controls */}
@@ -1270,6 +1316,7 @@ function AngelNPCDialogPanel({ state, setState, setShowDialog, username, onRitua
 
   // Render dialog bubble
   return (
+    
     <div
       className="npc-dialog-panel"
       style={{

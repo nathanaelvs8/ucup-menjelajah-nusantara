@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import "./Market.css";
 import "./Gameplay.css";
 import { getGreeting } from "./utils";
+import { addActivity } from "./utils";
 import craftingRecipes from "./CraftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import CraftIcon from "../assets/ui/Craft.png";
@@ -30,9 +31,8 @@ const MAP_HEIGHT = 1600;
 const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 const marketZones = [
-  { x: 450, y: 700, width: 650, height: 650, name: "Toko Peralatan" },
-  { x: 600, y: -100, width: 650, height: 650, name: "Toko Senjata" },
-  { x: 1300, y: 530, width: 450, height: 300, name: "Mesin Slot" },
+  { x: 450, y: 700, width: 650, height: 650, name: "Market" },
+  { x: 1300, y: 530, width: 450, height: 300, name: "Slot Machine" },
 ];
 
 export default function Market() {
@@ -109,11 +109,12 @@ const generateNumber = () => {
 const startSlot = () => {
   if (isSpinning) return;
   if (money < 1000) {
-    alert("Gold tidak cukup untuk bermain mesin slot!");
+    alert("Gold is not enough to play slot machines!");
     return;
   }
   
   setIsSpinning(true);
+  addActivity("Slot Machine");
   setMoney(prev => prev - 1000);
 
   let count = 0;
@@ -310,9 +311,9 @@ const handleInteract = () => {
   );
 
   if (zone) {
-    if (zone.name === "Mesin Slot") {
+    if (zone.name === "Slot Machine") {
       setShowSlotMachine(true);
-    } else if (zone.name === "Toko Peralatan") {
+    } else if (zone.name === "Market") {
       setShowShop(true);
     } else {
       alert(`🛒 Interaksi dengan ${zone.name}`);
@@ -508,10 +509,36 @@ useEffect(() => {
         <p className="event-text">
           {currentZoneName
             ? `🛒 Press Interact to enter ${currentZoneName}`
-            : "⚠️ There's nothing to interact with here."}
+            : "🔙 Interact to return to Gameplay"}
         </p>
-        <button className="event-button" onClick={handleInteract}>Interact</button>
+        <button
+          className="event-button"
+          onClick={() => {
+            if (currentZoneName === "Slot Machine" || currentZoneName === "Market") {
+              handleInteract();
+            } else {
+              // Save state before keluar
+              const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+              localStorage.setItem("playerData", JSON.stringify({
+                ...saved,
+                status,
+                money,
+                inventory,
+              }));
+              localStorage.setItem("playerTime", JSON.stringify({
+                startTimestamp: Date.now(),
+                savedMinute: currentMinute,
+                savedHour: currentHour,
+                savedDay: currentDayIndex,
+              }));
+              window.location.href = "/gameplay";
+            }
+          }}
+        >
+          {currentZoneName ? "Interact" : "Back to Gameplay"}
+        </button>
       </div>
+
       <div className="analog-controls">
         <div className="analog-up-row">
           <button className="arrow up"
@@ -957,41 +984,6 @@ useEffect(() => {
       <div className="time-display">
         <div className="clock-text">{days[currentDayIndex]}, {formatTime(currentHour, currentMinute)}</div>
       </div>
-
-      <button
-        style={{
-          position: "fixed",
-          bottom: "20px",
-          left: "50%",
-          transform: "translateX(-50%)",
-          padding: "10px 20px",
-          fontSize: "16px",
-          background: "#444",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          cursor: "pointer",
-          zIndex: 99,
-        }}
-        onClick={() => {
-          const saved = JSON.parse(localStorage.getItem("playerData")) || {};
-          localStorage.setItem("playerData", JSON.stringify({
-            ...saved,
-            status,
-            money,
-            inventory,
-          }));
-          localStorage.setItem("playerTime", JSON.stringify({
-            startTimestamp: Date.now(),
-            savedMinute: currentMinute,
-            savedHour: currentHour,
-            savedDay: currentDayIndex,
-          }));
-          window.location.href = "/gameplay";
-        }}
-      >
-        🔙 Back to Gameplay
-      </button>
     </div>
     </>
   );

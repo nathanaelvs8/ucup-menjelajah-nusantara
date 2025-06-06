@@ -324,45 +324,53 @@ export default function Inventory({ inventory, onUseItem, onSellItem, canUseTali
 
     // Tooltip di posisi global, bukan relatif ke modal
     const rect = itemElement.getBoundingClientRect();
+    let left = rect.right + 8;
+    let top = rect.top + rect.height / 2;
+
+    // Ukuran minimum/maksimum tooltip
+    const TOOLTIP_WIDTH = 280; // Boleh 220-340px, sesuai di Tooltip
+    const PADDING = 8;
+
+    // Kalau tooltip bakal keluar kanan layar, geser masuk ke kiri slot
+    if (left + TOOLTIP_WIDTH + PADDING > window.innerWidth) {
+      left = rect.left - TOOLTIP_WIDTH - 8;
+      if (left < PADDING) left = PADDING; // Biar gak mentok kiri
+    }
+
     setTooltipPos({
-      top: rect.top + rect.height / 2,
-      left: rect.right + 8, // Jarak ke kanan dari slot
+      top,
+      left,
     });
+
   }, [selectedIndex]);
 
   return (
     <div style={{ position: "relative", width: "100%", height: "100%" }} ref={containerRef}>
+    <div className="inventory-scroll-area">
       <div
-        className="inventory-grid"
-        style={{
-          gridTemplateColumns: "repeat(10, 1fr)",
-          gridTemplateRows: "repeat(10, 1fr)",
-          gap: "6px",
-          width: "100%",
-          height: "400px",
-        }}
-      >
-        {paddedInventory.map((item, i) => (
+        className="inventory-grid">
+        {Array.from({ length: 100 }).map((_, idx) => (
           <div
-            key={i}
-            ref={(el) => (itemRefs.current[i] = el)}
             className="inventory-slot"
-            onClick={() => item && setSelectedIndex(i === selectedIndex ? null : i)}
+            key={idx}
+            onClick={() => inventory[idx] && setSelectedIndex(idx)}
             style={{
-              border: selectedIndex === i && item ? "2px solid #4ade80" : "1px solid #555",
-              background: item ? "#222" : "#1a1a1a",
-              cursor: item ? "pointer" : "default",
+              border: selectedIndex === idx && inventory[idx] ? "2px solid #4ade80" : "1px solid #555",
+              background: inventory[idx] ? "#222" : "#1a1a1a",
+              cursor: inventory[idx] ? "pointer" : "default",
               position: "relative",
               overflow: "hidden"
             }}
+            ref={el => (itemRefs.current[idx] = el)}
           >
-            {item && itemIcons[item] &&
-              <img src={itemIcons[item]} alt={item} style={{
-                width: "32px", height: "32px", display: "block"
-              }} />
+            {inventory[idx] && itemIcons[inventory[idx]] &&
+              <img src={itemIcons[inventory[idx]]} alt={inventory[idx]} style={{ width: "32px", height: "32px" }} />
             }
           </div>
         ))}
+
+      </div>
+
       </div>
       {selectedIndex !== null && paddedInventory[selectedIndex] && (
         <Tooltip

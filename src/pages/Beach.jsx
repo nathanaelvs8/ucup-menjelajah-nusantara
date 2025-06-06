@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
 import "./Beach.css";
-import { getGreeting } from "./utils";
+
+import { getGreeting, addActivity, addNPCInteract } from "./utils";
 import craftingRecipes from "./CraftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import CraftIcon from "../assets/ui/Craft.png";
@@ -384,6 +385,7 @@ useEffect(() => {
         setTimeout(() => {
           setShowRockMinigame(false);
           setInventory(prev => [...prev, "Rusty Iron"]);
+          addActivity("Rock Mining");
           setShowRustyResult(true); // Tampilkan banner!
           setGameStage(1);
           setPointerX(0);
@@ -449,6 +451,7 @@ useEffect(() => {
     }
 
     if (inSunbatheZone) {
+      addActivity("Sunbathe");
       setIsSunbathing(true);
       setSkipRequested(false);
       const isLeft = position.x < 825;
@@ -513,6 +516,7 @@ useEffect(() => {
     }
 
     if (nearBeachNPC) {
+      addNPCInteract("BeachNPC");
       setShowBeachNPCDialog(true);
       setBeachNPCDialogState({ stage: 0, textIdx: 0 });
       return;
@@ -640,9 +644,10 @@ useEffect(() => {
                   character,
                   position
                 }));
-    return updated;
-  });
-}}
+                return updated;
+                addActivity("Coconut Minigame");
+              });
+            }}
 
             className="coconut-video"
           />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
-import { getGreeting } from "./utils";
+import { addVisitedArea, addNPCInteract, getGreeting } from "./utils";
 import craftingRecipes from "./craftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import { itemDetails } from "./Inventory.jsx";
@@ -155,7 +155,7 @@ export default function Gameplay() {
   const [mysticNotif, setMysticNotif] = useState(false);
   const [mysticNotifFade, setMysticNotifFade] = useState(false);
 
-
+  
 
   const riverZones = [
     { x: 2990, y: 2080, w: 120, h: 50 },
@@ -180,26 +180,92 @@ export default function Gameplay() {
     //if (alreadyGot) return null;
 
     // Fungsi validasi spawn
-    function isInBlockedZone(x, y) {
-      // Cek semua zone, harus sama logika collision-mu
-      // (pake area tengah bawah karakter biar adil)
-      const charSize = 64;
-      // Cek riverZones
-      const inRiver = riverZones.some(zone =>
-        x + charSize/2 >= zone.x && x + charSize/2 <= zone.x + zone.w &&
-        y + charSize >= zone.y && y + charSize <= zone.y + zone.h
-      );
-      // Ocean block, bottom block, triangle
-      const inBottom = x + charSize/2 >= 0 && x + charSize/2 <= 2316 &&
-                      y + charSize >= 3150 && y + charSize <= 3554;
-      const inRect1 = x + charSize/2 >= 1500 && x + charSize/2 <= 5000 && y + charSize >= 0 && y + charSize <= 350;
-      const inRect2 = x + charSize/2 >= 2970 && x + charSize/2 <= 4670 && y + charSize >= 350 && y + charSize <= 1300;
-      const inRect3 = x + charSize/2 >= 3080 && x + charSize/2 <= 4680 && y + charSize >= 1300 && y + charSize <= 2100;
-      const inTri1 = (x + charSize/2 >= 2920 && x + charSize/2 <= 4920 && y + charSize >= 2100 && y + charSize <= 4100
-        && y + charSize < ((2000/2000) * ((x + charSize/2) - 2920) + 2100));
-      // Tambah zone lain kalau perlu
-      return inRiver || inBottom || inRect1 || inRect2 || inRect3 || inTri1;
-    }
+  function isInBlockedZone(x, y) {
+    const charSize = 64;
+    // Cek 5 titik utama: 4 sudut & tengah bawah
+    const points = [
+      { x: x, y: y },
+      { x: x + charSize, y: y },
+      { x: x, y: y + charSize },
+      { x: x + charSize, y: y + charSize },
+      { x: x + charSize / 2, y: y + charSize }
+    ];
+
+    // RIVER ZONES
+    const inRiver = points.some(pt =>
+      riverZones.some(zone =>
+        pt.x >= zone.x && pt.x <= zone.x + zone.w &&
+        pt.y >= zone.y && pt.y <= zone.y + zone.h
+      )
+    );
+    // FOREST
+    const inForest = points.some(pt =>
+      pt.x >= 0 && pt.x <= 900 && pt.y >= 0 && pt.y <= 1250
+    );
+    // MOUNTAIN (pakai boundary dari movement-mu)
+    const inMountain = points.some(pt => {
+      // triangle gunung
+      const triX = pt.x - 1240, triY = pt.y - 850, triW = 620, triH = 350;
+      const inTri = triX >= 0 && triX <= triW && triY >= 0 && triY <= triH &&
+        triY >= Math.abs(triX - triW / 2) * (triH / (triW / 2));
+      // block gunung
+      const inRectA = pt.x >= 1200 && pt.x <= 2100 && pt.y >= 1200 && pt.y <= 1450;
+      const inRectB = pt.x >= 1200 && pt.x <= 2100 && pt.y >= 1450 && pt.y <= 1700;
+      return inTri || inRectA || inRectB;
+    });
+    // LAKE (pakai ellipse)
+    const inLake = points.some(pt => {
+      const cx = 395, cy = 1775, rx = 275, ry = 125;
+      const dx = pt.x - cx, dy = pt.y - cy;
+      return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1;
+    });
+    // BOTTOM BLOCK
+    const inBottom = points.some(pt =>
+      pt.x >= 0 && pt.x <= 2316 && pt.y >= 3150 && pt.y <= 3554
+    );
+    // MARKET
+    const inMarket = points.some(pt =>
+      pt.x >= 3100 && pt.x <= 3450 && pt.y >= 2780 && pt.y <= 3040
+    );
+    // HOUSE ZONE
+    const inHouse = points.some(pt =>
+      pt.x >= 490 && pt.x <= 750 && pt.y >= 2240 && pt.y <= 2475
+    );
+    // OCEAN BLOCKS
+    const inRect1 = points.some(pt =>
+      pt.x >= 1500 && pt.x <= 5000 && pt.y >= 0 && pt.y <= 350
+    );
+    const inRect2 = points.some(pt =>
+      pt.x >= 2970 && pt.x <= 4670 && pt.y >= 350 && pt.y <= 1300
+    );
+    const inRect3 = points.some(pt =>
+      pt.x >= 3080 && pt.x <= 4680 && pt.y >= 1300 && pt.y <= 2100
+    );
+    // OCEAN TRIANGLE
+    const inTri1 = points.some(pt =>
+      pt.x >= 2920 && pt.x <= 4920 &&
+      pt.y >= 2100 && pt.y <= 4100 &&
+      pt.y < ((2000/2000) * (pt.x - 2920) + 2100)
+    );
+    // BEACH
+    const inBeach = points.some(pt =>
+      (
+        (pt.x >= 1100 && pt.x <= 1200 && pt.y >= 0 && pt.y <= 100) ||
+        (pt.x >= 1200 && pt.x <= 1300 && pt.y >= 0 && pt.y <= 250) ||
+        (pt.x >= 1300 && pt.x <= 1400 && pt.y >= 0 && pt.y <= 400) ||
+        (pt.x >= 1400 && pt.x <= 1700 && pt.y >= 0 && pt.y <= 600) ||
+        (pt.x >= 1700 && pt.x <= 2100 && pt.y >= 290 && pt.y <= 690) ||
+        (pt.x >= 2000 && pt.x <= 3200 && pt.y >= 350 && pt.y <= 800)
+      )
+    );
+
+    // AREA TERLARANG = salah satu true
+    return inRiver || inForest || inMountain || inLake || inBottom ||
+          inMarket || inHouse ||
+          inRect1 || inRect2 || inRect3 || inTri1 || inBeach;
+  }
+
+
 
     let x, y, tryCount = 0;
     do {
@@ -216,6 +282,8 @@ export default function Gameplay() {
 
   const audioRef = useRef(null);
 
+  
+
   useEffect(() => {
     const currentDiscovered = getDiscoveredItems();
     let changed = false;
@@ -225,6 +293,7 @@ export default function Gameplay() {
         changed = true;
       }
     }
+    
     if (changed) {
       localStorage.setItem("discoveredItems", JSON.stringify(currentDiscovered));
       setDiscoveredItems([...currentDiscovered]);
@@ -679,18 +748,21 @@ export default function Gameplay() {
     }
 
     if (nearHouseNPC) {
+      addNPCInteract("HomeNPC"); 
       setShowHouseNPCDialog(true);
       setNPCDialogState({ stage: 0, textIdx: 0 });
       return;
     }
 
     if (nearLakeNPC) {
+      addNPCInteract("LakeNPC");
       setShowLakeNPCDialog(true);
       setLakeDialogState({ stage: 0, textIdx: 0 });
       return;
     }
 
     if (nearMountainNPC) {
+      addNPCInteract("MountainNPC");
       setShowMountainNPCDialog(true);
       setMountainDialogState({ stage: 0, textIdx: 0, followUp: false });
       return;
@@ -708,9 +780,11 @@ export default function Gameplay() {
     }));
 
     if (inHouseZone) {
+      addVisitedArea("Home");
       window.location.href = "/house";
     } else if (nearLakeZone) {
       if (inventory.includes("Rod")) {
+        addVisitedArea("Lake");
         window.location.href = "/fishing";
       } else {
         setLakeRodNotif(true);
@@ -721,20 +795,22 @@ export default function Gameplay() {
     } else if (nearBeachZone) {
       // Simpan posisi terakhir di main map sebelum masuk beach
       localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
-      // JANGAN overwrite playerData.position di sini!
+      addVisitedArea("Beach");
       window.location.href = "/beach";
     } else if (inMarketZone) {
+      addVisitedArea("Market");
       window.location.href = "/market";
     } else if (nearForestZone) {
       // Simpan posisi terakhir sebelum masuk forest
       localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
+      addVisitedArea("Forest");
       window.location.href = "/forest";
     } else if (atMysticShore) {
       if (inventory.includes("Boat")) {
         // --- Tambahan: simpan posisi terakhir sebelum ke Secret
         localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
-        // --- (opsional) simpan juga status, uang, dsb. kalau mau benar2 restore
-
+        addVisitedArea("Mystic Shore");
+        addVisitedArea("Isle of the Sacred Oath");
         window.location.href = "/secret"; // atau "/Secret" sesuai routing-mu
       }
     }
@@ -1053,6 +1129,7 @@ return (
           style={{ zIndex: 1100, minHeight: 350, maxHeight: 600, overflowY: 'auto', position: "relative" }}
           onClick={e => e.stopPropagation()}
         >
+        
           <div style={{ fontWeight: "bold", fontSize: 20, marginBottom: 16, color: "#ffe66a" }}>
             Crafting
           </div>
@@ -2548,6 +2625,4 @@ function MountainNPCDialogPanel({
     </div>
   );
 
-
-  
 }

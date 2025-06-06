@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
 import "./House.css";
 import { getGreeting } from "./utils";
+import { addActivity } from "./utils";
 import craftingRecipes from "./CraftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import CraftIcon from "../assets/ui/Craft.png";
@@ -408,6 +409,7 @@ else if (zone.name === "Bed") {
   setPositionBeforeInteract(position); // simpan posisi semula
   keysPressed.current = {};
   setIsSleeping(true);
+  addActivity("Sleep");
   setShowSleepOverlay(true);
 
   const kasurX = 470;
@@ -460,6 +462,7 @@ else if (zone.name === "Bathub") {
   });
 }
   setIsBathing(true);
+  addActivity("Bath");
   setBathStartTime(Date.now());
   keysPressed.current = {}; // blok input
 
@@ -486,6 +489,7 @@ else if (zone.name === "Sweeper") {
   }
 
   setIsSweeping(true);
+  addActivity("Sweep");
   setSweepStartTime(Date.now());
   keysPressed.current = {};
 
@@ -516,6 +520,7 @@ else if (zone.name === "Picture") {
     });
   }
   setShowChillImage(true);
+  addActivity("Look Painting");
 
   // Mulai interval untuk tambah happiness tiap 3 detik
   if (happinessIntervalRef.current) clearInterval(happinessIntervalRef.current);
@@ -1218,6 +1223,7 @@ useEffect(() => {
 
       <p>💧 SINK</p>
     <button onClick={() => {
+      addActivity("Drink");
       setStatus(prev => ({ ...prev, meal: Math.min(prev.meal + 10, 100) }));
     }}>Drink directly (+10 Meal)</button>
 

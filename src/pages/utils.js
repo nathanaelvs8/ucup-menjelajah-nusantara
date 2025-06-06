@@ -9,3 +9,32 @@ export function getGreeting(currentHour, username = "Player") {
   }
   return `${greeting}, ${username}`;
 }
+
+// src/utils.js
+
+// Fungsi: Tambah area ke visitedAreas
+export function addVisitedArea(areaName) {
+  let visited = JSON.parse(localStorage.getItem("visitedAreas") || "[]");
+  if (!visited.includes(areaName)) {
+    visited.push(areaName);
+    localStorage.setItem("visitedAreas", JSON.stringify(visited));
+  }
+}
+
+// Fungsi (opsional): Tambah aktivitas ke activityFlags
+export function addActivity(activityName) {
+  let flags = JSON.parse(localStorage.getItem("activityFlags") || "{}");
+  if (!flags[activityName]) {
+    flags[activityName] = true;
+    localStorage.setItem("activityFlags", JSON.stringify(flags));
+  }
+}
+
+// Fungsi (opsional): Tambah NPC yang pernah diinteraksi
+export function addNPCInteract(npcName) {
+  let npcs = JSON.parse(localStorage.getItem("interactedNPCs") || "[]");
+  if (!npcs.includes(npcName)) {
+    npcs.push(npcName);
+    localStorage.setItem("interactedNPCs", JSON.stringify(npcs));
+  }
+}
