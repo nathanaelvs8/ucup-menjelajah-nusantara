@@ -455,6 +455,7 @@ export default function Gameplay() {
 }, []);
 
 
+
   const formatTime = (h, m) => `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 
   useEffect(() => {
@@ -2471,6 +2472,11 @@ function MountainNPCDialogPanel({
           setState({ ...state, textIdx: state.textIdx + 1 });
         }
       } else {
+        if (state.stage === 3) { // 3 = Nevermind di menu utama
+          setShowDialog(false);
+          return;
+        }
+
         const nextIdx = state.textIdx + 1;
         const nextStep = dialogScript[state.stage][nextIdx];
         if (nextStep?.endQuest) {

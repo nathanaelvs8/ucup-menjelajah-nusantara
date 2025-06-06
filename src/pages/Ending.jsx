@@ -36,7 +36,7 @@ const AREA_LIST = [
   "Home", "Lake", "Forest", "Dungeon", "Beach", "Market", "Isle of the Sacred Oath"
 ];
 const NPC_LIST = [
-  "HomeNPC", "LakeNPC", "MountainNPC", "BeachNPC", "ForestNPC", "DungeonNPC", "SecretNPC"
+  "HomeNPC", "LakeNPC", "MountainNPC", "BeachNPC", "ForestNPC", "SecretNPC"
 ];
 
 const REVEAL_ORDER = [

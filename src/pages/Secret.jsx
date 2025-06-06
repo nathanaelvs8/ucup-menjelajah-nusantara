@@ -1089,9 +1089,9 @@ export default function Secret() {
         onClick={() => {
           if (angelDone) return;
           if (hasTalisman && nearAngel && !angelDone) {
+            addNPCInteract("SecretNPC");
             // Jika ritualCirclePermanent sudah true, dialog ke-2!
             if (ritualCirclePermanent) {
-              addNPCInteract("SecretNPC");
               setShowAngelDialog(true);
               setAngelDialogState({ stage: 99, textIdx: 0 }); // stage 99 khusus suruh pakai talisman
             } else {
