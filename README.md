@@ -54,11 +54,11 @@ Players begin the game by logging in with Google or as a guest, entering a chara
 
 ## Screenshots / Preview
 
-![Login Page](src/assets/screenshots/LoginPage.png)
-![Gameplay Preview](src/assets/screenshots/GameplayPreview.png)
-![NPC Dialog](src/assets/screenshots/DialogPreview.png)
-![Minigame Preview](src/assets/screenshots/MinigamePreview.png)
-![Fishing Minigame](src/assets/screenshots/Minigame2Preview.png)
-![Shop Preview](src/assets/screenshots/ShopPreview.png)
+![Login Page](src/screenshots/LoginPage.png)
+![Gameplay Preview](src/screenshots/GameplayPreview.png)
+![NPC Dialog](src/screenshots/DialogPreview.png)
+![Minigame Preview](src/screenshots/MinigamePreview.png)
+![Fishing Minigame](src/screenshots/Minigame2Preview.png)
+![Shop Preview](src/screenshots/ShopPreview.png)
 
 ---
