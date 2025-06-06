@@ -12,9 +12,11 @@
 
 ## Group Members
 
-- 
-- 
-- 
+- Clement Aelwyn Wirawan - 00000105577
+- Josh Reagan Wiselim - 00000105516
+- Michael - 00000106013
+- Nathanael Valentino Sutanto - 00000105359
+
 ---
 
 ## Gameplay Overview
