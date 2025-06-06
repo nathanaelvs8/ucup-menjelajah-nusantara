@@ -42,3 +42,40 @@
   object-fit: contain;
 }
 
+/* Market.css */
+
+/* Tambahkan/Ganti dengan kode ini */
+.slot-machine-close-btn {
+  position: absolute;
+  /* 1. Posisi yang Responsif */
+  top: 15%;
+  right: 24.5%;
+
+  /* 2. Ukuran Tombol dan Font yang Responsif */
+  width: clamp(35px, 4vw, 50px);
+  height: clamp(35px, 4vw, 50px);
+  font-size: clamp(20px, 2.5vw, 28px);
+  
+  /* Gaya dasar tombol */
+  background-color: rgba(220, 53, 69, 0.8);
+  color: white;
+  border: 2px solid white;
+  border-radius: 50%;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 10000;
+
+  /* Untuk memusatkan 'X' di tengah tombol */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+
+  /* Transisi untuk efek hover yang mulus */
+  transition: opacity 0.25s ease-in-out;
+}
+
+/* 3. Efek Hover Transparan */
+.slot-machine-close-btn:hover {
+  opacity: 0.7; /* Mengurangi kelegapan, membuatnya tembus pandang */
+}
