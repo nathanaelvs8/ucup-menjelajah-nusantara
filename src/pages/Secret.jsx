@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import "./Secret.css";
 import craftingRecipes from "./CraftingRecipes.js";
 import { getGreeting } from "./utils";
+import { addItemToInventory } from "./utils";
 import { addNPCInteract } from "./utils"; // Import di paling atas (jika belum)
 import Inventory from './Inventory.jsx';
 import { itemIcons, itemDetails } from "./Inventory.jsx";
@@ -875,7 +876,6 @@ export default function Secret() {
                   }}
                   disabled={!enough || hasResult}
                   onClick={() => {
-                    // Remove bahan dari inventory
                     let newInv = [...inventory];
                     Object.entries(materialCounts).forEach(([mat, qty]) => {
                       for (let i = 0; i < qty; i++) {
@@ -885,7 +885,8 @@ export default function Secret() {
                     });
                     let newMoney = money;
                     if (recipe.gold) newMoney -= recipe.gold;
-                    newInv.push(recipe.result);
+                    // Tambah hasil crafting PAKAI HELPER!
+                    newInv = addItemToInventory(newInv, recipe.result);
                     setInventory(newInv);
                     setMoney(newMoney);
                     addDiscoveredItem(recipe.result);

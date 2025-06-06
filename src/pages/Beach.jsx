@@ -3,6 +3,7 @@ import "./Gameplay.css";
 import "./Beach.css";
 
 import { getGreeting, addActivity, addNPCInteract } from "./utils";
+import { addItemToInventory } from "./utils";
 import craftingRecipes from "./CraftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import CraftIcon from "../assets/ui/Craft.png";
@@ -435,7 +436,7 @@ useEffect(() => {
 
     if (nearGlass && glassPos) {
       setInventory(prev => {
-        const updated = [...prev, "Ancient Glass"];
+        const updated = addItemToInventory(prev, "Ancient Glass");
         localStorage.setItem("playerData", JSON.stringify({
           status,
           money,
@@ -445,6 +446,7 @@ useEffect(() => {
         }));
         return updated;
       });
+
       setGlassPos(null); // hapus dari map
       setShowGlassResult(true); // ⬅️ tampilkan banner
       return;
@@ -636,7 +638,7 @@ useEffect(() => {
               setShowCoconutVideo(false);
               setShowCoconutResult(true);
               setInventory(prev => {
-                const updated = [...prev, "Coconut"];
+                const updated = addItemToInventory(prev, "Coconut");
                 localStorage.setItem("playerData", JSON.stringify({
                   status,
                   money,
@@ -645,8 +647,8 @@ useEffect(() => {
                   position
                 }));
                 return updated;
-                addActivity("Coconut Minigame");
               });
+              addActivity("Coconut Minigame"); // baris ini tetap di luar return
             }}
 
             className="coconut-video"

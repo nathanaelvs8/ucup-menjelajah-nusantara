@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "./Gameplay.css";
 import "./Forest.css";
 import { getGreeting, addActivity, addNPCInteract, addVisitedArea } from "./utils";
+import { addItemToInventory } from "./utils";
 
 import { itemDetails } from "./Inventory.jsx";
 import craftingRecipes from "./CraftingRecipes";
@@ -770,7 +771,7 @@ export default function Forest() {
       // --- Rope Pickup Logic ---
     if (nearRope && ropePos && !inventory.includes("Rope")) {
       setInventory(inv => {
-        const newInv = [...inv, "Rope"];
+        const newInv = addItemToInventory(inv, "Rope");
         // Simpan ke localStorage
         const saved = JSON.parse(localStorage.getItem("playerData")) || {};
         localStorage.setItem(
@@ -779,6 +780,7 @@ export default function Forest() {
         );
         return newInv;
       });
+
       setRopePos(null);
 
       // Update encyclopedia/discovered
@@ -919,7 +921,7 @@ export default function Forest() {
       document.body.removeChild(fade);
       setShowMinigame(false);
       if (minigameResult === "win") {
-        setInventory(prev => [...prev, "Wild Fruit"]);
+        setInventory(prev => addItemToInventory(prev, "Wild Fruit"));
         addActivity("Wild Fruit Minigame");
         setStatus(prev => ({ ...prev, happiness: Math.min(prev.happiness + 20, 100) }));
       } else {
@@ -1331,6 +1333,7 @@ export default function Forest() {
                         onClick={() => {
                           // Remove bahan dari inventory
                           let newInv = [...inventory];
+                          // Buang bahan
                           Object.entries(materialCounts).forEach(([mat, qty]) => {
                             for (let i = 0; i < qty; i++) {
                               const idx = newInv.indexOf(mat);
@@ -1339,7 +1342,8 @@ export default function Forest() {
                           });
                           let newMoney = money;
                           if (recipe.gold) newMoney -= recipe.gold;
-                          newInv.push(recipe.result);
+                          // Tambahkan hasil craft (jika slot masih ada)
+                          newInv = addItemToInventory(newInv, recipe.result);
                           setInventory(newInv);
                           setMoney(newMoney);
                           // Simpan ke localStorage
@@ -1780,19 +1784,19 @@ export default function Forest() {
                     setShowChopFinishImage(false);
                       if (chopResult === "win") {
                         setInventory(prev => {
-                          const newInv = [...prev, "Wood"];
-                          // Ambil semua state, jangan cuma inventory!
+                          const newInv = addItemToInventory(prev, "Wood");
                           const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                           localStorage.setItem("playerData", JSON.stringify({
                             ...saved,
                             inventory: newInv,
-                            status,   // tambahkan ini!
-                            money,    // dan ini!
-                            character // dan ini kalau ada!
+                            status,
+                            money,
+                            character
                           }));
                           return newInv;
                         });
                         addActivity("Chop Wood");
+
                       }
 
                   }, 800);

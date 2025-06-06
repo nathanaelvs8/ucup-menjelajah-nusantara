@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import "./Shop.css";
+import { addItemToInventory } from "./utils";
 import Inventory from "./Inventory.jsx"; // path harus benar, sesuaikan dengan struktur folder kamu
 import inventoryIcon from "../assets/ui/Inventory.png";
 import HappinesPotionIcon from "../assets/inventory-items/HappinesPotion.png";
@@ -376,18 +377,15 @@ useEffect(() => {
   const handleBuy = useCallback((item) => {
     // Pastikan item ada di itemStock dan memiliki info stok
     if (!itemStock[item.id] || itemStock[item.id].stock === 0) {
-      alert("Item habis!");
       return;
     }
     if (playerMoney < item.price) {
-      alert("Gold tidak cukup!");
       return;
     }
 
     setPlayerMoney(prev => prev - item.price);
-    setPlayerInventory(prev => {
-        return [...prev, item.name];
-    });
+    setPlayerInventory(prev => addItemToInventory(prev, item.name));
+
     addActivity("Buy Item");
 
     setItemStock(prev => {

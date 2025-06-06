@@ -38,3 +38,9 @@ export function addNPCInteract(npcName) {
     localStorage.setItem("interactedNPCs", JSON.stringify(npcs));
   }
 }
+
+// utils.js
+export function addItemToInventory(inventory, item) {
+  if (inventory.length >= 100) return inventory;
+  return [...inventory, item];
+}

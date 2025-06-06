@@ -3,6 +3,7 @@ import alatPancing from "../assets/images/alatpancing.png";
 import kailPancing from "../assets/images/kail.png";
 import "./Fishing.css";
 import { getGreeting } from "./utils";
+import { addItemToInventory } from "./utils";
 import { itemDetails } from "./Inventory.jsx";
 import { addActivity } from "./utils";
 import inventoryIcon from "../assets/ui/Inventory.png";
@@ -197,7 +198,7 @@ setKailTop(`${depth}px`);
         alert(`🎉 You caught a ${currentFish}!`);
 
         setInventory((prev) => {
-          const newInv = [...prev, currentFish];
+          const newInv = addItemToInventory(prev, currentFish);
           const saved = JSON.parse(localStorage.getItem("playerData")) || {};
           localStorage.setItem(
             "playerData",
@@ -206,6 +207,7 @@ setKailTop(`${depth}px`);
           return newInv;
         });
         addActivity("Fishing");
+
 
         setStage(1);
         setPower(0);

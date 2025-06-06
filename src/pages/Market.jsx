@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Market.css";
 import "./Gameplay.css";
+import { addItemToInventory } from "./utils";
 import { getGreeting } from "./utils";
 import { addActivity } from "./utils";
 import craftingRecipes from "./CraftingRecipes";

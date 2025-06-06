@@ -68,18 +68,21 @@ export default function Ending() {
     + (npcsDone.length / NPC_LIST.length)
   ) / 5;
 
-  let starCount = 0;
-  if (isGameFinished) {
-    starCount += 1;
-    if (explorePct >= 0.9) {
-      starCount += 2;
-    } else if (explorePct >= 0.3 && explorePct < 0.6) {
-      starCount += 1;
-    }
-    if (starCount > 3) starCount = 3;
-  }
-  // else: biarkan starCount tetap 0
+let starCount = 0;
+if (explorePct >= 0.3 && explorePct < 0.6) {
+  starCount = 1;
+} else if (explorePct >= 0.6) {
+  starCount = 2;
+}
+if (isGameFinished) starCount += 1;
+if (!isGameFinished) starCount = 0;
+if (starCount > 3) starCount = 3;
 
+console.log(
+  "DEBUG starCount:", starCount,
+  "isGameFinished:", isGameFinished,
+  "explorePct:", explorePct
+);
 
   // Animasi states
   const [revealed, setRevealed] = useState({
@@ -90,28 +93,34 @@ export default function Ending() {
   const [descRevealed, setDescRevealed] = useState(false);
 
   // Animasi muncul skor urut, lalu bintang satu per satu
-  useEffect(() => {
-    let order = [...REVEAL_ORDER];
-    let delay = 400;
-    order.forEach((key, idx) => {
-      setTimeout(() => {
-        setRevealed(prev => ({ ...prev, [key]: true }));
-      }, idx * 900 + delay);
-    });
-    // Mulai animasi bintang setelah score terakhir
+useEffect(() => {
+  let order = [...REVEAL_ORDER];
+  let delay = 400;
+  order.forEach((key, idx) => {
     setTimeout(() => {
-      setStarAnimStarted(true);
-      let curr = 0;
-      const interval = setInterval(() => {
-        curr++;
-        setStarsRevealed(curr);
-        if (curr >= starCount) {
-          clearInterval(interval);
-          setTimeout(() => setDescRevealed(true), 700);
-        }
-      }, 670);
-    }, (REVEAL_ORDER.length) * 900 + 600);
-  }, []);
+      setRevealed(prev => ({ ...prev, [key]: true }));
+    }, idx * 900 + delay);
+  });
+
+  // Setelah semua info reveal, baru animasi bintang
+  setTimeout(() => {
+    setStarAnimStarted(true);
+    if (starCount === 0) {
+      setStarsRevealed(0);
+      setTimeout(() => setDescRevealed(true), 600); // Atur delay biar masih smooth
+      return;
+    }
+    let curr = 0;
+    const interval = setInterval(() => {
+      curr++;
+      setStarsRevealed(curr);
+      if (curr >= starCount) {
+        clearInterval(interval);
+        setTimeout(() => setDescRevealed(true), 700);
+      }
+    }, 670);
+  }, (REVEAL_ORDER.length) * 900 + 600);
+}, [starCount]);
 
   useEffect(() => {
     // Cek sudah masuk ending screen
@@ -187,7 +196,7 @@ export default function Ending() {
         {/* Bintang borderOnly selalu render dari awal */}
         <div className="star-row-anim" style={{ minHeight: 68 }}>
           {[0, 1, 2].map(i =>
-            (starAnimStarted && i < starsRevealed) ? (
+            (starAnimStarted && i < starsRevealed && i < starCount) ? (
               <Star
                 key={i}
                 filled={true}
@@ -204,6 +213,7 @@ export default function Ending() {
             )
           )}
         </div>
+
         <h1 className="ending-title-glow" style={{ marginTop: 24 }}>
           {isGameFinished
             ? "Congratulations! You reached the ending!"

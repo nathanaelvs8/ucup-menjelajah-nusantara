@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './Kitchen.css';
 import { addActivity } from "./utils";
+import { addItemToInventory } from "./utils";
 import kitchenBackgroundImage from '../assets/ui/KitchenMG.png'; // Background dapur
 import RecipeBookIcon from '../assets/inventory-items/Recipe Book.png';
 
@@ -286,9 +287,11 @@ export default function Kitchen({
           }
         }
       }
-      tempInventory.push(selectedRecipe.resultItem);
+      // Pakai helper agar hasil masakan hanya masuk kalau slot masih ada
+      tempInventory = addItemToInventory(tempInventory, selectedRecipe.resultItem);
       setInventory(tempInventory);
       addActivity("Cooking");
+
     } else {
       setFeedbackMessage(`Yah, gagal di tahap akhir saat mengatur panas ${selectedRecipe.name}. Makanan tidak jadi.`);
     }

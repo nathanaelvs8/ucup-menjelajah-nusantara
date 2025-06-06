@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
 import { addVisitedArea, addNPCInteract, getGreeting } from "./utils";
+import { addItemToInventory } from "./utils";
 import craftingRecipes from "./craftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import { itemDetails } from "./Inventory.jsx";
@@ -155,7 +156,10 @@ export default function Gameplay() {
   const [mysticNotif, setMysticNotif] = useState(false);
   const [mysticNotifFade, setMysticNotifFade] = useState(false);
 
-  
+  useEffect(() => {
+    localStorage.setItem("gameFinished", "false");
+  }, []);
+
 
   const riverZones = [
     { x: 2990, y: 2080, w: 120, h: 50 },
@@ -733,7 +737,7 @@ export default function Gameplay() {
     // Ambil ripped cloth jika di dekat item
     if (nearCloth && clothPos) {
       setInventory(inv => {
-        const newInv = [...inv, "Ripped Cloth"];
+        const newInv = addItemToInventory(inv, "Ripped Cloth");
         localStorage.setItem("playerData", JSON.stringify({
           character, position, status, money, inventory: newInv
         }));
@@ -1207,10 +1211,12 @@ return (
                     });
                     let newMoney = money;
                     if (recipe.gold) newMoney -= recipe.gold;
-                    newInv.push(recipe.result);
+                    // Tambahkan hasil craft dengan pengecekan 100 item
+                    newInv = addItemToInventory(newInv, recipe.result);
                     setInventory(newInv);
                     setMoney(newMoney);
                     addDiscoveredItem(recipe.result);
+
                     // Simpan ke localStorage
                     const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                     localStorage.setItem("playerData",
@@ -1554,7 +1560,7 @@ return (
           giveFishNail={() => {
             // Dapat Fish Nail (Fish Claw)
             if (!inventory.includes("Fish Nail")) {
-              const newInv = [...inventory, "Fish Nail"];
+              const newInv = addItemToInventory(inventory, "Fish Nail");
               setInventory(newInv);
               addDiscoveredItem("Fish Nail");
             }
@@ -2442,10 +2448,11 @@ function MountainNPCDialogPanel({
       if (nextStep?.giveItem) {
         setInventory(inv => {
           let newInv = inv.filter(x => x !== "Juice Wild Fruit" && x !== "Juice Coconut");
-          newInv.push("Rare Herbal Grass");
+          newInv = addItemToInventory(newInv, "Rare Herbal Grass");
           addDiscoveredItem("Rare Herbal Grass");
           return newInv;
         });
+
         setShowDialog(false);
         return;
       }

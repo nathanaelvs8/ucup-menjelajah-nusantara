@@ -3,6 +3,7 @@ import "./Gameplay.css";
 import "./House.css";
 import { getGreeting } from "./utils";
 import { addActivity } from "./utils";
+import { addItemToInventory } from "./utils";
 import craftingRecipes from "./CraftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import CraftIcon from "../assets/ui/Craft.png";
@@ -961,10 +962,10 @@ useEffect(() => {
                           });
                           let newMoney = money;
                           if (recipe.gold) newMoney -= recipe.gold;
-                          newInv.push(recipe.result);
+                          // Gunakan helper agar hasil craft hanya masuk kalau belum penuh
+                          newInv = addItemToInventory(newInv, recipe.result);
                           setInventory(newInv);
                           setMoney(newMoney);
-                          // Simpan ke localStorage
                           const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                           localStorage.setItem("playerData",
                             JSON.stringify({
@@ -973,6 +974,7 @@ useEffect(() => {
                               money: newMoney
                             })
                           );
+
                         }}
                       >
                         Craft
@@ -1229,8 +1231,7 @@ useEffect(() => {
 
   <button onClick={() => {
     setInventory(prev => {
-      const newInv = [...prev, "Water"];
-      // Sinkronkan ke localStorage biar scene lain (gameplay) kebaca!
+      const newInv = addItemToInventory(prev, "Water");
       const saved = JSON.parse(localStorage.getItem("playerData")) || {};
       localStorage.setItem("playerData", JSON.stringify({
         ...saved,
@@ -1241,6 +1242,7 @@ useEffect(() => {
       }));
       return newInv;
     });
+
     setShowNotification(true);
     setTimeout(() => setShowNotification(false), 2000);
   }}>
