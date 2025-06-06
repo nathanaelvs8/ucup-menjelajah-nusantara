@@ -1,4 +1,4 @@
-# Ucup Explores the Archipelago
+# Archipelago Saga
 
 **Play here:** [Click here to play](https://your-game-link.com)
 
@@ -12,9 +12,11 @@
 
 ## Group Members
 
-- 
-- 
-- 
+- Clement Aelwyn Wirawan - 00000105577
+- Josh Reagan Wiselim - 00000105516
+- Michael - 00000106013
+- Nathanael Valentino Sutanto - 00000105359
+
 ---
 
 ## Gameplay Overview
@@ -52,11 +54,11 @@ Players begin the game by logging in with Google or as a guest, entering a chara
 
 ## Screenshots / Preview
 
-![Login Page](assets/screenshots/LoginPage.png)
-![Gameplay Preview](assets/screenshots/GameplayPreview.png)
-![NPC Dialog](assets/screenshots/DialogPreview.png)
-![Minigame Preview](assets/screenshots/MinigamePreview.png) 
-![Fishing Minigame](assets/screenshots/Minigame2Preview.png)
-![Shop Preview](assets/screenshots/ShopPreview.png)
+![Login Page](src/screenshots/LoginPage.png)
+![Gameplay Preview](src/screenshots/GameplayPreview.png)
+![NPC Dialog](src/screenshots/DialogPreview.png)
+![Minigame Preview](src/screenshots/MinigamePreview.png)
+![Fishing Minigame](src/screenshots/Minigame2Preview.png)
+![Shop Preview](src/screenshots/ShopPreview.png)
 
 ---
