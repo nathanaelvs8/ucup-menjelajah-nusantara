@@ -930,6 +930,13 @@ export default function Forest() {
     }, 800);
   };
 
+  const keysPressed = useRef({});
+
+  const handleAnalog = (key, value) => {
+    keysPressed.current[key] = value;
+  };
+
+
   return (
     <>
   <audio
@@ -1553,36 +1560,45 @@ export default function Forest() {
       <div className="analog-controls">
         <div className="analog-up-row">
           <button className="arrow up"
-            onMouseDown={() => keysPressed.current.arrowup = true}
-            onMouseUp={() => keysPressed.current.arrowup = false}
+            onMouseDown={() => handleAnalog("arrowup", true)}
+            onMouseUp={() => handleAnalog("arrowup", false)}
+            onTouchStart={() => handleAnalog("arrowup", true)}
+            onTouchEnd={() => handleAnalog("arrowup", false)}
           >
             <img src={arrowUp} alt="Up" className="arrow-img" />
           </button>
         </div>
         <div className="analog-middle-row">
           <button className="arrow left"
-            onMouseDown={() => keysPressed.current.arrowleft = true}
-            onMouseUp={() => keysPressed.current.arrowleft = false}
+            onMouseDown={() => handleAnalog("arrowleft", true)}
+            onMouseUp={() => handleAnalog("arrowleft", false)}
+            onTouchStart={() => handleAnalog("arrowleft", true)}
+            onTouchEnd={() => handleAnalog("arrowleft", false)}
           >
             <img src={arrowLeft} alt="Left" className="arrow-img" />
           </button>
           <div className="arrow-spacer"></div>
           <button className="arrow right"
-            onMouseDown={() => keysPressed.current.arrowright = true}
-            onMouseUp={() => keysPressed.current.arrowright = false}
+            onMouseDown={() => handleAnalog("arrowright", true)}
+            onMouseUp={() => handleAnalog("arrowright", false)}
+            onTouchStart={() => handleAnalog("arrowright", true)}
+            onTouchEnd={() => handleAnalog("arrowright", false)}
           >
             <img src={arrowRight} alt="Right" className="arrow-img" />
           </button>
         </div>
         <div className="analog-down-row">
           <button className="arrow down"
-            onMouseDown={() => keysPressed.current.arrowdown = true}
-            onMouseUp={() => keysPressed.current.arrowdown = false}
+            onMouseDown={() => handleAnalog("arrowdown", true)}
+            onMouseUp={() => handleAnalog("arrowdown", false)}
+            onTouchStart={() => handleAnalog("arrowdown", true)}
+            onTouchEnd={() => handleAnalog("arrowdown", false)}
           >
             <img src={arrowDown} alt="Down" className="arrow-img" />
           </button>
         </div>
       </div>
+
 
 
       <div className="event-panel">
