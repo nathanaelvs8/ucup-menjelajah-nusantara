@@ -488,6 +488,11 @@ export default function House() {
     }
   }, [interactionRequested]);
 
+  const handleAnalog = (key, value) => {
+    keysPressed.current[key] = value;
+  };
+
+
   return (
     <>
       <audio ref={houseAudioRef} src={houseMusic} autoPlay loop />
@@ -705,31 +710,48 @@ export default function House() {
             <div
               className="inventory-modal"
               onClick={e => {
-                if (e.target === e.currentTarget) setInventoryVisible(false);
+                if (e.target === e.currentTarget) {
+                  setInventoryVisible(false);
+                }
+              }}
+              style={{
+                background: 'transparent',
+                padding: '20px',
+                maxWidth: '600px',
+                width: '90%',
+                height: '320px',
+                display: 'flex',
+                flexDirection: 'column',
               }}
             >
-              <div className="inventory-scroll-area">
+              <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto' }}>
                 <Inventory
                   inventory={inventory}
                   onUseItem={itemName => {
-                    const idx = inventory.findIndex(it => it === itemName);
+                    // --- logic sama persis ---
+                    const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                    const inv = saved.inventory || [];
+                    const idx = inv.findIndex(it => it === itemName);
                     if (idx !== -1) {
                       const details = itemDetails[itemName];
+                      let updatedStatus = status;
                       if (details && typeof details.useEffect === "function") {
-                        setStatus(prev => details.useEffect(prev));
+                        updatedStatus = details.useEffect(status);
+                        setStatus(updatedStatus);
                       }
-                      const newInventory = [...inventory];
+                      const newInventory = [...inv];
                       newInventory.splice(idx, 1);
                       setInventory(newInventory);
-                      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                       localStorage.setItem(
                         "playerData",
-                        JSON.stringify({ ...saved, inventory: newInventory, status: details && typeof details.useEffect === "function" ? details.useEffect(status) : status })
+                        JSON.stringify({ ...saved, inventory: newInventory, status: updatedStatus })
                       );
                     }
                   }}
                   onSellItem={itemName => {
-                    const idx = inventory.findIndex(it => it === itemName);
+                    const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                    const inv = saved.inventory || [];
+                    const idx = inv.findIndex(it => it === itemName);
                     if (idx !== -1) {
                       const details = itemDetails[itemName];
                       const price = details?.sellGold || 0;
@@ -738,10 +760,9 @@ export default function House() {
                       } else {
                         alert("Item cannot be sold!");
                       }
-                      const newInventory = [...inventory];
+                      const newInventory = [...inv];
                       newInventory.splice(idx, 1);
                       setInventory(newInventory);
-                      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                       localStorage.setItem(
                         "playerData",
                         JSON.stringify({ ...saved, inventory: newInventory, money: price > 0 ? (saved.money || 0) + price : saved.money })
@@ -753,12 +774,23 @@ export default function House() {
               <button
                 className="close-inventory-btn"
                 onClick={() => setInventoryVisible(false)}
+                style={{
+                  marginTop: '15px',
+                  width: '100%',
+                  background: '#333',
+                  color: 'white',
+                  border: 'none',
+                  padding: '10px',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
               >
-                Close
+                Close Inventory
               </button>
             </div>
           </>
         )}
+
 
         {showCraftModal && (
           <div className="modal-overlay" onClick={() => setShowCraftModal(false)}>
@@ -965,27 +997,47 @@ export default function House() {
 
         {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
           <>
-            <div className="analog-controls">
-              <div className="analog-up-row">
-                <button className="arrow up" onMouseDown={() => keysPressed.current.arrowup = true} onMouseUp={() => keysPressed.current.arrowup = false}>
-                  <img src={arrowUp} alt="Up" className="arrow-img" />
-                </button>
-              </div>
-              <div className="analog-middle-row">
-                <button className="arrow left" onMouseDown={() => keysPressed.current.arrowleft = true} onMouseUp={() => keysPressed.current.arrowleft = false}>
-                  <img src={arrowLeft} alt="Left" className="arrow-img" />
-                </button>
-                <div className="arrow-spacer"></div>
-                <button className="arrow right" onMouseDown={() => keysPressed.current.arrowright = true} onMouseUp={() => keysPressed.current.arrowright = false}>
-                  <img src={arrowRight} alt="Right" className="arrow-img" />
-                </button>
-              </div>
-              <div className="analog-down-row">
-                <button className="arrow down" onMouseDown={() => keysPressed.current.arrowdown = true} onMouseUp={() => keysPressed.current.arrowdown = false}>
-                  <img src={arrowDown} alt="Down" className="arrow-img" />
-                </button>
-              </div>
-            </div>
+<div className="analog-controls">
+          <div className="analog-up-row">
+            <button className="arrow up"
+              onMouseDown={() => handleAnalog("arrowup", true)}
+              onMouseUp={() => handleAnalog("arrowup", false)}
+              onTouchStart={() => handleAnalog("arrowup", true)}
+              onTouchEnd={() => handleAnalog("arrowup", false)}
+            >
+              <img src={arrowUp} alt="Up" className="arrow-img" />
+            </button>
+          </div>
+          <div className="analog-middle-row">
+            <button className="arrow left"
+              onMouseDown={() => handleAnalog("arrowleft", true)}
+              onMouseUp={() => handleAnalog("arrowleft", false)}
+              onTouchStart={() => handleAnalog("arrowleft", true)}
+              onTouchEnd={() => handleAnalog("arrowleft", false)}
+            >
+              <img src={arrowLeft} alt="Left" className="arrow-img" />
+            </button>
+            <div className="arrow-spacer"></div>
+            <button className="arrow right"
+              onMouseDown={() => handleAnalog("arrowright", true)}
+              onMouseUp={() => handleAnalog("arrowright", false)}
+              onTouchStart={() => handleAnalog("arrowright", true)}
+              onTouchEnd={() => handleAnalog("arrowright", false)}
+            >
+              <img src={arrowRight} alt="Right" className="arrow-img" />
+            </button>
+          </div>
+          <div className="analog-down-row">
+            <button className="arrow down"
+              onMouseDown={() => handleAnalog("arrowdown", true)}
+              onMouseUp={() => handleAnalog("arrowdown", false)}
+              onTouchStart={() => handleAnalog("arrowdown", true)}
+              onTouchEnd={() => handleAnalog("arrowdown", false)}
+            >
+              <img src={arrowDown} alt="Down" className="arrow-img" />
+            </button>
+          </div>
+        </div>
             <div className="event-panel">
               <p className="event-text">
                 {

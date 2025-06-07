@@ -563,11 +563,12 @@ export default function Dungeon({ onExit }) {
           />
         </div>
 
-               <div className="analog-controls">
+        <div className="analog-controls">
           <div className="analog-up-row">
             <button
               className="arrow up"
               onClick={() => movePlayer("w")}
+              onTouchStart={() => movePlayer("w")}
             >
               <img src={arrowUp} alt="Up" className="arrow-img" />
             </button>
@@ -576,6 +577,7 @@ export default function Dungeon({ onExit }) {
             <button
               className="arrow left"
               onClick={() => movePlayer("a")}
+              onTouchStart={() => movePlayer("a")}
             >
               <img src={arrowLeft} alt="Left" className="arrow-img" />
             </button>
@@ -583,6 +585,7 @@ export default function Dungeon({ onExit }) {
             <button
               className="arrow right"
               onClick={() => movePlayer("d")}
+              onTouchStart={() => movePlayer("d")}
             >
               <img src={arrowRight} alt="Right" className="arrow-img" />
             </button>
@@ -591,11 +594,13 @@ export default function Dungeon({ onExit }) {
             <button
               className="arrow down"
               onClick={() => movePlayer("s")}
+              onTouchStart={() => movePlayer("s")}
             >
               <img src={arrowDown} alt="Down" className="arrow-img" />
             </button>
           </div>
         </div>
+
 
       </div>
       </>

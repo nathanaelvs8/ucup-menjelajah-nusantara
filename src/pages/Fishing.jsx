@@ -327,77 +327,77 @@ setKailTop(`${depth}px`);
           >
             <img src={inventoryIcon} alt="Inventory" />
           </button>
-        {inventoryVisible && (
-          <>
-            <div
-              className="modal-overlay"
-              onClick={() => setInventoryVisible(false)}
-            />
-            <div
-              className="inventory-modal"
-              onClick={e => e.stopPropagation()}
-            >
-              <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto', width: "100%" }}>
-                <Inventory
-                  inventory={inventory}
-                  onUseItem={itemName => {
-                    const idx = inventory.findIndex(it => it === itemName);
-                    if (idx !== -1) {
-                      const newInventory = [...inventory];
-                      newInventory.splice(idx, 1);
-                      setInventory(newInventory);
-                      // Sync ke localStorage: hanya inventory, JANGAN status!
-                      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
-                      localStorage.setItem(
-                        "playerData",
-                        JSON.stringify({ ...saved, inventory: newInventory })
-                      );
-                    }
-                  }}
-                  onSellItem={itemName => {
-                    const idx = inventory.findIndex(it => it === itemName);
-                    if (idx !== -1) {
-                      const details = itemDetails[itemName];
-                      const price = details?.sellGold || 0;
-                      if (price > 0) {
-                        setMoney(prev => prev + price);
-                      } else {
-                        showNotif("Item cannot be sold!");
-                      }
-                      const newInventory = [...inventory];
-                      newInventory.splice(idx, 1);
-                      setInventory(newInventory);
-                      // sync ke localStorage juga money
-                      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
-                      localStorage.setItem(
-                        "playerData",
-                        JSON.stringify({ ...saved, inventory: newInventory, money: price > 0 ? (saved.money || 0) + price : saved.money })
-                      );
-                    }
-                  }}
-                />
-              </div>
-              <button
-                className="close-inventory-btn"
-                onClick={() => setInventoryVisible(false)}
-                style={{
-                  position: 'absolute',
-                  top: 16,
-                  right: 18,
-                  background: '#e2c070',
-                  color: '#514116',
-                  border: 'none',
-                  fontWeight: 'bold',
-                  fontSize: 18,
-                  padding: '7px 16px',
-                  zIndex: 10
+      {inventoryVisible && (
+        <>
+          <div
+            className="modal-overlay"
+            onClick={() => setInventoryVisible(false)}
+          />
+          <div
+            className="inventory-modal"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto', width: "100%" }}>
+              <Inventory
+                inventory={inventory}
+                onUseItem={itemName => {
+                  const idx = inventory.findIndex(it => it === itemName);
+                  if (idx !== -1) {
+                    const newInventory = [...inventory];
+                    newInventory.splice(idx, 1);
+                    setInventory(newInventory);
+                    // Sync ke localStorage: hanya inventory, JANGAN status!
+                    const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                    localStorage.setItem(
+                      "playerData",
+                      JSON.stringify({ ...saved, inventory: newInventory })
+                    );
+                  }
                 }}
-              >
-                ✕
-              </button>
+                onSellItem={itemName => {
+                  const idx = inventory.findIndex(it => it === itemName);
+                  if (idx !== -1) {
+                    const details = itemDetails[itemName];
+                    const price = details?.sellGold || 0;
+                    if (price > 0) {
+                      setMoney(prev => prev + price);
+                    } else {
+                      showNotif("Item cannot be sold!");
+                    }
+                    const newInventory = [...inventory];
+                    newInventory.splice(idx, 1);
+                    setInventory(newInventory);
+                    // sync ke localStorage juga money
+                    const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                    localStorage.setItem(
+                      "playerData",
+                      JSON.stringify({ ...saved, inventory: newInventory, money: price > 0 ? (saved.money || 0) + price : saved.money })
+                    );
+                  }
+                }}
+              />
             </div>
-          </>
-        )}
+            <button
+              className="close-inventory-btn"
+              onClick={() => setInventoryVisible(false)}
+              style={{
+                position: 'absolute',
+                top: 16,
+                right: 18,
+                background: '#e2c070',
+                color: '#514116',
+                border: 'none',
+                fontWeight: 'bold',
+                fontSize: 18,
+                padding: '7px 16px',
+                zIndex: 10
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </>
+      )}
 
         </div>
 

@@ -1194,35 +1194,48 @@ export default function Forest() {
               <div
                 className="inventory-modal"
                 onClick={e => {
-                  if (e.target === e.currentTarget) setInventoryVisible(false);
+                  if (e.target === e.currentTarget) {
+                    setInventoryVisible(false);
+                  }
+                }}
+                style={{
+                  background: 'transparent',
+                  padding: '20px',
+                  maxWidth: '600px',
+                  width: '90%',
+                  height: '320px',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}
               >
-                <div className="inventory-scroll-area">
+                <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto' }}>
                   <Inventory
                     inventory={inventory}
                     onUseItem={itemName => {
-                      const idx = inventory.findIndex(it => it === itemName);
+                      // --- logic sama persis ---
+                      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                      const inv = saved.inventory || [];
+                      const idx = inv.findIndex(it => it === itemName);
                       if (idx !== -1) {
                         const details = itemDetails[itemName];
+                        let updatedStatus = status;
                         if (details && typeof details.useEffect === "function") {
-                          setStatus(prev => details.useEffect(prev));
+                          updatedStatus = details.useEffect(status);
+                          setStatus(updatedStatus);
                         }
-                        const newInventory = [...inventory];
+                        const newInventory = [...inv];
                         newInventory.splice(idx, 1);
                         setInventory(newInventory);
-                        const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                         localStorage.setItem(
                           "playerData",
-                          JSON.stringify({
-                            ...saved,
-                            inventory: newInventory,
-                            status: details && typeof details.useEffect === "function" ? details.useEffect(status) : status,
-                          })
+                          JSON.stringify({ ...saved, inventory: newInventory, status: updatedStatus })
                         );
                       }
                     }}
                     onSellItem={itemName => {
-                      const idx = inventory.findIndex(it => it === itemName);
+                      const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                      const inv = saved.inventory || [];
+                      const idx = inv.findIndex(it => it === itemName);
                       if (idx !== -1) {
                         const details = itemDetails[itemName];
                         const price = details?.sellGold || 0;
@@ -1231,32 +1244,37 @@ export default function Forest() {
                         } else {
                           alert("Item cannot be sold!");
                         }
-                        const newInventory = [...inventory];
+                        const newInventory = [...inv];
                         newInventory.splice(idx, 1);
                         setInventory(newInventory);
-                        const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                         localStorage.setItem(
                           "playerData",
-                          JSON.stringify({
-                            ...saved,
-                            inventory: newInventory,
-                            money: price > 0 ? (saved.money || 0) + price : saved.money,
-                          })
+                          JSON.stringify({ ...saved, inventory: newInventory, money: price > 0 ? (saved.money || 0) + price : saved.money })
                         );
                       }
                     }}
                   />
-
                 </div>
                 <button
                   className="close-inventory-btn"
                   onClick={() => setInventoryVisible(false)}
+                  style={{
+                    marginTop: '15px',
+                    width: '100%',
+                    background: '#333',
+                    color: 'white',
+                    border: 'none',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    cursor: 'pointer'
+                  }}
                 >
-                  Close
+                  Close Inventory
                 </button>
               </div>
             </>
           )}
+
 
           {showCraftModal && (
             <div className="modal-overlay" onClick={() => setShowCraftModal(false)}>

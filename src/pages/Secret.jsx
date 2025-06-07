@@ -757,13 +757,12 @@ export default function Secret() {
         />
         <div
           className="inventory-modal"
-          onClick={(e) => {
+          onClick={e => {
             if (e.target === e.currentTarget) {
               setInventoryVisible(false);
             }
           }}
-        >
-          <div style={{
+          style={{
             background: 'transparent',
             padding: '20px',
             maxWidth: '600px',
@@ -771,36 +770,75 @@ export default function Secret() {
             height: '320px',
             display: 'flex',
             flexDirection: 'column',
-          }}>
-            <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto' }}>
-          <Inventory
-            inventory={inventory}
-            onUseItem={handleUseItem}
-            onSellItem={handleSellItem}
-            // DI SINI!
-            canUseTalisman={inRitualCircle && ritualCirclePermanent}
-          />
-            </div>
-            <button
-              className="close-inventory-btn"
-              onClick={() => setInventoryVisible(false)}
-              style={{
-                marginTop: '15px',
-                width: '100%',
-                background: '#333',
-                color: 'white',
-                border: 'none',
-                padding: '10px',
-                borderRadius: '8px',
-                cursor: 'pointer'
+          }}
+        >
+          <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto' }}>
+            <Inventory
+              inventory={inventory}
+              onUseItem={itemName => {
+                // --- logic sama persis ---
+                const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                const inv = saved.inventory || [];
+                const idx = inv.findIndex(it => it === itemName);
+                if (idx !== -1) {
+                  const details = itemDetails[itemName];
+                  let updatedStatus = status;
+                  if (details && typeof details.useEffect === "function") {
+                    updatedStatus = details.useEffect(status);
+                    setStatus(updatedStatus);
+                  }
+                  const newInventory = [...inv];
+                  newInventory.splice(idx, 1);
+                  setInventory(newInventory);
+                  localStorage.setItem(
+                    "playerData",
+                    JSON.stringify({ ...saved, inventory: newInventory, status: updatedStatus })
+                  );
+                }
               }}
-            >
-              Close Inventory
-            </button>
+              onSellItem={itemName => {
+                const saved = JSON.parse(localStorage.getItem("playerData")) || {};
+                const inv = saved.inventory || [];
+                const idx = inv.findIndex(it => it === itemName);
+                if (idx !== -1) {
+                  const details = itemDetails[itemName];
+                  const price = details?.sellGold || 0;
+                  if (price > 0) {
+                    setMoney(prev => prev + price);
+                  } else {
+                    alert("Item cannot be sold!");
+                  }
+                  const newInventory = [...inv];
+                  newInventory.splice(idx, 1);
+                  setInventory(newInventory);
+                  localStorage.setItem(
+                    "playerData",
+                    JSON.stringify({ ...saved, inventory: newInventory, money: price > 0 ? (saved.money || 0) + price : saved.money })
+                  );
+                }
+              }}
+            />
           </div>
+          <button
+            className="close-inventory-btn"
+            onClick={() => setInventoryVisible(false)}
+            style={{
+              marginTop: '15px',
+              width: '100%',
+              background: '#333',
+              color: 'white',
+              border: 'none',
+              padding: '10px',
+              borderRadius: '8px',
+              cursor: 'pointer'
+            }}
+          >
+            Close Inventory
+          </button>
         </div>
       </>
     )}
+
 
 
     {showCraftModal && (
