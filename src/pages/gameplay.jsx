@@ -14,7 +14,7 @@ import mapIcon from "../assets/ui/Map.png";
 import arrowUp from "../assets/ui/ArrowUP.png";
 import arrowDown from "../assets/ui/ArrowDOWN.png";
 import arrowLeft from "../assets/ui/ArrowLEFT.png";
-import arrowRight from "../assets/ui/ArrowRight.png";
+import arrowRight from "../assets/ui/ArrowRIGHT.png";
 import gameplayAudio from "../assets/audio/gameplayaudio.mp3";
 import hungryIcon from "../assets/ui/Hunger.png";
 import sleepIcon from "../assets/ui/Sleep.png";
