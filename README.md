@@ -6,7 +6,7 @@
 
 ## Description
 
-**Ucup Explores the Archipelago** is a 2D pixel-art RPG adventure game set across the diverse islands of Indonesia. Players take on the role of Ucup, embarking on an epic journey to explore, survive, and complete quests in a world inspired by the unique culture and environment of the Indonesian archipelago. The game features exploration, NPC interactions, resource management, minigames, crafting, and a dynamic status system that challenges players to maintain their character's wellbeing throughout the adventure.
+**Archipelago Saga** is a 2D pixel-art RPG adventure game set across the diverse place. Players take on the role of Ucup, embarking on an epic journey to explore, survive, and complete quests in a world inspired by the unique culture and environment of the archipelago. The game features exploration, NPC interactions, resource management, minigames, crafting, and a dynamic status system that challenges players to maintain their character's wellbeing throughout the adventure.
 
 ---
 
