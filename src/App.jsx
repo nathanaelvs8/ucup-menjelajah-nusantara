@@ -4,7 +4,7 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 
 import Intro from "./pages/Intro";
 import SelectCharacter from "./pages/SelectCharacter";
-import Gameplay from "./pages/Gameplay";
+import Gameplay from "./pages/gameplay";
 import House from "./pages/House";
 import Fishing from "./pages/Fishing";
 import Beach from "./pages/Beach";
