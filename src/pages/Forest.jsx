@@ -1554,84 +1554,84 @@ export default function Forest() {
       </div>
 
     {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
-      <>
-  <div className="analog-controls">
-    <div className="analog-up-row">
-      <button
-        className="arrow up"
-        onClick={() => {
-          setPosition(prev => {
-            const newPos = { ...prev, y: Math.max(prev.y - 20, 0) };
-            setDirection("up");
-            setIsMoving(true);
-            return newPos;
-          });
-        }}
-        onMouseDown={() => handleAnalog("arrowup", true)}
-        onMouseUp={() => handleAnalog("arrowup", false)}
-        onTouchStart={() => handleAnalog("arrowup", true)}
-        onTouchEnd={() => handleAnalog("arrowup", false)}
-      >
-        <img src={arrowUp} alt="Up" className="arrow-img" />
-      </button>
+      
+      <div className="analog-controls">
+      <div className="analog-up-row">
+        <button
+          className="arrow up"
+          onClick={() => {
+            setPosition(prev => {
+              const newPos = { ...prev, y: Math.max(prev.y - 20, 0) };
+              setDirection("up");
+              setIsMoving(true);
+              return newPos;
+            });
+          }}
+          onMouseDown={() => handleAnalog("arrowup", true)}
+          onMouseUp={() => handleAnalog("arrowup", false)}
+          onTouchStart={() => handleAnalog("arrowup", true)}
+          onTouchEnd={() => handleAnalog("arrowup", false)}
+        >
+          <img src={arrowUp} alt="Up" className="arrow-img" />
+        </button>
+      </div>
+      <div className="analog-middle-row">
+        <button
+          className="arrow left"
+          onClick={() => {
+            setPosition(prev => {
+              const newPos = { ...prev, x: Math.max(prev.x - 20, 0) };
+              setDirection("left");
+              setIsMoving(true);
+              return newPos;
+            });
+          }}
+          onMouseDown={() => handleAnalog("arrowleft", true)}
+          onMouseUp={() => handleAnalog("arrowleft", false)}
+          onTouchStart={() => handleAnalog("arrowleft", true)}
+          onTouchEnd={() => handleAnalog("arrowleft", false)}
+        >
+          <img src={arrowLeft} alt="Left" className="arrow-img" />
+        </button>
+        <div className="arrow-spacer"></div>
+        <button
+          className="arrow right"
+          onClick={() => {
+            setPosition(prev => {
+              const newPos = { ...prev, x: prev.x + 20 };
+              setDirection("right");
+              setIsMoving(true);
+              return newPos;
+            });
+          }}
+          onMouseDown={() => handleAnalog("arrowright", true)}
+          onMouseUp={() => handleAnalog("arrowright", false)}
+          onTouchStart={() => handleAnalog("arrowright", true)}
+          onTouchEnd={() => handleAnalog("arrowright", false)}
+        >
+          <img src={arrowRight} alt="Right" className="arrow-img" />
+        </button>
+      </div>
+      <div className="analog-down-row">
+        <button
+          className="arrow down"
+          onClick={() => {
+            setPosition(prev => {
+              const newPos = { ...prev, y: prev.y + 20 };
+              setDirection("down");
+              setIsMoving(true);
+              return newPos;
+            });
+          }}
+          onMouseDown={() => handleAnalog("arrowdown", true)}
+          onMouseUp={() => handleAnalog("arrowdown", false)}
+          onTouchStart={() => handleAnalog("arrowdown", true)}
+          onTouchEnd={() => handleAnalog("arrowdown", false)}
+        >
+          <img src={arrowDown} alt="Down" className="arrow-img" />
+        </button>
+      </div>
     </div>
-    <div className="analog-middle-row">
-      <button
-        className="arrow left"
-        onClick={() => {
-          setPosition(prev => {
-            const newPos = { ...prev, x: Math.max(prev.x - 20, 0) };
-            setDirection("left");
-            setIsMoving(true);
-            return newPos;
-          });
-        }}
-        onMouseDown={() => handleAnalog("arrowleft", true)}
-        onMouseUp={() => handleAnalog("arrowleft", false)}
-        onTouchStart={() => handleAnalog("arrowleft", true)}
-        onTouchEnd={() => handleAnalog("arrowleft", false)}
-      >
-        <img src={arrowLeft} alt="Left" className="arrow-img" />
-      </button>
-      <div className="arrow-spacer"></div>
-      <button
-        className="arrow right"
-        onClick={() => {
-          setPosition(prev => {
-            const newPos = { ...prev, x: prev.x + 20 };
-            setDirection("right");
-            setIsMoving(true);
-            return newPos;
-          });
-        }}
-        onMouseDown={() => handleAnalog("arrowright", true)}
-        onMouseUp={() => handleAnalog("arrowright", false)}
-        onTouchStart={() => handleAnalog("arrowright", true)}
-        onTouchEnd={() => handleAnalog("arrowright", false)}
-      >
-        <img src={arrowRight} alt="Right" className="arrow-img" />
-      </button>
-    </div>
-    <div className="analog-down-row">
-      <button
-        className="arrow down"
-        onClick={() => {
-          setPosition(prev => {
-            const newPos = { ...prev, y: prev.y + 20 };
-            setDirection("down");
-            setIsMoving(true);
-            return newPos;
-          });
-        }}
-        onMouseDown={() => handleAnalog("arrowdown", true)}
-        onMouseUp={() => handleAnalog("arrowdown", false)}
-        onTouchStart={() => handleAnalog("arrowdown", true)}
-        onTouchEnd={() => handleAnalog("arrowdown", false)}
-      >
-        <img src={arrowDown} alt="Down" className="arrow-img" />
-      </button>
-    </div>
-  </div>
 
       <div className="event-panel">
         <p className="event-text">{getEventText()}</p>
