@@ -12,7 +12,7 @@ import EncyclopediaIcon from "../assets/ui/Encyclopedia.png";
 import arrowUp from "../assets/ui/ArrowUP.png";
 import arrowDown from "../assets/ui/ArrowDOWN.png";
 import arrowLeft from "../assets/ui/ArrowLEFT.png";
-import arrowRight from "../assets/ui/ArrowRight.png";
+import arrowRight from "../assets/ui/ArrowRIGHT.png";
 import SecretMapImg from "../assets/map/Secret.jpg";
 import hungryIcon from "../assets/ui/Hunger.png";
 import sleepIcon from "../assets/ui/Sleep.png";
