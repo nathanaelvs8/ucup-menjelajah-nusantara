@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import "./Gameplay.css";
 import { addVisitedArea, addNPCInteract, getGreeting } from "./utils";
 import { addItemToInventory } from "./utils";
-import craftingRecipes from "./craftingRecipes";
+import craftingRecipes from "./CraftingRecipes";
 import { itemIcons } from "./Inventory.jsx";
 import { itemDetails } from "./Inventory.jsx";
 import Inventory from './Inventory.jsx';  // pastikan path benar
