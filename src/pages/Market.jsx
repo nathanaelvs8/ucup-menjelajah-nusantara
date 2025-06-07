@@ -53,11 +53,11 @@ export default function Market() {
   const [showSlotMachine, setShowSlotMachine] = useState(false);
   const [slotNumbers, setSlotNumbers] = useState([5, 5, 6]); // angka awal slot
   const [showShop, setShowShop] = useState(false);
-const [showCraftModal, setShowCraftModal] = useState(false);
-const marketAudioRef = useRef();
-
+  const [showCraftModal, setShowCraftModal] = useState(false);
+  const marketAudioRef = useRef();
   const [showEncyclopedia, setShowEncyclopedia] = useState(false);
   const [encyclopediaSelected, setEncyclopediaSelected] = useState(null);
+  const [slotNotif, setSlotNotif] = useState(""); // string kosong artinya tidak ada notif
   const [discoveredItems, setDiscoveredItems] = useState(() =>
     JSON.parse(localStorage.getItem("discoveredItems") || "[]")
   );
@@ -86,72 +86,77 @@ const marketAudioRef = useRef();
   }, [inventory]);
 
 
-const [isSpinning, setIsSpinning] = useState(false);
-useEffect(() => {
-  const savedMoney = localStorage.getItem("playerMoney");
-  if (savedMoney !== null) {
-    setMoney(parseInt(savedMoney, 10));
-  } else {
-    setMoney(5000); // default awal
-  }
-}, []);
-
-const generateNumber = () => {
-  const weightedNumbers = [
-    1, 2, 3, 4,
-    5, 5, 5, 5, 5,
-    6, 6, 6, 6,
-    7, 8, 9
-  ];
-  const idx = Math.floor(Math.random() * weightedNumbers.length);
-  return weightedNumbers[idx];
-};
-
-const startSlot = () => {
-  if (isSpinning) return;
-  if (money < 1000) {
-    alert("Gold is not enough to play slot machines!");
-    return;
-  }
-  
-  setIsSpinning(true);
-  addActivity("Slot Machine");
-  setMoney(prev => prev - 1000);
-
-  let count = 0;
-  let finalResult = null; // Untuk menyimpan hasil akhir
-  
-  const interval = setInterval(() => {
-    const newNumbers = [
-      generateNumber(),
-      generateNumber(),
-      generateNumber()
-    ];
-    
-    setSlotNumbers(newNumbers);
-    
-    count++;
-    if (count > 20) {
-      clearInterval(interval);
-      setIsSpinning(false);
-      
-      // Simpan hasil akhir setelah animasi selesai
-      finalResult = newNumbers;
-      
-      // Hitung hadiah setelah 100ms untuk memastikan state terupdate
-      setTimeout(() => {
-        const slotValue = parseInt(finalResult.join(''), 10) * 10;
-        setMoney(prev => prev + slotValue);
-        alert(`Kamu mendapatkan ${slotValue} gold! (${finalResult.join('')} × 10)`);
-      }, 100);
+  const [isSpinning, setIsSpinning] = useState(false);
+  useEffect(() => {
+    const savedMoney = localStorage.getItem("playerMoney");
+    if (savedMoney !== null) {
+      setMoney(parseInt(savedMoney, 10));
+    } else {
+      setMoney(5000); 
     }
-  }, 100);
-};
+  }, []);
 
+  const generateNumber = () => {
+    const weightedNumbers = [
+      1, 2, 3, 4,
+      5, 5, 5, 5, 5,
+      6, 6, 6, 6,
+      7, 8, 9
+    ];
+    const idx = Math.floor(Math.random() * weightedNumbers.length);
+    return weightedNumbers[idx];
+  };
 
+  const startSlot = () => {
+    if (isSpinning) return;
+    if (money < 1000) {
+      showSlotNotif("Gold is not enough to play slot machines!");
+      return;
+    }
+    
+    setIsSpinning(true);
+    addActivity("Slot Machine");
+    setMoney(prev => prev - 1000);
+
+    let count = 0;
+    let finalResult = null;
+
+    const interval = setInterval(() => {
+      const newNumbers = [
+        generateNumber(),
+        generateNumber(),
+        generateNumber()
+      ];
+      setSlotNumbers(newNumbers);
+      count++;
+      if (count > 20) {
+        clearInterval(interval);
+        setIsSpinning(false);
+        finalResult = newNumbers;
+
+        setTimeout(() => {
+          const [a, b, c] = finalResult;
+          let reward = 0;
+          let message = "";
+
+          if (a === b && b === c) {
+            reward = 10000;
+            message = "🎉 JACKPOT! Three same numbers, you get 10000 gold!";
+          } else if (a === b || a === c || b === c) {
+            reward = 3000;
+            message = "🥳 Two same numbers, you get 3000 gold!";
+          } else {
+            reward = 500;
+            message = "😅 All numbers are different, you get 500 gold!";
+          }
+          setMoney(prev => prev + reward);
+          showSlotNotif(message);
+        }, 100);
+      }
+    }, 100);
+  };
 
   const keysPressed = useRef({});
-
   const handleAnalog = (key, value) => {
     keysPressed.current[key] = value;
   };
@@ -332,6 +337,10 @@ useEffect(() => {
   }
 }, []);
 
+  function showSlotNotif(msg) {
+    setSlotNotif(msg);
+    setTimeout(() => setSlotNotif(""), 2400);
+  }
 
   return (
     <>
@@ -368,19 +377,6 @@ useEffect(() => {
     // ...prop lainnya sesuai kebutuhan Shop.jsx kamu
   />
 )}
-
-
-
-// Di dalam file Market.jsx, pada bagian return (...)
-
-// Di dalam file Market.jsx, pada bagian return (...)
-// Di dalam file Market.jsx, ganti seluruh blok showSlotMachine
-
-// Market.jsx
-
-// Market.jsx
-
-// Market.jsx
 
 {showSlotMachine && (
   <div
@@ -426,6 +422,7 @@ useEffect(() => {
 
       {/* 2. AREA INTERAKTIF YANG 'MENEMPEL' PADA GAMBAR */}
       <div
+       className="slot-area"
         style={{
           position: 'absolute',
 
@@ -473,12 +470,35 @@ useEffect(() => {
             userSelect: "none",
             padding: 0,
             lineHeight: 1, // Pastikan teks tidak punya spasi ekstra
+            marginTop: "20px",
           }}
           disabled={isSpinning || money < 1000}
           onClick={startSlot}
         >
-          {isSpinning ? "Spinning..." : "Start"}
+          {isSpinning ? "Spinning..." : "Use 1000 Gold"}
         </button>
+
+        {slotNotif && (
+          <div style={{
+            position: "fixed",
+            top: "10%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#222",
+            color: "#ffe066",
+            padding: "18px 30px",
+            borderRadius: 16,
+            fontSize: 22,
+            fontWeight: "bold",
+            zIndex: 20000,
+            boxShadow: "0 6px 24px #000a",
+            textAlign: "center",
+            animation: "fadeSlotNotif 2.4s"
+          }}>
+            {slotNotif}
+          </div>
+        )}
+
       </div>
     </div>
   </div>

@@ -52,8 +52,6 @@ function addDiscoveredItem(item) {
 
 
 export default function Gameplay() {
-
-
   const [character, setCharacter] = useState(null);
   const [position, setPosition] = useState(() => {
   const saved = JSON.parse(localStorage.getItem("playerData"));
@@ -68,12 +66,8 @@ export default function Gameplay() {
   const [nearBeachZone, setNearBeachZone] = useState(false);
   const [inMarketZone, setInMarketZone] = useState(false);
   const [nearForestZone, setNearForestZone] = useState(false);
-
-
   const keysPressed = useRef({});
   const mainMapRef = useRef(null);
-
-    
   const savedData = JSON.parse(localStorage.getItem("playerData")) || {};
   const [status, setStatus] = useState(savedData.status || {
     meal: 50,
@@ -83,37 +77,29 @@ export default function Gameplay() {
   });
   const [money, setMoney] = useState(savedData.money || 5000);
   const [inventory, setInventory] = useState(savedData.inventory || ["Pickaxe"]);
-
   const [inventoryVisible, setInventoryVisible] = useState(false);
-  const [currentMinute, setCurrentMinute] = useState(0); // 0 - 59
-  const [currentHour, setCurrentHour] = useState(9); // 0 - 23
-  const [currentDayIndex, setCurrentDayIndex] = useState(0); // Monday
+  const [currentMinute, setCurrentMinute] = useState(0); 
+  const [currentHour, setCurrentHour] = useState(9);
+  const [currentDayIndex, setCurrentDayIndex] = useState(0); 
   const [username, setUsername] = useState(localStorage.getItem("playerName") || "Player");
-
   const [showCraftModal, setShowCraftModal] = useState(false);
-  const [craftingItem, setCraftingItem] = useState(null); // optional untuk animasi loading/craft
-
   const [showEncyclopedia, setShowEncyclopedia] = useState(false);
   const [encyclopediaSelected, setEncyclopediaSelected] = useState(null);
   const [discoveredItems, setDiscoveredItems] = useState(getDiscoveredItems());
-
   const [nearCloth, setNearCloth] = useState(false);
   const [showClothBanner, setShowClothBanner] = useState(false);
-
   const [showHouseNPCDialog, setShowHouseNPCDialog] = useState(false);
   const [npcDialogState, setNPCDialogState] = useState({ stage: 0, textIdx: 0 });
-
-  const houseNPCPos = { x: 625, y: 2460 }; // Sesuaikan posisinya di map
+  const houseNPCPos = { x: 625, y: 2460 }; 
   const [nearHouseNPC, setNearHouseNPC] = useState(false);
 
   useEffect(() => {
-    // Hitung jarak char ke NPC
     const dx = position.x + SPRITE_SIZE / 2 - houseNPCPos.x;
     const dy = position.y + SPRITE_SIZE / 2 - houseNPCPos.y;
-    setNearHouseNPC(Math.sqrt(dx * dx + dy * dy) < 60); // Radius interaksi
+    setNearHouseNPC(Math.sqrt(dx * dx + dy * dy) < 60);
   }, [position]);
 
-  const lakeNPCPos = { x: 600, y: 1910 }; // Contoh, geser sesuai posisi di map-mu
+  const lakeNPCPos = { x: 600, y: 1910 }; 
   const [showLakeNPCDialog, setShowLakeNPCDialog] = useState(false);
   const [lakeDialogState, setLakeDialogState] = useState({ stage: 0, textIdx: 0 });
   const [nearLakeNPC, setNearLakeNPC] = useState(false);
@@ -124,14 +110,12 @@ export default function Gameplay() {
     setNearLakeNPC(Math.sqrt(dx * dx + dy * dy) < 60);
   }, [position]);
 
-  const mountainNPCPos = { x: 1670, y: 1810 }; // bawah gunung, edit sesuai map kamu
+  const mountainNPCPos = { x: 1670, y: 1810 }; 
   const [showMountainNPCDialog, setShowMountainNPCDialog] = useState(false);
   const [mountainDialogState, setMountainDialogState] = useState({ stage: 0, textIdx: 0, followUp: false });
   const [nearMountainNPC, setNearMountainNPC] = useState(false);
-
   const [lakeRodNotif, setLakeRodNotif] = useState(false);
   const [lakeRodNotifFade, setLakeRodNotifFade] = useState(false);
-
 
   useEffect(() => {
     const dx = position.x + SPRITE_SIZE / 2 - mountainNPCPos.x;
@@ -139,15 +123,12 @@ export default function Gameplay() {
     setNearMountainNPC(Math.sqrt(dx * dx + dy * dy) < 64);
   }, [position]);
 
-  // Tambah di state Gameplay.jsx
   const [atMysticShore, setAtMysticShore] = useState(false);
 
-  // Tambah di useEffect([position]) di bawah setNearForestZone:
   useEffect(() => {
-    // ... logic lain
     const atMystic = (
-      position.x >= 3500 && position.x <= 3700 && // X range
-      position.y >= 3300 && position.y <= 3440   // Y range
+      position.x >= 3500 && position.x <= 3700 && 
+      position.y >= 3300 && position.y <= 3440   
     );
     setAtMysticShore(atMystic);
   }, [position]);
@@ -159,7 +140,6 @@ export default function Gameplay() {
   useEffect(() => {
     localStorage.setItem("gameFinished", "false");
   }, []);
-
 
   const riverZones = [
     { x: 2990, y: 2080, w: 120, h: 50 },
@@ -179,114 +159,99 @@ export default function Gameplay() {
   ];
 
   const [clothPos, setClothPos] = useState(() => {
-    // Cek apakah sudah pernah diambil, jika ya: null
-    //const alreadyGot = JSON.parse(localStorage.getItem("gotRippedCloth"));
-    //if (alreadyGot) return null;
+    function isInBlockedZone(x, y) {
+      const charSize = 64;
+      const points = [
+        { x: x, y: y },
+        { x: x + charSize, y: y },
+        { x: x, y: y + charSize },
+        { x: x + charSize, y: y + charSize },
+        { x: x + charSize / 2, y: y + charSize }
+      ];
 
-    // Fungsi validasi spawn
-  function isInBlockedZone(x, y) {
-    const charSize = 64;
-    // Cek 5 titik utama: 4 sudut & tengah bawah
-    const points = [
-      { x: x, y: y },
-      { x: x + charSize, y: y },
-      { x: x, y: y + charSize },
-      { x: x + charSize, y: y + charSize },
-      { x: x + charSize / 2, y: y + charSize }
-    ];
+      //RIVER
+      const inRiver = points.some(pt =>
+        riverZones.some(zone =>
+          pt.x >= zone.x && pt.x <= zone.x + zone.w &&
+          pt.y >= zone.y && pt.y <= zone.y + zone.h
+        )
+      );
+      //FOREST
+      const inForest = points.some(pt =>
+        pt.x >= 0 && pt.x <= 900 && pt.y >= 0 && pt.y <= 1250
+      );
+      //MOUNTAIN
+      const inMountain = points.some(pt => {
+        const triX = pt.x - 1240, triY = pt.y - 850, triW = 620, triH = 350;
+        const inTri = triX >= 0 && triX <= triW && triY >= 0 && triY <= triH &&
+          triY >= Math.abs(triX - triW / 2) * (triH / (triW / 2));
+        const inRectA = pt.x >= 1200 && pt.x <= 2100 && pt.y >= 1200 && pt.y <= 1450;
+        const inRectB = pt.x >= 1200 && pt.x <= 2100 && pt.y >= 1450 && pt.y <= 1700;
+        return inTri || inRectA || inRectB;
+      });
+      //LAKE
+      const inLake = points.some(pt => {
+        const cx = 395, cy = 1775, rx = 275, ry = 125;
+        const dx = pt.x - cx, dy = pt.y - cy;
+        return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1;
+      });
+      //BOTTOM BLOCK
+      const inBottom = points.some(pt =>
+        pt.x >= 0 && pt.x <= 2316 && pt.y >= 3150 && pt.y <= 3554
+      );
+      //MARKET
+      const inMarket = points.some(pt =>
+        pt.x >= 3100 && pt.x <= 3450 && pt.y >= 2780 && pt.y <= 3040
+      );
+      //HOUSE ZONE
+      const inHouse = points.some(pt =>
+        pt.x >= 490 && pt.x <= 750 && pt.y >= 2240 && pt.y <= 2475
+      );
+      //OCEAN BLOCKS
+      const inRect1 = points.some(pt =>
+        pt.x >= 1500 && pt.x <= 5000 && pt.y >= 0 && pt.y <= 350
+      );
+      const inRect2 = points.some(pt =>
+        pt.x >= 2970 && pt.x <= 4670 && pt.y >= 350 && pt.y <= 1300
+      );
+      const inRect3 = points.some(pt =>
+        pt.x >= 3080 && pt.x <= 4680 && pt.y >= 1300 && pt.y <= 2100
+      );
+      //OCEAN TRIANGLE
+      const inTri1 = points.some(pt =>
+        pt.x >= 2920 && pt.x <= 4920 &&
+        pt.y >= 2100 && pt.y <= 4100 &&
+        pt.y < ((2000/2000) * (pt.x - 2920) + 2100)
+      );
+      //BEACH
+      const inBeach = points.some(pt =>
+        (
+          (pt.x >= 1100 && pt.x <= 1200 && pt.y >= 0 && pt.y <= 100) ||
+          (pt.x >= 1200 && pt.x <= 1300 && pt.y >= 0 && pt.y <= 250) ||
+          (pt.x >= 1300 && pt.x <= 1400 && pt.y >= 0 && pt.y <= 400) ||
+          (pt.x >= 1400 && pt.x <= 1700 && pt.y >= 0 && pt.y <= 600) ||
+          (pt.x >= 1700 && pt.x <= 2100 && pt.y >= 290 && pt.y <= 690) ||
+          (pt.x >= 2000 && pt.x <= 3200 && pt.y >= 350 && pt.y <= 800)
+        )
+      );
 
-    // RIVER ZONES
-    const inRiver = points.some(pt =>
-      riverZones.some(zone =>
-        pt.x >= zone.x && pt.x <= zone.x + zone.w &&
-        pt.y >= zone.y && pt.y <= zone.y + zone.h
-      )
-    );
-    // FOREST
-    const inForest = points.some(pt =>
-      pt.x >= 0 && pt.x <= 900 && pt.y >= 0 && pt.y <= 1250
-    );
-    // MOUNTAIN (pakai boundary dari movement-mu)
-    const inMountain = points.some(pt => {
-      // triangle gunung
-      const triX = pt.x - 1240, triY = pt.y - 850, triW = 620, triH = 350;
-      const inTri = triX >= 0 && triX <= triW && triY >= 0 && triY <= triH &&
-        triY >= Math.abs(triX - triW / 2) * (triH / (triW / 2));
-      // block gunung
-      const inRectA = pt.x >= 1200 && pt.x <= 2100 && pt.y >= 1200 && pt.y <= 1450;
-      const inRectB = pt.x >= 1200 && pt.x <= 2100 && pt.y >= 1450 && pt.y <= 1700;
-      return inTri || inRectA || inRectB;
-    });
-    // LAKE (pakai ellipse)
-    const inLake = points.some(pt => {
-      const cx = 395, cy = 1775, rx = 275, ry = 125;
-      const dx = pt.x - cx, dy = pt.y - cy;
-      return (dx * dx) / (rx * rx) + (dy * dy) / (ry * ry) <= 1;
-    });
-    // BOTTOM BLOCK
-    const inBottom = points.some(pt =>
-      pt.x >= 0 && pt.x <= 2316 && pt.y >= 3150 && pt.y <= 3554
-    );
-    // MARKET
-    const inMarket = points.some(pt =>
-      pt.x >= 3100 && pt.x <= 3450 && pt.y >= 2780 && pt.y <= 3040
-    );
-    // HOUSE ZONE
-    const inHouse = points.some(pt =>
-      pt.x >= 490 && pt.x <= 750 && pt.y >= 2240 && pt.y <= 2475
-    );
-    // OCEAN BLOCKS
-    const inRect1 = points.some(pt =>
-      pt.x >= 1500 && pt.x <= 5000 && pt.y >= 0 && pt.y <= 350
-    );
-    const inRect2 = points.some(pt =>
-      pt.x >= 2970 && pt.x <= 4670 && pt.y >= 350 && pt.y <= 1300
-    );
-    const inRect3 = points.some(pt =>
-      pt.x >= 3080 && pt.x <= 4680 && pt.y >= 1300 && pt.y <= 2100
-    );
-    // OCEAN TRIANGLE
-    const inTri1 = points.some(pt =>
-      pt.x >= 2920 && pt.x <= 4920 &&
-      pt.y >= 2100 && pt.y <= 4100 &&
-      pt.y < ((2000/2000) * (pt.x - 2920) + 2100)
-    );
-    // BEACH
-    const inBeach = points.some(pt =>
-      (
-        (pt.x >= 1100 && pt.x <= 1200 && pt.y >= 0 && pt.y <= 100) ||
-        (pt.x >= 1200 && pt.x <= 1300 && pt.y >= 0 && pt.y <= 250) ||
-        (pt.x >= 1300 && pt.x <= 1400 && pt.y >= 0 && pt.y <= 400) ||
-        (pt.x >= 1400 && pt.x <= 1700 && pt.y >= 0 && pt.y <= 600) ||
-        (pt.x >= 1700 && pt.x <= 2100 && pt.y >= 290 && pt.y <= 690) ||
-        (pt.x >= 2000 && pt.x <= 3200 && pt.y >= 350 && pt.y <= 800)
-      )
-    );
-
-    // AREA TERLARANG = salah satu true
-    return inRiver || inForest || inMountain || inLake || inBottom ||
-          inMarket || inHouse ||
-          inRect1 || inRect2 || inRect3 || inTri1 || inBeach;
-  }
-
-
+      //AREA TERLARANG = salah satu true
+      return inRiver || inForest || inMountain || inLake || inBottom ||
+            inMarket || inHouse ||
+            inRect1 || inRect2 || inRect3 || inTri1 || inBeach;
+    }
 
     let x, y, tryCount = 0;
     do {
       x = Math.floor(Math.random() * (MAP_WIDTH - SPRITE_SIZE));
       y = Math.floor(Math.random() * (MAP_HEIGHT - SPRITE_SIZE));
       tryCount++;
-      if (tryCount > 1000) break; // jaga2 infinite loop
+      if (tryCount > 1000) break;
     } while (isInBlockedZone(x, y));
     return { x, y };
   });
 
-  
-
-
   const audioRef = useRef(null);
-
-  
 
   useEffect(() => {
     const currentDiscovered = getDiscoveredItems();
@@ -307,16 +272,14 @@ export default function Gameplay() {
 
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = 0.6;  // atur volume jika perlu
-      audioRef.current.loop = true;   // agar musik looping terus
+      audioRef.current.volume = 0.6;  
+      audioRef.current.loop = true;  
       audioRef.current.play().catch(e => {
-        // bisa gagal autoplay di browser karena kebijakan user gesture
         console.log("Audio play failed:", e);
       });
     }
   }, []);
 
-  // Fungsi untuk handle use item dari komponen Inventory
   const handleUseItem = (itemName) => {
     const itemIndex = inventory.findIndex(item => item === itemName);
     if (itemIndex === -1) return;
@@ -324,31 +287,22 @@ export default function Gameplay() {
     const effectFn = itemDetails[itemName]?.useEffect;
     if (effectFn) {
       setStatus(prev => effectFn(prev));
-      alert(`${itemName} used!`);
-    } else {
-      alert(`Used ${itemName}`);
     }
-
-    // Remove item dari inventory
+    
     const newInventory = [...inventory];
     newInventory.splice(itemIndex, 1);
     setInventory(newInventory);
   };
 
-  // Fungsi untuk handle sell item dari komponen Inventory
   const handleSellItem = (itemName) => {
     const itemIndex = inventory.findIndex(item => item === itemName);
     if (itemIndex === -1) return;
 
     const price = itemDetails[itemName]?.sellGold || 0;
     if (price <= 0) {
-      alert(`Cannot sell ${itemName}`);
       return;
     }
 
-    alert(`Sold ${itemName} for ${price} gold.`);
-    
-    // Remove item dan tambah money
     const newInventory = [...inventory];
     newInventory.splice(itemIndex, 1);
     setInventory(newInventory);
@@ -388,8 +342,7 @@ export default function Gameplay() {
 
   if (timeData) {
     const now = Date.now();
-    const elapsed = Math.floor((now - timeData.startTimestamp) / 250); // 1 tick = 250ms = 1 menit game
-
+    const elapsed = Math.floor((now - timeData.startTimestamp) / 250);
     let totalMinutes = timeData.savedHour * 60 + timeData.savedMinute + elapsed;
     day = (timeData.savedDay + Math.floor(totalMinutes / (24 * 60))) % 7;
     hour = Math.floor((totalMinutes % (24 * 60)) / 60);
@@ -408,31 +361,30 @@ export default function Gameplay() {
       hour += 1;
 
       setStatus((prev) => {
-  // Ambil info buff dari localStorage
-  const playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
-  const playerTime = JSON.parse(localStorage.getItem("playerTime") || "{}");
-  const currentDayIndex = playerTime.savedDay ?? 0;
+        const playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
+        const playerTime = JSON.parse(localStorage.getItem("playerTime") || "{}");
+        const currentDayIndex = playerTime.savedDay ?? 0;
 
-  // Hapus buff jika sudah lewat 3 hari
-  if (playerData.megalodonBuffUntil !== undefined && playerData.megalodonBuffUntil < currentDayIndex) {
-    delete playerData.megalodonBuffUntil;
-    localStorage.setItem("playerData", JSON.stringify(playerData));
-  }
+        // Hapus buff jika sudah lewat 3 hari
+        if (playerData.megalodonBuffUntil !== undefined && playerData.megalodonBuffUntil < currentDayIndex) {
+          delete playerData.megalodonBuffUntil;
+          localStorage.setItem("playerData", JSON.stringify(playerData));
+        }
 
-  // Jika buff aktif, status tetap 100
-  if (playerData.megalodonBuffUntil !== undefined && playerData.megalodonBuffUntil >= currentDayIndex) {
-    return { meal: 100, sleep: 100, happiness: 100, cleanliness: 100 };
-  }
+        // Jika buff aktif, status tetap 100
+        if (playerData.megalodonBuffUntil !== undefined && playerData.megalodonBuffUntil >= currentDayIndex) {
+          return { meal: 100, sleep: 100, happiness: 100, cleanliness: 100 };
+        }
 
-  // Kalau tidak ada buff, status turun seperti biasa
-  const newStatus = { ...prev };
-  for (let key in newStatus) {
-    newStatus[key] = Math.max(newStatus[key] - 2, 0);
-  }
-  const allZero = Object.values(newStatus).every(val => val === 0);
-  if (allZero) window.location.href = "/ending";
-  return newStatus;
-});
+        // Kalau tidak ada buff, status turun seperti biasa
+        const newStatus = { ...prev };
+        for (let key in newStatus) {
+          newStatus[key] = Math.max(newStatus[key] - 2, 0);
+        }
+        const allZero = Object.values(newStatus).every(val => val === 0);
+        if (allZero) window.location.href = "/ending";
+        return newStatus;
+      });
 
     }
 
@@ -512,10 +464,9 @@ export default function Gameplay() {
           (newPos.x >= 1200 && newPos.x <= 2100 && newPos.y >= 1450 && newPos.y <= 1700);
 
 
-      const charSize = 64; // ukuran karakter
+      const charSize = 64;
 
       const inRiver = riverZones.some(zone => {
-        // Cek keempat sudut karakter, bisa juga cek bagian bawah tengah agar lebih natural
         const charPoints = [
           // pojok kiri atas
           { x: newPos.x, y: newPos.y },
@@ -553,13 +504,13 @@ export default function Gameplay() {
         );
 
         // Ocean block 2
-        // Persegi kedua (geser ke kiri 30px)
+        // Persegi kedua
         const inRect2 = (
           newPos.x >= 2970 && newPos.x <= 2970 + 1700 &&
           newPos.y >= 350 && newPos.y <= 350 + 950
         );
 
-        // Persegi ketiga (geser ke kiri 30px)
+        // Persegi ketiga
         const inRect3 = (
           newPos.x >= 3080 && newPos.x <= 3080 + 1600 &&
           newPos.y >= 1300 && newPos.y <= 1300 + 800
@@ -570,14 +521,8 @@ export default function Gameplay() {
         const inTri1 = (
           newPos.x >= 2920 && newPos.x <= 2920 + 2000 &&
           newPos.y >= 2100 && newPos.y <= 2100 + 2000 &&
-          // Clip-path segitiga polygon(100% 0, 100% 100%, 0 0)
-          // Artinya: y < kemiringan garis dari pojok kanan atas ke bawah kiri
-          // Cek: y < slope * (x - left) + top
-          newPos.y < ((2000/2000) * (newPos.x - 2920) + 2100) // Slope = height/width
+          newPos.y < ((2000/2000) * (newPos.x - 2920) + 2100)
         );
-
-
-
 
         if (!insideLake && !inMountain && !inRiver && !inForest && !inBottomBlock && !inRect1 &&!inRect2 && !inRect3 && !inTri1) {
           setIsMoving(moved);
@@ -639,7 +584,6 @@ export default function Gameplay() {
       position.y >= forest.y &&
       position.y <= forest.y + forest.h;
 
-
     const touchingForest =
       !insideForest && (
         position.x >= forest.x - 10 &&
@@ -669,7 +613,7 @@ export default function Gameplay() {
 
   useEffect(() => {
     if (!clothPos) {
-      setNearCloth(false); // <--- ini penting!
+      setNearCloth(false);
       return;
     }
     const charCenterX = position.x + SPRITE_SIZE / 2;
@@ -683,9 +627,7 @@ export default function Gameplay() {
   
 
   useEffect(() => {
-    // Jika inventory tidak punya ripped cloth dan clothPos belum ada, spawn lagi!
     if (!inventory.includes("Ripped Cloth") && !clothPos) {
-      // SPAWN ULANG, logic sama seperti awal
       function isInBlockedZone(x, y) {
         const charSize = 64;
         const inRiver = riverZones.some(zone =>
@@ -737,7 +679,6 @@ export default function Gameplay() {
   };
 
   const handleInteract = () => {
-    // Ambil ripped cloth jika di dekat item
     if (nearCloth && clothPos) {
       setInventory(inv => {
         const newInv = addItemToInventory(inv, "Ripped Cloth");
@@ -748,8 +689,7 @@ export default function Gameplay() {
       });
       setClothPos(null);
       addDiscoveredItem("Ripped Cloth");
-      setDiscoveredItems(getDiscoveredItems()); // <-- Sudah ada
-      // TAMBAHKAN INI:
+      setDiscoveredItems(getDiscoveredItems());
       setShowClothBanner(true);
       return;
     }
@@ -775,8 +715,6 @@ export default function Gameplay() {
       return;
     }
 
-
-    // Simpan data player seperti biasa
     const saveData = { character, position, status, money, inventory };
     localStorage.setItem("playerData", JSON.stringify(saveData));
     localStorage.setItem("playerTime", JSON.stringify({
@@ -796,11 +734,10 @@ export default function Gameplay() {
       } else {
         setLakeRodNotif(true);
         setLakeRodNotifFade(false);
-        setTimeout(() => setLakeRodNotifFade(true), 2000); // mulai fade setelah 2 detik
-        setTimeout(() => setLakeRodNotif(false), 2500); // hapus dari DOM setelah fade
+        setTimeout(() => setLakeRodNotifFade(true), 2000); 
+        setTimeout(() => setLakeRodNotif(false), 2500); 
       }
     } else if (nearBeachZone) {
-      // Simpan posisi terakhir di main map sebelum masuk beach
       localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
       addVisitedArea("Beach");
       window.location.href = "/beach";
@@ -808,17 +745,15 @@ export default function Gameplay() {
       addVisitedArea("Market");
       window.location.href = "/market";
     } else if (nearForestZone) {
-      // Simpan posisi terakhir sebelum masuk forest
       localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
       addVisitedArea("Forest");
       window.location.href = "/forest";
     } else if (atMysticShore) {
       if (inventory.includes("Boat")) {
-        // --- Tambahan: simpan posisi terakhir sebelum ke Secret
         localStorage.setItem("lastGameplayPosition", JSON.stringify(position));
         addVisitedArea("Mystic Shore");
         addVisitedArea("Isle of the Sacred Oath");
-        window.location.href = "/secret"; // atau "/Secret" sesuai routing-mu
+        window.location.href = "/secret";
       }
     }
   };
@@ -845,7 +780,6 @@ return (
         ></div>
       )}
 
-        {/* NPC di depan rumah */}
       <img
         src={houseNPCImg}
         alt="House NPC"
@@ -854,8 +788,8 @@ return (
           position: "absolute",
           left: houseNPCPos.x,
           top: houseNPCPos.y,
-          width: 64,
           height: 64,
+          objectFit: "contain",
           zIndex: 9,
           imageRendering: "pixelated",
           filter: showHouseNPCDialog ? "brightness(0.7)" : "none",
@@ -872,8 +806,8 @@ return (
           position: "absolute",
           left: lakeNPCPos.x,
           top: lakeNPCPos.y,
-          width: 64,
           height: 64,
+          objectFit: "contain",
           zIndex: nearLakeNPC ? 7 : 11,
           imageRendering: "pixelated",
           filter: showLakeNPCDialog ? "brightness(0.7)" : "none",
@@ -900,44 +834,6 @@ return (
         draggable={false}
       />
 
-
-
-      <div className="house-zone"></div>
-      <div className="lake-zone"></div>
-      <div className="mountain-zone part-1"></div>
-      <div className="mountain-zone part-2"></div>
-      <div className="mountain-zone part-3"></div>
-      <div className="beach-zone part-a"></div>
-      <div className="beach-zone part-b"></div>
-      <div className="beach-zone part-c"></div>
-      <div className="beach-zone part-d"></div>
-      <div className="beach-zone part-e"></div>
-      <div className="beach-zone part-f"></div>
-      <div className="river-zone part-a"></div>
-      <div className="river-zone part-b"></div>
-      <div className="river-zone part-c"></div>
-      <div className="river-zone part-e"></div>
-      <div className="river-zone part-f"></div>
-      <div className="river-zone part-g"></div>
-      <div className="river-zone part-h"></div>
-      <div className="river-zone part-i"></div>
-      <div className="river-zone part-j"></div>
-      <div className="river-zone part-k"></div>
-      <div className="river-zone part-l"></div>
-      <div className="river-zone part-m"></div>
-      <div className="river-zone part-n"></div>
-      <div className="river-zone part-o"></div>
-      <div className="market-zone"></div>
-      <div className="forest-zone"></div>
-      <div className="bottom-black-zone"></div>
-      <div className="bottom-block-zone"></div>
-      <div className="rect-block-zone ocean-block-1"></div>
-      <div className="rect-block-zone ocean-block-2"></div>
-      <div className="rect-block-zone ocean-block-3"></div>
-      <div className="tri-block-zone ocean-tri-1"></div>
-      <div className="mystic-shore-zone"></div>
-
-
       {clothPos && (
         <img
           src={itemIcons["Ripped Cloth"]}
@@ -953,7 +849,6 @@ return (
           }}
         />
       )}
-
     </div>
 
     <div className="status-ui">
@@ -985,8 +880,6 @@ return (
             </div>
           </div>
         </div>
-
-
       </div>
 
       <div className="status-money">
@@ -1011,10 +904,7 @@ return (
         >
           <img src={EncyclopediaIcon} alt="Encyclopedia" />
         </button>
-
-
       </div>
-
     </div>
 
     {showClothBanner && (
@@ -1051,8 +941,6 @@ return (
       </div>
     )}
 
-
-    {/* Inventory Modal DAN Overlay - TAMPIL kalau inventoryVisible */}
     {inventoryVisible && (
       <>
         <div
@@ -1141,7 +1029,6 @@ return (
             Crafting
           </div>
           {craftingRecipes.map(recipe => {
-            // Hitung bahan
             const materialCounts = recipe.materials.reduce((obj, mat) => {
               obj[mat] = (obj[mat] || 0) + 1;
               return obj;
@@ -1204,7 +1091,6 @@ return (
                   }}
                   disabled={!enough || hasResult}
                   onClick={() => {
-                    // Remove bahan dari inventory
                     let newInv = [...inventory];
                     Object.entries(materialCounts).forEach(([mat, qty]) => {
                       for (let i = 0; i < qty; i++) {
@@ -1214,13 +1100,10 @@ return (
                     });
                     let newMoney = money;
                     if (recipe.gold) newMoney -= recipe.gold;
-                    // Tambahkan hasil craft dengan pengecekan 100 item
                     newInv = addItemToInventory(newInv, recipe.result);
                     setInventory(newInv);
                     setMoney(newMoney);
                     addDiscoveredItem(recipe.result);
-
-                    // Simpan ke localStorage
                     const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                     localStorage.setItem("playerData",
                       JSON.stringify({
@@ -1275,7 +1158,6 @@ return (
         }}
         onClick={e => e.stopPropagation()}
       >
-        {/* PANEL KIRI — LIST */}
         <div className="encyclopedia-list"
           style={{
             width: 220,
@@ -1313,7 +1195,6 @@ return (
             );
           })}
         </div>
-        {/* PANEL KANAN — DETAIL */}
         <div
           style={{
             flex: 1,
@@ -1323,7 +1204,7 @@ return (
             justifyContent: "center",
             padding: "40px 30px 10px 30px",
             minWidth: 0,
-            textAlign: "center", // ini penting!
+            textAlign: "center", 
           }}
         >
           <img
@@ -1378,8 +1259,6 @@ return (
           )}
         </div>
 
-
-        {/* Close button */}
         <button
           className="close-inventory-btn"
           style={{
@@ -1401,8 +1280,6 @@ return (
     </div>
   )}
 
-
-    {/* Semua UI bawah, panel event, analog, map, dsb HANYA tampil kalau inventory tidak terbuka */}
     {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
       <>
         <div className="analog-controls">
@@ -1447,7 +1324,6 @@ return (
           </div>
         </div>
 
-
         <div className="event-panel">
           <p className="event-text">
             {nearCloth
@@ -1475,14 +1351,12 @@ return (
           <button className="event-button" onClick={handleInteract}>Interact</button>
         </div>
 
-
         <button className="map-toggle-button" onClick={() => setShowMainMap(true)}>
           <img src={mapIcon} alt="Map" />
         </button>
       </>
     )}
 
-    {/* Overlay map tetap di luar kondisi */}
     {showMainMap && (
       <div className="main-map-overlay">
         <button className="close-map-button" onClick={() => setShowMainMap(false)}>✕</button>
@@ -1554,14 +1428,13 @@ return (
           characterSprite={character?.sprite}
           username={username}
           condition={
-            !inventory.includes("Fish Nail")
-              ? 0
-              : !inventory.includes("Rod")
+            inventory.includes("Rod")
+              ? 2
+              : inventory.includes("Fish Nail")
                 ? 1
-                : 2
+                : 0
           }
           giveFishNail={() => {
-            // Dapat Fish Nail (Fish Claw)
             if (!inventory.includes("Fish Nail")) {
               const newInv = addItemToInventory(inventory, "Fish Nail");
               setInventory(newInv);
@@ -1605,15 +1478,10 @@ return (
         />
       </div>
     )}
-
-
-
-
   </div>
 )
 }
 
-// Komponen Dialog Panel NPC House
 function HouseNPCDialogPanel({
   state, setState, setShowDialog, characterSprite, username
 }) {
@@ -1709,7 +1577,6 @@ function HouseNPCDialogPanel({
     }
   }
 
-  // INI FIX PALING BENER
   if (state.stage === 0 && d?.choice) {
     return (
       <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
@@ -1733,7 +1600,7 @@ function HouseNPCDialogPanel({
               width: 32,
               height: 32,
               background: `url(${characterSprite})`,
-              backgroundPosition: "0px 0px",         // frame kiri atas
+              backgroundPosition: "0px 0px",        
               backgroundSize: "128px 128px",
               imageRendering: "pixelated",
               transform: "scale(5.15625)",
@@ -1745,7 +1612,6 @@ function HouseNPCDialogPanel({
     );
   }
 
-  // Render dialog branch atau baris dialog utama (bukan pilihan)
   return (
     <div
       className="npc-dialog-panel"
@@ -1809,7 +1675,7 @@ function HouseNPCDialogPanel({
               width: 32,
               height: 32,
               background: `url(${characterSprite})`,
-              backgroundPosition: "0px 0px",         // frame kiri atas
+              backgroundPosition: "0px 0px",     
               backgroundSize: "128px 128px",
               imageRendering: "pixelated",
               transform: "scale(5.15625)",
@@ -1823,7 +1689,7 @@ function HouseNPCDialogPanel({
 }
 
 function LakeNPCDialogPanel({
-  state, setState, setShowDialog, characterSprite, username, giveFishNail, condition // condition: 0,1,2
+  state, setState, setShowDialog, characterSprite, username, giveFishNail, condition 
 }) {
   // Dialog Script berdasarkan kondisi
   // 0 = Belum punya fish claw
@@ -1958,9 +1824,7 @@ function LakeNPCDialogPanel({
       if (state.textIdx < dialogScript[state.stage].length - 1) {
         setState({ ...state, textIdx: state.textIdx + 1 });
       } else {
-        // === Logic close dialog ===
         if (condition === 0) {
-          // Give fish claw setelah pilih 1/2, selesai tutup
           if (state.stage === 1 || state.stage === 2) {
             giveFishNail();
           }
@@ -1970,7 +1834,6 @@ function LakeNPCDialogPanel({
     }
   }
 
-  // Render pilihan
   if (d?.choice) {
     return (
       <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
@@ -2008,7 +1871,6 @@ function LakeNPCDialogPanel({
     );
   }
 
-  // Render percakapan (dialog branch)
   return (
     <div
       className="npc-dialog-panel"
@@ -2088,28 +1950,21 @@ function LakeNPCDialogPanel({
 function MountainNPCDialogPanel({
   state, setState, setShowDialog, characterSprite, username, inventory, setInventory, addDiscoveredItem
 }) {
-  // State for multi-step dialog after crafting talisman
   const [talismanDialogStep, setTalismanDialogStep] = React.useState(0);
-
-  // Inventory checks
   const hasRareHerbalGrass = inventory.includes("Rare Herbal Grass");
   const hasTalisman = inventory.includes("Archipelago Talisman");
-
-  // Default: quest logic
   const [questStarted, setQuestStarted] = React.useState(() =>
     localStorage.getItem("mountainQuestStarted") === "true"
   );
   const [whereAmIDone, setWhereAmIDone] = React.useState(false);
   const [yourStoryDone, setYourStoryDone] = React.useState(false);
 
-  // Reset done state on open
   React.useEffect(() => {
     setWhereAmIDone(false);
     setYourStoryDone(false);
     setTalismanDialogStep(0);
   }, [setShowDialog]);
 
-  // Normal quest dialog (before and after quest started)
   const hasWildFruitJuice = inventory.includes("Juice Wild Fruit");
   const hasCoconutJuice = inventory.includes("Juice Coconut");
 
@@ -2248,12 +2103,10 @@ function MountainNPCDialogPanel({
       if (step < talismanDialogs.length - 1) {
         setStep(step + 1);
       } else {
-        // Habis dialog terakhir, tap sekali lagi untuk tampil panel Nevermind saja
         setJustNevermind(true);
       }
     }
 
-    // Setelah selesai, tampilkan panel NPC seperti biasa, tengah cuma tombol Nevermind
     if (justNevermind) {
       return (
         <div className="npc-dialog-panel"
@@ -2296,7 +2149,6 @@ function MountainNPCDialogPanel({
       );
     }
 
-    // Panel dialog normal (animasi typing)
     return (
       <div className="npc-dialog-panel"
         style={{
@@ -2348,8 +2200,6 @@ function MountainNPCDialogPanel({
     );
   }
 
-
-
   // 2. RARE HERBAL GRASS: SECOND PRIORITY
   if (hasRareHerbalGrass) {
     return (
@@ -2398,7 +2248,6 @@ function MountainNPCDialogPanel({
     );
   }
 
-  // --- Else: normal quest dialog (before/after quest started)
   let dialogScript, choices;
   if (questStarted) {
     dialogScript = dialogFollowUp;
@@ -2408,8 +2257,6 @@ function MountainNPCDialogPanel({
     choices = choicesMain;
   }
   const d = dialogScript[state.stage][state.textIdx];
-
-  // Typing effect
   const [shownText, setShownText] = React.useState("");
   const textDone = React.useRef(true);
 
@@ -2428,10 +2275,8 @@ function MountainNPCDialogPanel({
       }
     }
     type();
-    // eslint-disable-next-line
   }, [state.stage, state.textIdx, hasWildFruitJuice, hasCoconutJuice]);
 
-  // Handler klik dialog
   function handleDialogClick() {
     if (!textDone.current) {
       setShownText(d.npc || d.player || "");
@@ -2440,7 +2285,6 @@ function MountainNPCDialogPanel({
     }
     if (d?.choice) return;
 
-    // SESUDAH QUEST
     if (questStarted) {
       const nextIdx = state.textIdx + 1;
       const nextStep = dialogScript[state.stage][nextIdx];
@@ -2474,7 +2318,7 @@ function MountainNPCDialogPanel({
           setState({ ...state, textIdx: state.textIdx + 1 });
         }
       } else {
-        if (state.stage === 3) { // 3 = Nevermind di menu utama
+        if (state.stage === 3) {
           setShowDialog(false);
           return;
         }
@@ -2507,7 +2351,6 @@ function MountainNPCDialogPanel({
     setShowDialog(false);
   }
 
-  // Render CHOICE PANEL
   if (d?.choice) {
     return (
       <div className="npc-dialog-panel" style={{ display: "flex", width: 740, height: 320, background: "rgba(0,0,0,0.87)", borderRadius: 32, alignItems: "center", boxShadow: "0 3px 60px #000a" }}>
@@ -2570,7 +2413,6 @@ function MountainNPCDialogPanel({
     );
   }
 
-  // Render dialog one by one
   return (
     <div
       className="npc-dialog-panel"

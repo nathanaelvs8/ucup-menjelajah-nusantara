@@ -9,7 +9,7 @@ import { addActivity } from "./utils";
 import inventoryIcon from "../assets/ui/Inventory.png";
 import Inventory from './Inventory.jsx'; 
 import { useNavigate } from "react-router-dom";
-
+import lakeAudio from "../assets/audio/Lake.mp3";
 
 export default function Fishing() {
   const [stage, setStage] = useState(1); // 1: power, 2: wait, 3: catch
@@ -30,21 +30,24 @@ export default function Fishing() {
   const [showExclamation, setShowExclamation] = useState(false);
   const [kailTop, setKailTop] = useState("10px"); // posisi kail
   const kailTopPx = `${(parseFloat(kailTop) / 100) * window.innerHeight}px`;
-  const alatPancingTop = 10; // Samakan dengan minTop (atau posisi awal alat pancing di area mancing)
-const lineHeight = parseFloat(kailTop) - alatPancingTop;
-const alatPancingBottom = 40; // px, ganti sesuai posisi alat pancing di layout kamu
-const [kailBottom, setKailBottom] = useState(`${alatPancingBottom}px`);
-const [holding, setHolding] = useState(false);
-const holdInterval = useRef(null);
-const navigate = useNavigate();
-
-
-
-
+  const alatPancingTop = 10; 
+  const lineHeight = parseFloat(kailTop) - alatPancingTop;
+  const alatPancingBottom = 40; 
+  const [kailBottom, setKailBottom] = useState(`${alatPancingBottom}px`);
+  const [holding, setHolding] = useState(false);
+  const holdInterval = useRef(null);
+  const navigate = useNavigate();
+  const [notif, setNotif] = useState(""); 
   const intervalRef = useRef(null);
   const catchIntervalRef = useRef(null);
-const [autoMoveDirection, setAutoMoveDirection] = useState(-1); // -1 untuk kiri, 1 untuk kanan
-const autoMoveSpeed = 2; // Kecepatan pergerakan otomatis
+  const [autoMoveDirection, setAutoMoveDirection] = useState(-1); 
+  const autoMoveSpeed = 2; 
+
+  function showNotif(msg) {
+    setNotif(msg);
+    setTimeout(() => setNotif(""), 2200); // otomatis hilang setelah 2.2 detik
+  }
+
   
 
   // Data ikan dan peluang per area
@@ -177,15 +180,21 @@ setKailTop(`${depth}px`);
       const fishPos = fishIndicatorPosRef.current;
       const duration = fishData[fish]?.duration || 4000;
       const inc = 100 / (duration / 100);
-      
-      // Area hijau sekarang mengikuti controlBarPos (±10%)
-      if (fishPos >= controlBarPos - 10 && fishPos <= controlBarPos + 10) {
+
+      // Area hijau: width = 20%, sesuai style bar (left: controlBarPos - 10%)
+      const greenZoneWidth = 20;
+      const greenZoneStart = controlBarPos - greenZoneWidth / 2;
+      const greenZoneEnd = controlBarPos + greenZoneWidth / 2;
+      const inGreenZone = fishPos >= greenZoneStart && fishPos <= greenZoneEnd;
+
+      if (inGreenZone) {
         return Math.min(prog + inc, 100);
       } else {
         const dec = inc * 1.5;
         return Math.max(0, prog - dec);
       }
     });
+
   }, 100);
 };
 
@@ -195,7 +204,7 @@ setKailTop(`${depth}px`);
     if (stage === 3) {
       if (catchProgress >= 100) {
         clearInterval(catchIntervalRef.current);
-        alert(`🎉 You caught a ${currentFish}!`);
+        showNotif(`🎉 You caught a ${currentFish}!`);
 
         setInventory((prev) => {
           const newInv = addItemToInventory(prev, currentFish);
@@ -214,7 +223,7 @@ setKailTop(`${depth}px`);
         setCaught(true);
       } else if (catchProgress <= 0) {
         clearInterval(catchIntervalRef.current);
-        alert("🐟 Fish escaped!");
+        showNotif("🐟 Fish escaped!");
         setStage(1);
         setPower(0);
         setCaught(false);
@@ -231,6 +240,14 @@ setKailTop(`${depth}px`);
 
   return (
     <>
+    <audio
+  src={lakeAudio}
+  autoPlay
+  loop
+  ref={audio => { if (audio) audio.volume = 0.3; }}
+  style={{ display: "none" }}
+/>
+
       <div className="fishing-scene"onClick={handleBarClick}>
         <img src={alatPancing} alt="alat pancing" className="alat-pancing-scene" />
 
@@ -299,39 +316,41 @@ setKailTop(`${depth}px`);
     zIndex: 1000,
   }}
 >
-  Kembali
+  Back
 </button>
 
         <div className="status-money">
           <div className="money">🎣 Fishing Mode - Stage: {stage}</div>
           <button
             className="inventory-btn"
-            onClick={() => setInventoryVisible(true)}
+            onClick={() => setInventoryVisible(v => !v)}
           >
             <img src={inventoryIcon} alt="Inventory" />
           </button>
-          {inventoryVisible && (
-            <div className="inventory-modal">
-              <div className="inventory-scroll-area">
+        {inventoryVisible && (
+          <>
+            <div
+              className="modal-overlay"
+              onClick={() => setInventoryVisible(false)}
+            />
+            <div
+              className="inventory-modal"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto', width: "100%" }}>
                 <Inventory
                   inventory={inventory}
                   onUseItem={itemName => {
                     const idx = inventory.findIndex(it => it === itemName);
                     if (idx !== -1) {
-                      const details = itemDetails[itemName];
-                      // Jalankan efek kalau ada
-                      if (details && typeof details.useEffect === "function") {
-                        setStatus(prev => details.useEffect(prev));
-                      }
                       const newInventory = [...inventory];
                       newInventory.splice(idx, 1);
                       setInventory(newInventory);
-
-                      // sync ke localStorage juga status
+                      // Sync ke localStorage: hanya inventory, JANGAN status!
                       const saved = JSON.parse(localStorage.getItem("playerData")) || {};
                       localStorage.setItem(
                         "playerData",
-                        JSON.stringify({ ...saved, inventory: newInventory, status: details && typeof details.useEffect === "function" ? details.useEffect(status) : status })
+                        JSON.stringify({ ...saved, inventory: newInventory })
                       );
                     }
                   }}
@@ -343,7 +362,7 @@ setKailTop(`${depth}px`);
                       if (price > 0) {
                         setMoney(prev => prev + price);
                       } else {
-                        alert("Item cannot be sold!");
+                        showNotif("Item cannot be sold!");
                       }
                       const newInventory = [...inventory];
                       newInventory.splice(idx, 1);
@@ -357,16 +376,28 @@ setKailTop(`${depth}px`);
                     }
                   }}
                 />
-
               </div>
               <button
                 className="close-inventory-btn"
                 onClick={() => setInventoryVisible(false)}
+                style={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 18,
+                  background: '#e2c070',
+                  color: '#514116',
+                  border: 'none',
+                  fontWeight: 'bold',
+                  fontSize: 18,
+                  padding: '7px 16px',
+                  zIndex: 10
+                }}
               >
-                Close
+                ✕
               </button>
             </div>
-          )}
+          </>
+        )}
 
         </div>
 
@@ -494,6 +525,27 @@ setKailTop(`${depth}px`);
           </div>
         )}
       </div>
+      {notif && (
+        <div style={{
+          position: "fixed",
+          top: "14vh",
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "#232323",
+          color: "#ffe066",
+          padding: "18px 28px",
+          borderRadius: 18,
+          fontSize: 22,
+          fontWeight: "bold",
+          zIndex: 99999,
+          boxShadow: "0 6px 24px #000a",
+          textAlign: "center",
+          animation: "fadeSlotNotif 2.2s"
+        }}>
+          {notif}
+        </div>
+      )}
+
     </>
   );
 }
