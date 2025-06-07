@@ -370,6 +370,18 @@ useEffect(() => {
 )}
 
 
+
+// Di dalam file Market.jsx, pada bagian return (...)
+
+// Di dalam file Market.jsx, pada bagian return (...)
+// Di dalam file Market.jsx, ganti seluruh blok showSlotMachine
+
+// Market.jsx
+
+// Market.jsx
+
+// Market.jsx
+
 {showSlotMachine && (
   <div
     style={{
@@ -386,109 +398,92 @@ useEffect(() => {
     }}
     onClick={() => setShowSlotMachine(false)}
   >
+    {/* 1. KANVAS UTAMA YANG RESPONSIVE */}
     <div
-  onClick={(e) => e.stopPropagation()}
-  style={{
-    position: "relative",   // PENTING supaya anak bisa pakai position absolute
-    width: 1300,
-    height: 800,
-    backgroundImage: `url(${mesinImg})`,
-    backgroundSize: "contain",
-    backgroundRepeat: "no-repeat",
-    // hapus flex dan justifyContent/alignItems
-    // display: "flex",
-    // flexDirection: "column",
-    // justifyContent: "center",
-    // alignItems: "center",
-    paddingTop: 60,
-  }}
->
-<button
-  onClick={() => setShowSlotMachine(false)}
-  style={{
-    position: "absolute",
-    top: "80px",  // Sesuaikan dengan posisi vertikal yang diinginkan
-    right: "50px", // Sesuaikan dengan posisi horizontal yang diinginkan
-    width: "40px",
-    height: "40px",
-    borderRadius: "50%",
-    border: "none",
-    backgroundColor: "rgba(255,0,0,0.7)", // Warna merah untuk testing
-    color: "white",
-    fontWeight: "bold",
-    fontSize: "24px",
-    cursor: "pointer",
-    zIndex: 10000, // Pastikan di atas semua elemen
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 0,
-  }}
-  aria-label="Close"
->
-  ×
-</button>
-      {/* Kotak angka */}
-<div
-  style={{
-    position: "absolute",
-    top: 500,   // sesuaikan jarak dari atas container modal mesin
-    left: 520,  // sesuaikan jarak dari kiri container modal mesin
-    display: "flex",
-    gap: 10,
-  }}
->
-  {slotNumbers.map((num, i) => (
-    <div
-      key={i}
+      onClick={(e) => e.stopPropagation()}
       style={{
-        width: 60,
-        height: 80,
-        backgroundColor: "transparent",
-        borderRadius: 10,
-        fontSize: 48,
-        fontWeight: "bold",
-        color: "#333",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        userSelect: "none",
+        position: "relative", // Ini adalah 'kanvas' sebagai acuan posisi
+        
+        // Ukuran kontainer relatif terhadap layar, dengan batas maksimal
+        width: "90vw",
+        height: "90vh",
+        maxWidth: "1000px",
+        maxHeight: "750px",
+
+        backgroundImage: `url(${mesinImg})`,
+        backgroundSize: "contain",
+        backgroundRepeat: "no-repeat",
+        backgroundPosition: "center",
       }}
     >
-      {num}
-    </div>
-  ))}
-</div>
+      <button
+        onClick={() => setShowSlotMachine(false)}
+        className="slot-machine-close-btn"
+        aria-label="Close"
+      >
+        ×
+      </button>
 
+      {/* 2. AREA INTERAKTIF YANG 'MENEMPEL' PADA GAMBAR */}
+      <div
+        style={{
+          position: 'absolute',
 
-      {/* Tombol Start */}
-<button
-  style={{
-    position: "absolute",
-    top: 610,
-    left: 560,
-    padding: "12px 30px",
-    fontSize: 20,
-    fontWeight: "bold",
-    cursor: isSpinning || money < 1000 ? "not-allowed" : "pointer",
-    backgroundColor: "transparent",  // transparan tanpa warna background
-    border: "none",                  // tanpa border
-    color: "#fff",                   // warna tulisan tetap putih (atau sesuaikan)
-    userSelect: "none",
-  }}
-  disabled={isSpinning || money < 1000}
-  onClick={startSlot}
->
-  {isSpinning ? "Spinning..." : "Start"}
-</button>
+          // --- PANDUAN PENYESUAIAN ADA DI SINI ---
+          top: '53.5%',     // Jarak dari ATAS gambar
+          left: '48%',      // Posisi HORIZONTAL (kiri/kanan)
+          width: '23%',     // LEBAR area relatif terhadap lebar gambar
+          height: '14%',    // TINGGI area relatif terhadap tinggi gambar
+          
+          transform: 'translateX(-50%)', // Trik untuk memastikan posisi horizontal selalu di tengah
+          
+          // Tata letak untuk isi di dalamnya (angka & tombol)
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'space-between', // 'space-between' untuk mendorong Start ke bawah
+          padding: '1.5% 0', // Beri sedikit padding vertikal
+        }}
+      >
+        {/* Angka Slot */}
+        <div style={{ display: "flex", gap: "1.4vw" }}>
+          {slotNumbers.map((num, i) => (
+            <div
+              key={i}
+              style={{
+                fontSize: "clamp(20px, 3.5vw, 42px)", // Ukuran font responsif
+                color: "#333",
+                fontWeight: "bold",
+              }}
+            >
+              {num}
+            </div>
+          ))}
+        </div>
 
-
-
+        {/* Tombol Start */}
+        <button
+          style={{
+            backgroundColor: "transparent",
+            border: "none",
+            color: "#fff",
+            fontSize: "clamp(12px, 2vw, 20px)", // Ukuran font responsif
+            fontWeight: "bold",
+            cursor: isSpinning || money < 1000 ? "not-allowed" : "pointer",
+            userSelect: "none",
+            padding: 0,
+            lineHeight: 1, // Pastikan teks tidak punya spasi ekstra
+          }}
+          disabled={isSpinning || money < 1000}
+          onClick={startSlot}
+        >
+          {isSpinning ? "Spinning..." : "Start"}
+        </button>
+      </div>
     </div>
   </div>
-)}
-
-      {character && (
+)}   
+  {character && (
         <div className="character" style={{
           position: "fixed",
           left: `calc(50vw - ${SPRITE_SIZE / 2}px)`,
