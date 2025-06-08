@@ -1554,7 +1554,7 @@ export default function Forest() {
       </div>
 
     {!inventoryVisible && !showCraftModal && !showEncyclopedia && (
-      
+      <>
       <div className="analog-controls">
       <div className="analog-up-row">
         <button

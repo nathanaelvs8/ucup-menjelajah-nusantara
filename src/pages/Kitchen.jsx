@@ -99,17 +99,17 @@ export default function Kitchen({
     {
       name: "Cooked Goldfish",
       ingredients: ["Goldfish", "Garlic", "Onion", "Shallot", "Oil", "Magic Sauce"],
-      instructions: "Campur semua bahan, masak sampai matang dan bumbu meresap.",
+      instructions: "Mix all ingredients, cook until cooked and the spices are absorbed.",
     },
     {
       name: "Cooked Tuna",
       ingredients: ["Tuna", "Salt", "Garlic", "Magic Powder", "Oil"],
-      instructions: "Tumis garlic dan tuna, masukkan bahan lain, masak hingga matang.",
+      instructions: "Saute garlic and tuna, add other ingredients, cook until cooked.",
     },
     {
       name: "Cooked Megalodon",
       ingredients: ["Megalodon", "Garlic", "Onion", "Shallot", "Magic Powder", "Magic Sauce"],
-      instructions: "Tumis bawang, masukkan Megalodon dan bahan lain, masak sampai harum.",
+      instructions: "Saute the onions, add the Megalodon and other ingredients, cook until fragrant.",
     }
   ];
 
@@ -195,10 +195,10 @@ export default function Kitchen({
     if (selectedRecipe.steps.includes(item.name)) {
       setActiveItems(items => items.filter(i => i.id !== item.id));
       setStage1Score(s => s + 100);
-      setFeedbackMessage(`Benar! ${item.name} +100 poin`);
+      setFeedbackMessage(`Correct! ${item.name} +100 points`);
     } else {
       setStage1Score(s => Math.max(0, s - 50)); 
-      setFeedbackMessage(`Salah! ${item.name} -50 poin`);
+      setFeedbackMessage(`Wrong! ${item.name} -50 points`);
     }
   };
 
@@ -225,7 +225,7 @@ export default function Kitchen({
     if (!selectedRecipe) return;
     setGameState('minigame_stage1');
     setStage1Score(0); 
-    setFeedbackMessage(`Siapkan bahan untuk ${selectedRecipe.name}! Pilih dengan benar.`);
+    setFeedbackMessage(`Prepare the ingredients for ${selectedRecipe.name}! Choose correctly`);
   };
 
   // Fungsi untuk memulai stage 2 atau transisi dari stage 1
@@ -243,28 +243,26 @@ export default function Kitchen({
     if (gameState === 'minigame_stage1' && selectedRecipe) {
       const targetScore = selectedRecipe.steps.length * 100;
       if (targetScore > 0 && stage1Score >= targetScore) { 
-        setFeedbackMessage("Stage 1 selesai! Lanjut ke tahap berikutnya!");
+        setFeedbackMessage("Stage 1 is complete! Move on to the next stage!");
         setIsIndicatorAnimating(false); // Pastikan animasi dari stage sebelumnya berhenti jika ada
         setTimeout(() => {
             startStage2Minigame(); // Panggil fungsi untuk memulai stage 2
         }, 700);
       }
     }
-  }, [stage1Score, gameState, selectedRecipe]); // Tidak perlu memasukkan startStage2Minigame ke dependency array jika ia didefinisikan di scope yang sama atau di atasnya dan tidak berubah.
-
-
+  }, [stage1Score, gameState, selectedRecipe]);
   const handleStopIndicator = () => {
-    if (!isIndicatorAnimating) return; // Jangan lakukan apa-apa jika sudah dihentikan
+    if (!isIndicatorAnimating) return;
 
     setIsIndicatorAnimating(false);
     setPlayerHasStoppedIndicator(true);
 
     const success = indicatorPosition >= targetZone.start && indicatorPosition <= targetZone.end;
     if (success) {
-      setFeedbackMessage(`Tepat! Panasnya pas!`); // Pesan sementara sebelum hasil akhir
+      setFeedbackMessage(`Just right! Just the right amount of heat!`); // Pesan sementara sebelum hasil akhir
     } else {
-      let missType = indicatorPosition < targetZone.start ? "kurang panas" : "terlalu panas";
-      setFeedbackMessage(`Oops! Sepertinya ${missType}.`); // Pesan sementara
+      let missType = indicatorPosition < targetZone.start ? "not hot enough" : "too hot";
+      setFeedbackMessage(`Oops! Looks like ${missType}.`); // Pesan sementara
     }
     
     // Beri sedikit jeda sebelum memanggil hasil akhir agar pemain bisa lihat feedback singkat
@@ -277,7 +275,7 @@ export default function Kitchen({
   const handleStage2Result = (success) => {
     if (!selectedRecipe) return;
     if (success) {
-      setFeedbackMessage(`Luar biasa! Kamu berhasil memasak ${selectedRecipe.resultItem}!`);
+      setFeedbackMessage(`Awesome! You successfully cooked ${selectedRecipe.resultItem}!`);
       let tempInventory = [...inventory];
       for (const ingredient of selectedRecipe.ingredients) {
         for (let i = 0; i < ingredient.qty; i++) {
@@ -293,7 +291,7 @@ export default function Kitchen({
       addActivity("Cooking");
 
     } else {
-      setFeedbackMessage(`Yah, gagal di tahap akhir saat mengatur panas ${selectedRecipe.name}. Makanan tidak jadi.`);
+      setFeedbackMessage(`Well, it failed at the final stage when setting the heat of ${selectedRecipe.name}. The food didn't turn out.`);
     }
     setGameState('result');
   };
@@ -316,7 +314,7 @@ export default function Kitchen({
         return (
             <div className="kitchen-container" style={{ backgroundImage: `url(${kitchenBackgroundImage})` }}>
                 <div className="game-overlay">
-                    <p>Error: Gagal memuat data resep. Periksa konsol untuk detail.</p>
+                    <p>Error: Failed to load recipe data. Check the console for details.</p>
                     <button onClick={onClose} className="kitchen-close-button">×</button>
                 </div>
             </div>
@@ -343,14 +341,25 @@ export default function Kitchen({
         </h2>
 
         {feedbackMessage && ! (gameState === 'minigame_stage2' && playerHasStoppedIndicator) && ( // Jangan tampilkan feedback umum jika sedang di stage 2 dan baru saja stop
-          <div
-            className={`feedback-message ${
-              feedbackMessage.includes("Luar biasa") || feedbackMessage.includes("Berhasil") ||  feedbackMessage.includes("Selamat") || feedbackMessage.includes("Benar") || feedbackMessage.includes("Tepat!") ? 'success' : 
-              (feedbackMessage.includes("Yah, gagal") || feedbackMessage.includes("Salah") || feedbackMessage.includes("tidak cukup") || feedbackMessage.includes("Error") || feedbackMessage.includes("Oops!") ) ? 'failure' : ''
-            }`}
-          >
-            {feedbackMessage}
-          </div>
+        <div
+          className={`feedback-message ${
+            feedbackMessage.includes("Awesome") ||
+            feedbackMessage.includes("Great") ||
+            feedbackMessage.includes("Success") ||
+            feedbackMessage.includes("Correct") ||
+            feedbackMessage.includes("Just right!") 
+              ? 'success' 
+              : (
+                feedbackMessage.includes("failed") ||
+                feedbackMessage.includes("Wrong") ||
+                feedbackMessage.includes("Not enough") ||
+                feedbackMessage.includes("Error") ||
+                feedbackMessage.includes("Oops!") 
+              ) ? 'failure' : ''
+          }`}
+        >
+          {feedbackMessage}
+        </div>
         )}
 
         {gameState === 'menu' && (
@@ -366,7 +375,7 @@ export default function Kitchen({
                 cursor: "pointer",
                 outline: "none"
               }}
-              title="Lihat Buku Resep"
+              title="View Recipe Book"
               onClick={() => setShowRecipeBook(true)}
             >
               <img src={RecipeBookIcon} alt="Recipe Book" style={{ width: 56, height: 56, objectFit: "contain" }} />
@@ -473,7 +482,7 @@ export default function Kitchen({
                 </div>
                 {/* Menampilkan feedback spesifik untuk stage 2 setelah stop */}
                 {playerHasStoppedIndicator && feedbackMessage && (
-                    <div className={`feedback-message small-margin ${feedbackMessage.includes("Tepat!") ? 'success' : 'failure'}`}>
+                    <div className={`feedback-message small-margin ${feedbackMessage.includes("Just Right!") ? 'success' : 'failure'}`}>
                         {feedbackMessage}
                     </div>
                 )}
@@ -495,13 +504,13 @@ export default function Kitchen({
 
         {gameState === 'result' && selectedRecipe && (
           <div className="result-display">
-            <h3>Hasil Akhir Memasak</h3>
-            {(feedbackMessage.includes("Luar biasa") || feedbackMessage.includes("Berhasil")) && selectedRecipe.icon &&
+            <h3>Final Cooking Result</h3>
+            {(feedbackMessage.includes("Awesome") || feedbackMessage.includes("Success")) && selectedRecipe.icon &&
               <img src={selectedRecipe.icon} alt={selectedRecipe.resultItem} className="result-cooked-item-icon" />
             }
             <p className={`result-feedback-text ${
-                (feedbackMessage.includes("Luar biasa") || feedbackMessage.includes("Berhasil")) ? 'success' : 
-                (feedbackMessage.includes("Yah, gagal") || feedbackMessage.includes("Error")) ? 'failure' : ''
+                (feedbackMessage.includes("Awesome") || feedbackMessage.includes("Success")) ? 'success' : 
+                (feedbackMessage.includes("Failed") || feedbackMessage.includes("Error")) ? 'failure' : ''
             }`}>{feedbackMessage}</p>
             <button onClick={backToMenu}>Go back to the Recipe Menu</button>
           </div>
