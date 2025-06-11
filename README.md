@@ -1,6 +1,6 @@
 # Archipelago Saga
 
-**Play here:** [Click here to play](https://your-game-link.com)
+**Play here:** [Click here to play](https://archipelagosaga.netlify.app/)
 
 ---
 
