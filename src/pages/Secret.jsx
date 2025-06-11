@@ -775,48 +775,9 @@ export default function Secret() {
           <div className="inventory-scroll-area" style={{ flex: 1, overflowY: 'auto' }}>
             <Inventory
               inventory={inventory}
-              onUseItem={itemName => {
-                // --- logic sama persis ---
-                const saved = JSON.parse(localStorage.getItem("playerData")) || {};
-                const inv = saved.inventory || [];
-                const idx = inv.findIndex(it => it === itemName);
-                if (idx !== -1) {
-                  const details = itemDetails[itemName];
-                  let updatedStatus = status;
-                  if (details && typeof details.useEffect === "function") {
-                    updatedStatus = details.useEffect(status);
-                    setStatus(updatedStatus);
-                  }
-                  const newInventory = [...inv];
-                  newInventory.splice(idx, 1);
-                  setInventory(newInventory);
-                  localStorage.setItem(
-                    "playerData",
-                    JSON.stringify({ ...saved, inventory: newInventory, status: updatedStatus })
-                  );
-                }
-              }}
-              onSellItem={itemName => {
-                const saved = JSON.parse(localStorage.getItem("playerData")) || {};
-                const inv = saved.inventory || [];
-                const idx = inv.findIndex(it => it === itemName);
-                if (idx !== -1) {
-                  const details = itemDetails[itemName];
-                  const price = details?.sellGold || 0;
-                  if (price > 0) {
-                    setMoney(prev => prev + price);
-                  } else {
-                    alert("Item cannot be sold!");
-                  }
-                  const newInventory = [...inv];
-                  newInventory.splice(idx, 1);
-                  setInventory(newInventory);
-                  localStorage.setItem(
-                    "playerData",
-                    JSON.stringify({ ...saved, inventory: newInventory, money: price > 0 ? (saved.money || 0) + price : saved.money })
-                  );
-                }
-              }}
+              onUseItem={handleUseItem}
+              onSellItem={handleSellItem}
+              canUseTalisman={angelDone && inRitualCircle && hasTalisman}
             />
           </div>
           <button
