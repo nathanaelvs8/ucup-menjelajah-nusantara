@@ -3,8 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { signInWithPopup } from "firebase/auth";
 import { auth, provider } from "../firebase";
 
-import loadingVideo from "../assets/intro/Loading intro.mp4";
-import introLoopVideo from "../assets/intro/Video Intro.mp4";
+//import loadingVideo from "../assets/intro/Loading intro.mp4";
+//import introLoopVideo from "../assets/intro/Video Intro.mp4";
 import introMusic from "../assets/audio/intro-music.mp3";
 import googleIcon from "../assets/icons/google.png";
 import guestIcon from "../assets/icons/guest.png";
@@ -102,15 +102,20 @@ export default function Intro() {
         <source src={clickSound} type="audio/mp3" />
       </audio>
 
-      <video className="intro-video base" src={introLoopVideo} autoPlay muted loop />
+      <video
+        className="intro-video base"
+        src="https://cdn.jsdelivr.net/gh/nathanaelvs8/ucup-menjelajah-nusantara/assets/intro/Video%20Intro.mp4"
+        autoPlay
+        muted
+        loop
+      />
       <video
         ref={loadingRef}
         className={`intro-video overlay ${step === "loading" ? "fade-in-video" : "hidden-video"}`}
-        src={loadingVideo}
+        src="https://cdn.jsdelivr.net/gh/nathanaelvs8/ucup-menjelajah-nusantara/assets/intro/Loading%20intro.mp4"
         muted
         onEnded={handleLoadingEnd}
       />
-
       {/* STEP 1 - PILIH LOGIN */}
       {step === "select-login" && (
         <div className="auth-options-grid">
