@@ -406,31 +406,6 @@ export default function Gameplay() {
   return () => clearTimeout(timeoutRef.current);
 }, []);
 
-useEffect(() => {
-  // Dicek hanya sekali pas komponen mount
-  setInventory(inv => {
-    let newInv = Array.isArray(inv) ? [...inv] : [];
-    let changed = false;
-    if (!newInv.includes("Boat")) {
-      newInv.push("Boat");
-      changed = true;
-    }
-    if (!newInv.includes("Archipelago Talisman")) {
-      newInv.push("Archipelago Talisman");
-      changed = true;
-    }
-    if (changed) {
-      // Simpan juga ke localStorage biar persistent
-      let playerData = JSON.parse(localStorage.getItem("playerData") || "{}");
-      playerData.inventory = newInv;
-      localStorage.setItem("playerData", JSON.stringify(playerData));
-      return newInv;
-    }
-    return inv;
-  });
-  // eslint-disable-next-line
-}, []);
-
   const formatTime = (h, m) => `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 
   useEffect(() => {
