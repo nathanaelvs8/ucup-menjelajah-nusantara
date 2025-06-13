@@ -17,7 +17,6 @@ export default function Intro() {
   const [step, setStep] = useState("select-login"); // select-login | fill-form | tap-start | loading
   const [isGuest, setIsGuest] = useState(false);
   const [playerName, setPlayerName] = useState("");
-  const [playerPassword, setPlayerPassword] = useState("");
 
   const loadingRef = useRef(null);
   const audioRef = useRef(null);
@@ -37,10 +36,35 @@ export default function Intro() {
     }
   };
 
-  const handleSelectGoogle = () => {
+  const startMusic = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch((err) => {
+        console.warn("Audio autoplay blocked:", err.message);
+      });
+    }
+  };
+
+  const handleSelectGoogle = async () => {
     playClick();
-    setIsGuest(false);
-    setStep("fill-form");
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Ambil nama dari akun Google dan simpan
+      const googleUserName = user.displayName || "Adventurer"; // Fallback jika nama tidak ada
+      localStorage.setItem("playerName", googleUserName);
+      setPlayerName(googleUserName); // Simpan di state jika perlu
+
+      console.log("Login Google berhasil, nama:", googleUserName);
+
+      // Mulai musik dan lanjutkan ke langkah berikutnya
+      startMusic();
+      setStep("tap-start");
+
+    } catch (error) {
+      alert("Login Google gagal: " + error.message);
+      // Tetap di halaman pilihan login jika gagal
+    }
   };
 
   const handleSelectGuest = () => {
@@ -49,33 +73,19 @@ export default function Intro() {
     setStep("fill-form");
   };
 
- const handleFormSubmit = async () => {
-  if (playerName.trim() === "") {
-    alert("Nama tidak boleh kosong");
-    return;
-  }
-
-  if (!isGuest) {
-    try {
-      await signInWithPopup(auth, provider);
-      console.log("Login Google berhasil");
-    } catch (error) {
-      alert("Login gagal: " + error.message);
+  const handleFormSubmit = () => { // Fungsi ini sekarang hanya untuk Guest
+    if (playerName.trim() === "") {
+      alert("Nama tidak boleh kosong");
       return;
     }
-  }
 
-  localStorage.setItem("playerName", playerName);
+    localStorage.setItem("playerName", playerName);
 
-  // ⬇️ Mulai musik setelah berhasil login/nama valid
-  if (audioRef.current) {
-    audioRef.current.play().catch((err) => {
-      console.warn("Audio autoplay blocked:", err.message);
-    });
-  }
+    // ⬇️ Mulai musik setelah berhasil login/nama valid
+    startMusic();
 
-  setStep("tap-start");
-};
+    setStep("tap-start");
+  };
 
   const handleTapStart = () => {
     playClick();
@@ -87,8 +97,8 @@ export default function Intro() {
   };
 
   const handleLoadingEnd = () => {
-  navigate("/select-character"); // pindah ke halaman baru
-};
+    navigate("/select-character"); // pindah ke halaman baru
+  };
 
 
   return (
@@ -125,31 +135,22 @@ export default function Intro() {
         </div>
       )}
 
-      {/* STEP 2 - FORM */}
-  {step === "fill-form" && (
-  <div className="login-card">
-    <img src={cardImage} alt="Header" className="card-header" />
-    <div className="login-title">Enter Information</div>
+      {/* STEP 2 - FORM (HANYA UNTUK GUEST) */}
+      {step === "fill-form" && isGuest && (
+        <div className="login-card">
+          <img src={cardImage} alt="Header" className="card-header" />
+          <div className="login-title">Enter Your Name</div>
 
-    <input
-      type="text"
-      placeholder="Enter name"
-      value={playerName}
-      onChange={(e) => setPlayerName(e.target.value)}
-    />
+          <input
+            type="text"
+            placeholder="Enter name"
+            value={playerName}
+            onChange={(e) => setPlayerName(e.target.value)}
+          />
 
-    {!isGuest && (
-      <input
-        type="password"
-        placeholder="Enter password"
-        value={playerPassword}
-        onChange={(e) => setPlayerPassword(e.target.value)}
-      />
-    )}
-
-    <button onClick={handleFormSubmit}>OK</button>
-  </div>
-)}
+          <button onClick={handleFormSubmit}>OK</button>
+        </div>
+      )}
 
       {/* STEP 3 - TAP TO START */}
       {step === "tap-start" && (
